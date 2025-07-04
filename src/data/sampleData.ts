@@ -1,0 +1,326 @@
+import type { Event, NewsArticle, Business, JobPosting, Classified } from '../types'
+
+export const sampleEvents: Event[] = [
+  {
+    id: 'ev1',
+    title: 'Wetaskiwin Regional Farmers Market',
+    description: 'Fresh local produce, artisan goods, and community vendors. Every Saturday in Memorial Park.',
+    date: new Date('2025-07-12T09:00:00Z'),
+    time: '09:00',
+    location: 'Memorial Park, Wetaskiwin',
+    category: 'community',
+    organizer: 'Wetaskiwin Regional Farmers Market Association',
+    contactEmail: 'info@wetaskiwinmarket.ca',
+    website: 'https://wetaskiwinmarket.ca',
+    featured: true,
+    price: 0,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'ev2',
+    title: 'Summer Music Festival',
+    description: 'Join us for a family-friendly summer music festival with live bands, food vendors, and activities for all ages.',
+    date: new Date('2025-08-15T11:00:00Z'),
+    time: '11:00',
+    location: 'Jubilee Park, Wetaskiwin',
+    category: 'music',
+    organizer: 'City of Wetaskiwin',
+    contactPhone: '780-352-3321',
+    featured: true,
+    price: 0,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'ev3',
+    title: 'Reynolds-Alberta Museum Car Show',
+    description: 'Annual vintage car show featuring classic automobiles, tractors, and agricultural machinery.',
+    date: new Date('2025-07-20T10:00:00Z'),
+    time: '10:00',
+    location: 'Reynolds-Alberta Museum',
+    category: 'other',
+    organizer: 'Reynolds-Alberta Museum',
+    website: 'https://reynoldsmuseum.ca',
+    featured: false,
+    price: 15,
+    ticketUrl: 'https://reynoldsmuseum.ca/tickets',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'ev4',
+    title: 'Community Garage Sale Weekend',
+    description: 'City-wide garage sale event. Find great deals and treasures throughout Wetaskiwin neighborhoods.',
+    date: new Date('2025-07-26T08:00:00Z'),
+    time: '08:00',
+    location: 'Various locations, Wetaskiwin',
+    category: 'community',
+    organizer: 'Wetaskiwin Chamber of Commerce',
+    contactEmail: 'events@wetaskiwincc.ca',
+    featured: false,
+    price: 0,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'ev5',
+    title: 'Youth Soccer Tournament',
+    description: 'Annual youth soccer tournament for ages 8-16. Teams from across central Alberta compete.',
+    date: new Date('2025-08-02T09:00:00Z'),
+    time: '09:00',
+    location: 'Wetaskiwin Sports Complex',
+    category: 'sports',
+    organizer: 'Wetaskiwin Soccer Association',
+    contactPhone: '780-352-7777',
+    featured: true,
+    price: 10,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+]
+
+export const sampleNews: NewsArticle[] = [
+  {
+    id: 'n1',
+    title: 'New Recreation Center Opens in Wetaskiwin',
+    summary: 'The state-of-the-art recreation facility features a swimming pool, fitness center, and community spaces.',
+    content: 'The City of Wetaskiwin officially opened its new recreation center this week...',
+    category: 'local-news',
+    author: 'Sarah Johnson',
+    publishedAt: new Date('2025-07-01T10:00:00Z'),
+    sourceUrl: 'https://wetaskiwin.ca/news',
+    sourceName: 'City of Wetaskiwin',
+    tags: ['recreation', 'community', 'facilities'],
+    featured: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'n2',
+    title: 'Wetaskiwin Regional Public Schools Announces Fall Programs',
+    summary: 'New programming includes enhanced STEM courses and expanded arts programs for the upcoming school year.',
+    category: 'education',
+    author: 'Mike Peterson',
+    publishedAt: new Date('2025-06-28T14:00:00Z'),
+    sourceUrl: 'https://wrps.ca/news',
+    sourceName: 'Wetaskiwin Regional Public Schools',
+    tags: ['education', 'students', 'programs'],
+    featured: false,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'n3',
+    title: 'Summer Construction Projects Update',
+    summary: 'City provides update on road construction and infrastructure improvements planned for summer 2025.',
+    category: 'city-council',
+    author: 'City Communications',
+    publishedAt: new Date('2025-07-03T09:00:00Z'),
+    sourceUrl: 'https://wetaskiwin.ca/construction',
+    sourceName: 'City of Wetaskiwin',
+    tags: ['construction', 'infrastructure', 'roads'],
+    featured: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'n4',
+    title: 'Local Business Spotlight: Main Street Renovation',
+    summary: 'Downtown revitalization project brings new life to historic Main Street with updated facades and streetscaping.',
+    category: 'business',
+    author: 'Emma Wilson',
+    publishedAt: new Date('2025-06-30T16:00:00Z'),
+    sourceUrl: 'https://wetaskiwincc.ca/news',
+    sourceName: 'Wetaskiwin Chamber of Commerce',
+    tags: ['business', 'downtown', 'renovation'],
+    featured: false,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+]
+
+export const sampleBusinesses: Business[] = [
+  {
+    id: 'b1',
+    name: 'Main Street Cafe',
+    description: 'Cozy local cafe serving fresh coffee, homemade pastries, and hearty breakfast options.',
+    category: 'restaurant',
+    address: '123 Main Street, Wetaskiwin, AB',
+    phone: '780-352-1234',
+    email: 'info@mainstreetcafe.ca',
+    website: 'https://mainstreetcafe.ca',
+    hours: {
+      monday: '7:00 AM - 3:00 PM',
+      tuesday: '7:00 AM - 3:00 PM',
+      wednesday: '7:00 AM - 3:00 PM',
+      thursday: '7:00 AM - 3:00 PM',
+      friday: '7:00 AM - 3:00 PM',
+      saturday: '8:00 AM - 2:00 PM',
+      sunday: 'Closed'
+    },
+    featured: true,
+    verified: true,
+    rating: 4.5,
+    reviewCount: 127,
+    services: ['Dine-in', 'Takeout', 'Catering'],
+    tags: ['coffee', 'breakfast', 'local'],
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'b2',
+    name: 'Wetaskiwin Auto Care',
+    description: 'Full-service automotive repair and maintenance. Serving the community for over 20 years.',
+    category: 'automotive',
+    address: '456 Industrial Ave, Wetaskiwin, AB',
+    phone: '780-352-5678',
+    email: 'service@wetaskiwinauto.ca',
+    hours: {
+      monday: '8:00 AM - 5:00 PM',
+      tuesday: '8:00 AM - 5:00 PM',
+      wednesday: '8:00 AM - 5:00 PM',
+      thursday: '8:00 AM - 5:00 PM',
+      friday: '8:00 AM - 5:00 PM',
+      saturday: '9:00 AM - 2:00 PM',
+      sunday: 'Closed'
+    },
+    featured: false,
+    verified: true,
+    rating: 4.8,
+    reviewCount: 89,
+    services: ['Oil Changes', 'Brake Repair', 'Engine Diagnostics', 'Tire Service'],
+    tags: ['automotive', 'repair', 'maintenance'],
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+]
+
+export const sampleJobs: JobPosting[] = [
+  {
+    id: 'j1',
+    title: 'Registered Nurse - Emergency Department',
+    company: 'Wetaskiwin Hospital',
+    description: 'We are seeking a dedicated Registered Nurse to join our Emergency Department team.',
+    location: 'Wetaskiwin, AB',
+    category: 'healthcare',
+    type: 'full-time',
+    salaryRange: '$32-38/hour',
+    requirements: [
+      'Current RN license in Alberta',
+      'BScN or equivalent',
+      'Emergency department experience preferred',
+      'Strong communication skills'
+    ],
+    benefits: ['Health and dental coverage', 'Pension plan', 'Professional development'],
+    contactEmail: 'hr@wetaskiwin.hospital.ca',
+    featured: true,
+    expiresAt: new Date('2025-12-01'),
+    sourceName: 'Wetaskiwin Hospital',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'j2',
+    title: 'Elementary School Teacher',
+    company: 'Wetaskiwin Regional Public Schools',
+    description: 'Teaching position for Grade 3/4 combined class. Permanent full-time position.',
+    location: 'Wetaskiwin, AB',
+    category: 'education',
+    type: 'full-time',
+    salaryRange: '$65,000-$95,000/year',
+    requirements: [
+      'Bachelor of Education',
+      'Alberta Teaching Certificate',
+      'Elementary teaching experience',
+      'Strong classroom management skills'
+    ],
+    benefits: ['Comprehensive benefits', 'Pension plan', 'Professional development'],
+    contactEmail: 'careers@wrps.ca',
+    featured: false,
+    expiresAt: new Date('2025-08-15'),
+    sourceName: 'Wetaskiwin Regional Public Schools',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'j3',
+    title: 'Automotive Technician',
+    company: 'Wetaskiwin Auto Care',
+    description: 'Experienced automotive technician needed for busy repair shop. Competitive wages and benefits.',
+    location: 'Wetaskiwin, AB',
+    category: 'other',
+    type: 'full-time',
+    salaryRange: '$25-35/hour',
+    requirements: [
+      'Red Seal certification preferred',
+      '3+ years automotive experience',
+      'Own tools required',
+      'Valid driver\'s license'
+    ],
+    benefits: ['Health benefits', 'Tool allowance', 'Training opportunities'],
+    contactEmail: 'careers@wetaskiwinauto.ca',
+    featured: true,
+    expiresAt: new Date('2025-09-01'),
+    sourceName: 'Wetaskiwin Auto Care',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+]
+
+export const sampleClassifieds: Classified[] = [
+  {
+    id: 'c1',
+    title: '2022 Honda Civic - Low Mileage',
+    description: 'Excellent condition Honda Civic with only 35,000 km. Single owner, all maintenance records available.',
+    category: 'vehicles',
+    price: 24500,
+    condition: 'like-new',
+    location: 'Wetaskiwin',
+    contactName: 'Mike Johnson',
+    contactEmail: 'mike.j@email.com',
+    contactPhone: '780-555-0123',
+    images: [],
+    featured: true,
+    status: 'active',
+    expiresAt: new Date('2025-12-31'),
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'c2',
+    title: 'Antique Oak Dining Table',
+    description: 'Beautiful solid oak dining table from the 1920s. Seats 8 comfortably. Perfect for family gatherings.',
+    category: 'furniture',
+    price: 450,
+    condition: 'good',
+    location: 'Wetaskiwin',
+    contactName: 'Sarah Peterson',
+    contactEmail: 'sarah.p@email.com',
+    contactPhone: '780-555-0234',
+    images: [],
+    featured: false,
+    status: 'active',
+    expiresAt: new Date('2025-12-31'),
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'c3',
+    title: 'Mountain Bike - Trek 29er',
+    description: 'Lightly used Trek mountain bike, 29" wheels, 21-speed, great for trails and city riding.',
+    category: 'sports',
+    price: 650,
+    condition: 'good',
+    location: 'Wetaskiwin',
+    contactName: 'Alex Chen',
+    contactEmail: 'alex.c@email.com',
+    contactPhone: '780-555-0345',
+    images: [],
+    featured: true,
+    status: 'active',
+    expiresAt: new Date('2025-12-31'),
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+]

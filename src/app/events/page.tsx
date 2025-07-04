@@ -1,0 +1,229 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Navigation from '@/components/ui/Navigation';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Calendar, Clock, MapPin, Users, ArrowLeft, Search, Filter } from 'lucide-react';
+import type { Event } from '@/types';
+
+const EventsPage = () => {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch('/api/events');
+        const data = await response.json();
+        if (data.success) {
+          setEvents(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  const formatDate = (date: Date | string) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString('en-CA', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const formatTime = (timeString: string) => {
+    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-CA', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
+
+  const filteredEvents = events.filter(event => {
+    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         event.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || event.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const categories = ['all', 'community', 'sports', 'arts', 'music', 'food', 'education', 'business', 'family', 'health', 'other'];
+
+  if (loading) {
+    return (
+      <>
+        <Navigation />
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Navigation />
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex items-center space-x-4 mb-4">
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Home
+                </Link>
+              </Button>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Calendar className="h-8 w-8 text-blue-600" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Events</h1>
+                <p className="text-gray-600">                  Discover what&apos;s happening in Wetaskiwin</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Search and Filter */}
+          <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search events..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Filter className="h-4 w-4 text-gray-400" />
+                <select
+                  aria-label="Filter events by category"
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                  {categories.map(category => (
+                    <option key={category} value={category}>
+                      {category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Events Grid */}
+          {filteredEvents.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredEvents.map((event) => (
+                <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  {event.imageUrl && (
+                    <div className="h-48 bg-gray-200">
+                      <img
+                        src={event.imageUrl}
+                        alt={event.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-3">
+                      <Badge variant={event.featured ? 'default' : 'secondary'}>
+                        {event.category}
+                      </Badge>
+                      {event.featured && (
+                        <Badge variant="default" className="bg-yellow-500 text-black">
+                          Featured
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      {event.title}
+                    </h3>
+                    
+                    <p className="text-gray-600 mb-4 line-clamp-3">
+                      {event.description}
+                    </p>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        {formatDate(event.date)}
+                      </div>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Clock className="h-4 w-4 mr-2" />
+                        {formatTime(event.time)}
+                      </div>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <MapPin className="h-4 w-4 mr-2" />
+                        {event.location}
+                      </div>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Users className="h-4 w-4 mr-2" />
+                        {event.organizer}
+                      </div>
+                    </div>
+                    
+                    {event.price && (
+                      <div className="mb-4">
+                        <span className="text-lg font-bold text-green-600">
+                          {event.price === 0 ? 'Free' : `$${event.price}`}
+                        </span>
+                      </div>
+                    )}
+                    
+                    <div className="flex flex-wrap gap-2">
+                      {event.website && (
+                        <Button asChild size="sm" variant="outline">
+                          <a href={event.website} target="_blank" rel="noopener noreferrer">
+                            Website
+                          </a>
+                        </Button>
+                      )}
+                      {event.ticketUrl && (
+                        <Button asChild size="sm">
+                          <a href={event.ticketUrl} target="_blank" rel="noopener noreferrer">
+                            Get Tickets
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="p-12 text-center">
+              <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No events found</h3>
+              <p className="text-gray-600">                  {searchTerm || selectedCategory !== 'all' 
+                    ? 'Try adjusting your search or filter criteria.' 
+                    : 'No events are currently available.'}
+              </p>
+            </Card>
+          )}
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default EventsPage;
