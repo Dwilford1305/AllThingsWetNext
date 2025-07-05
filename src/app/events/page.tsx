@@ -193,14 +193,6 @@ const EventsPage = () => {
                       </div>
                     </div>
                     
-                    {event.price && (
-                      <div className="mb-4">
-                        <span className="text-lg font-bold text-green-600">
-                          {event.price === 0 ? 'Free' : `$${event.price}`}
-                        </span>
-                      </div>
-                    )}
-                    
                     <div className="flex flex-wrap gap-2">
                       {event.website && (
                         <Button asChild size="sm" variant="outline">
