@@ -14,32 +14,57 @@ A modern, full-stack community hub application built with Next.js 15, TypeScript
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 - **Modern UI**: Clean, accessible interface built with Tailwind CSS
 
-## 🤖 Data Scrapers
+## 🤖 Automated Scraping System
 
-The application includes ethical web scrapers that automatically collect event data from official community sources:
+The application features a robust, ethical web scraping system that automatically collects news and events from official community sources.
 
-### Sources
+### News Sources
+- **Wetaskiwin Times** (`wetaskiwintimes.com`)
+- **Pipestone Flyer** (`pipestoneflyer.ca`)
+
+### Event Sources  
 - **Connect Wetaskiwin** (`connectwetaskiwin.com/calendar-of-events.html`)
 - **City of Wetaskiwin** (`wetaskiwin.ca`)
 
-### Features
-- Respectful scraping with proper user agents and rate limiting
-- Automatic categorization of events
-- Source attribution with links back to original events
-- Duplicate detection and prevention
-- Error handling and logging
+### 🔄 Automation Features
+- **Scheduled Scraping**: Automatic collection every 6 hours via Vercel Cron Jobs
+- **Smart Deduplication**: Prevents duplicate articles/events
+- **Content Categorization**: Automatic sorting into relevant categories
+- **Source Attribution**: Proper links back to original content
+- **Error Handling**: Comprehensive logging and graceful failure recovery
 
-### Usage
-- **Manual**: Visit `/scraper` in the admin interface
-- **Scheduled**: `POST /api/scraper/scheduled` for automated runs
-- **CLI**: `npm run scrape:events` for command line execution
+### 🚀 Deployment Options
 
-### Ethical Guidelines
-The scrapers are designed to be respectful and ethical:
-- Only scrape publicly available information
-- Include proper attribution and source links
-- Respect robots.txt and rate limits
-- Handle errors gracefully without overwhelming servers
+#### Cloud (Vercel) - Recommended
+```json
+{
+  "crons": [
+    { "path": "/api/cron/scrape?type=news", "schedule": "0 */6 * * *" },
+    { "path": "/api/cron/scrape?type=events", "schedule": "30 */6 * * *" }
+  ]
+}
+```
+
+#### Local Development (Windows)
+- PowerShell scripts for Windows Task Scheduler
+- Manual testing and monitoring tools
+- Detailed setup guide included
+
+### 📊 API Endpoints
+- `GET/POST /api/cron/scrape` - Scheduled scraping endpoint (Vercel Cron)
+- `POST /api/scraper/news` - Manual news scraping
+- `POST /api/scraper/events` - Manual event scraping  
+- `GET /api/news` - Retrieve scraped news
+- `GET /api/events` - Retrieve scraped events
+
+### 🛡️ Ethical Guidelines
+- **Respectful Rate Limiting**: Built-in delays between requests
+- **Robots.txt Compliance**: Follows website guidelines
+- **Source Attribution**: Full credit and links to original sources
+- **Error Handling**: Graceful failures without overwhelming servers
+- **Content Filtering**: Only real articles (no section pages or navigation)
+
+See `SCRAPER_SETUP_GUIDE.md` for detailed setup instructions.
 
 ## 🛠 Tech Stack
 
