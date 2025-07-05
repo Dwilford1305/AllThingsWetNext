@@ -21,6 +21,7 @@ const Footer = () => {
     { href: '#', label: 'Community Events' },
     { href: '#', label: 'Local Services' },
     { href: '#', label: 'Tourism Info' },
+    { href: '/scraper', label: 'Admin: Scrapers' },
   ]
 
   return (

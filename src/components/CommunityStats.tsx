@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import { Calendar, Building, Briefcase, Users, Star, MapPin } from 'lucide-react'
+import { Calendar, Building, Briefcase, Users, MapPin } from 'lucide-react'
 
 const CommunityStats = () => {
   const [stats, setStats] = useState({
@@ -150,7 +150,7 @@ const CommunityStats = () => {
             <h3 className="text-2xl font-bold mb-4">Proudly Serving Wetaskiwin</h3>
             <p className="text-lg text-blue-100 max-w-2xl mx-auto">
               Located in the heart of Alberta, Wetaskiwin is a vibrant community rich in history, 
-              culture, and opportunity. We're here to help you discover all it has to offer.
+              culture, and opportunity. We&apos;re here to help you discover all it has to offer.
             </p>
           </div>
         </motion.div>

@@ -10,8 +10,36 @@ A modern, full-stack community hub application built with Next.js 15, TypeScript
 - **Businesses**: Directory of local businesses with contact information and hours
 - **Jobs**: Find career opportunities and job postings in the area
 - **Classifieds**: Buy, sell, and trade items locally
+- **Ethical Scrapers**: Automated data collection from official community sources
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 - **Modern UI**: Clean, accessible interface built with Tailwind CSS
+
+## 🤖 Data Scrapers
+
+The application includes ethical web scrapers that automatically collect event data from official community sources:
+
+### Sources
+- **Connect Wetaskiwin** (`connectwetaskiwin.com/calendar-of-events.html`)
+- **City of Wetaskiwin** (`wetaskiwin.ca`)
+
+### Features
+- Respectful scraping with proper user agents and rate limiting
+- Automatic categorization of events
+- Source attribution with links back to original events
+- Duplicate detection and prevention
+- Error handling and logging
+
+### Usage
+- **Manual**: Visit `/scraper` in the admin interface
+- **Scheduled**: `POST /api/scraper/scheduled` for automated runs
+- **CLI**: `npm run scrape:events` for command line execution
+
+### Ethical Guidelines
+The scrapers are designed to be respectful and ethical:
+- Only scrape publicly available information
+- Include proper attribution and source links
+- Respect robots.txt and rate limits
+- Handle errors gracefully without overwhelming servers
 
 ## 🛠 Tech Stack
 

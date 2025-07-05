@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     await connectDB()
 
     const { searchParams } = new URL(request.url)
-    const limit = parseInt(searchParams.get('limit') || '20')
+    const limit = parseInt(searchParams.get('limit') || '100') // Increased default limit
     const featured = searchParams.get('featured') === 'true'
     const category = searchParams.get('category')
 

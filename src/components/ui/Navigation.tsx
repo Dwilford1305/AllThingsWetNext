@@ -101,7 +101,7 @@ const Navigation = () => {
               <Link
                 key={href}
                 href={href}
-                className="text-gray-600 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2"
+                className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2"
                 onClick={() => setIsOpen(false)}
               >
                 <Icon size={20} />

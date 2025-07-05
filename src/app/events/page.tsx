@@ -44,11 +44,22 @@ const EventsPage = () => {
   };
 
   const formatTime = (timeString: string) => {
-    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-CA', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
+    // If it's already formatted (contains AM/PM or "All Day"), return as is
+    if (timeString.includes('AM') || timeString.includes('PM') || timeString.toLowerCase().includes('all day')) {
+      return timeString;
+    }
+    
+    // Otherwise, treat it as a raw time string (HH:MM:SS format)
+    try {
+      return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-CA', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+    } catch {
+      // If parsing fails, return the original string
+      return timeString;
+    }
   };
 
   const filteredEvents = events.filter(event => {
