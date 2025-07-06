@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Calendar, Building, Briefcase, ShoppingBag, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Newspaper } from 'lucide-react'
+import { Calendar, Building, Briefcase, ShoppingBag, Mail, MapPin, Facebook, Twitter, Instagram, Newspaper } from 'lucide-react'
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
@@ -132,10 +132,6 @@ const Footer = () => {
               <li className="text-gray-300 text-sm sm:text-base">
                 <Mail size={14} className="sm:w-4 sm:h-4 text-blue-300 inline mr-2" />
                 <a href="mailto:info@allthingswetaskiwin.ca" className="hover:text-blue-300 transition-colors">info@allthingswetaskiwin.ca</a>
-              </li>
-              <li className="text-gray-300 text-sm sm:text-base">
-                <Phone size={14} className="sm:w-4 sm:h-4 text-blue-300 inline mr-2" />
-                <a href="tel:+1-780-352-3321" className="hover:text-blue-300 transition-colors">(780) 352-3321</a>
               </li>
             </ul>
           </motion.div>
