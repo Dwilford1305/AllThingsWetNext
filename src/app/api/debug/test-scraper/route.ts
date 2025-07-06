@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { WetaskiwinBusinessScraper } from '@/lib/scrapers/wetaskiwinBusiness'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const scraper = new WetaskiwinBusinessScraper()
     
     // Test scraping just the first page to see parsing quality
-    const businesses = await scraper.scrapeSinglePage('https://www.wetaskiwin.ca/businessdirectoryii.aspx')
+    const businesses = await scraper.scrapeBusinessPage('https://www.wetaskiwin.ca/businessdirectoryii.aspx')
     
     return NextResponse.json({
       success: true,

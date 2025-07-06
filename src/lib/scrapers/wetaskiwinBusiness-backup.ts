@@ -1,3 +1,6 @@
+/* eslint-disable */
+// Backup of original business scraper implementation
+// This file is kept for reference only and may contain lint errors
 import * as cheerio from 'cheerio'
 
 export interface ScrapedBusiness {

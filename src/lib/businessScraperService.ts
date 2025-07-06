@@ -1,6 +1,7 @@
 import { WetaskiwinBusinessScraper, ScrapedBusiness, BusinessScrapingResult } from './scrapers/wetaskiwinBusiness'
 import { connectDB } from './mongodb'
 import { Business } from '../models'
+import type { Business as BusinessType } from '../types'
 
 export class BusinessScraperService {
   private businessScraper = new WetaskiwinBusinessScraper()
@@ -168,7 +169,7 @@ export class BusinessScraperService {
     featured?: boolean
     limit?: number
     subscriptionTier?: string
-  } = {}): Promise<unknown[]> {
+  } = {}): Promise<BusinessType[]> {
     try {
       await connectDB()
       
@@ -195,7 +196,7 @@ export class BusinessScraperService {
         .limit(options.limit || 100)
         .lean()
       
-      return businesses.map(business => this.formatBusinessForAPI(business as any))
+      return businesses.map(business => this.formatBusinessForAPI(business))
       
     } catch (error) {
       console.error('Error fetching businesses:', error)
@@ -204,62 +205,51 @@ export class BusinessScraperService {
   }
 
   // Define a type for the business object to ensure analytics and views exist
-  private formatBusinessForAPI(business: {
-    id?: string;
-    name?: string;
-    description?: string;
-    category?: string;
-    address?: string;
-    phone?: string;
-    email?: string;
-    website?: string;
-    contact?: string;
-    featured?: boolean;
-    verified?: boolean;
-    logo?: string;
-    photos?: unknown[];
-    hours?: unknown;
-    socialMedia?: unknown;
-    specialOffers?: unknown[];
-    subscriptionTier?: string;
-    isClaimed?: boolean;
-    analytics?: { views?: number };
-    createdAt?: Date;
-    updatedAt?: Date;
-  }) {
+  private formatBusinessForAPI(business: any): BusinessType {
     const isPremium = ['silver', 'gold', 'platinum'].includes(String(business.subscriptionTier))
     
     return {
-      id: business.id,
-      name: business.name,
-      description: business.description,
-      category: business.category,
-      address: business.address,
+      id: business.id || '',
+      name: business.name || '',
+      description: business.description || '',
+      category: business.category || 'other',
+      address: business.address || '',
       phone: business.phone,
       email: isPremium ? business.email : undefined,
       website: business.website,
       
       // Basic info (always shown)
       contact: business.contact,
-      featured: business.featured,
-      verified: business.verified,
+      featured: business.featured || false,
+      verified: business.verified || false,
       
       // Premium features (only for paid tiers)
       logo: isPremium ? business.logo : undefined,
-      photos: isPremium ? business.photos : undefined,
+      photos: isPremium ? business.photos : [],
       hours: isPremium ? business.hours : undefined,
       socialMedia: isPremium ? business.socialMedia : undefined,
-      specialOffers: isPremium ? business.specialOffers : undefined,
+      specialOffers: isPremium ? business.specialOffers : [],
       
       // Subscription info (for business owners)
-      subscriptionTier: business.subscriptionTier,
-      isClaimed: business.isClaimed,
+      subscriptionTier: business.subscriptionTier || 'free',
+      subscriptionStatus: business.subscriptionStatus || 'inactive',
+      isClaimed: business.isClaimed || false,
       
-      // Public analytics
-      views: business.analytics?.views || 0,
+      // Required fields for Business interface
+      reviewCount: business.reviewCount || 0,
+      services: business.services || [],
+      tags: business.tags || [],
       
-      createdAt: business.createdAt,
-      updatedAt: business.updatedAt
-    }
+      // Analytics
+      analytics: {
+        views: business.analytics?.views || 0,
+        clicks: business.analytics?.clicks || 0,
+        callClicks: business.analytics?.callClicks || 0,
+        websiteClicks: business.analytics?.websiteClicks || 0
+      },
+      
+      createdAt: business.createdAt || new Date(),
+      updatedAt: business.updatedAt || new Date()
+    } as BusinessType
   }
 }

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { WetaskiwinBusinessScraper } from '@/lib/scrapers/wetaskiwinBusiness'
+import * as cheerio from 'cheerio'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const scraper = new WetaskiwinBusinessScraper()
-    const businesses = await scraper.scrapeSinglePage('https://www.wetaskiwin.ca/businessdirectoryii.aspx')
+    const businesses = await scraper.scrapeBusinessPage('https://www.wetaskiwin.ca/businessdirectoryii.aspx')
     
     // Get raw extracted blocks for debugging
     const response = await fetch('https://www.wetaskiwin.ca/businessdirectoryii.aspx', {
@@ -13,7 +14,6 @@ export async function GET(request: NextRequest) {
       }
     })
     const html = await response.text()
-    const cheerio = require('cheerio')
     const $ = cheerio.load(html)
     
     // Extract raw business blocks for debugging

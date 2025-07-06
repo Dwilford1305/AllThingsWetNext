@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { BusinessScraperService } from '@/lib/businessScraperService'
-import type { ApiResponse } from '@/types'
+import type { ApiResponse, Business } from '@/types'
 
 // POST endpoint to trigger business scraping
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     console.log('Business scraper API called')
     
@@ -42,11 +42,11 @@ export async function GET() {
     const premiumBusinesses = await businessScraperService.getBusinesses({})
     const featuredBusinesses = await businessScraperService.getBusinesses({ featured: true, limit: 1000 })
     
-    const premiumCount = premiumBusinesses.filter(b => 
-      ['silver', 'gold', 'platinum'].includes(b.subscriptionTier)
+    const premiumCount = premiumBusinesses.filter((b: Business) => 
+      ['silver', 'gold', 'platinum'].includes(b.subscriptionTier || '')
     ).length
     
-    const claimedCount = premiumBusinesses.filter(b => b.isClaimed).length
+    const claimedCount = premiumBusinesses.filter((b: Business) => b.isClaimed).length
     
     const stats = {
       total: allBusinesses.length,
@@ -77,7 +77,7 @@ export async function GET() {
   }
 }
 
-function getCategoryBreakdown(businesses: any[]) {
+function getCategoryBreakdown(businesses: Business[]) {
   const categories: Record<string, number> = {}
   
   businesses.forEach(business => {

@@ -154,7 +154,7 @@ export async function GET() {
       },
       message: 'Scheduled scraper status'
     })
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       { success: false, error: 'Failed to get scraper status' },
       { status: 500 }

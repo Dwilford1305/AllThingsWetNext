@@ -225,42 +225,6 @@ export class WetaskiwinBusinessScraper {
     return { businessName, contact: contact.trim() }
   }
 
-  private extractAddress(text: string): string | null {
-    // Look for various address patterns with improved regex
-    const patterns = [
-      // Pattern 1: Suite/Unit + Street number + Street name + City + Province + Postal
-      /(#?\d+[-,\s]*\d+.*?(?:Street|Avenue|Ave|St|Road|Rd|Drive|Dr|Boulevard|Blvd|Way|Place|Pl|Crescent|Cres|Circle|Cir|Lane|Ln).*?Wetaskiwin.*?AB.*?T\d[A-Z]\s*\d[A-Z]\d)/i,
-      // Pattern 2: Simple street number + street name + city
-      /(\d+\s+\d+.*?(?:Street|Avenue|Ave|St|Road|Rd|Drive|Dr|Boulevard|Blvd|Way|Place|Pl|Crescent|Cres|Circle|Cir|Lane|Ln).*?Wetaskiwin.*?AB.*?T\d[A-Z]\s*\d[A-Z]\d)/i,
-      // Pattern 3: Any address with Wetaskiwin and postal code
-      /(\d+.*?Wetaskiwin.*?AB.*?T\d[A-Z]\s*\d[A-Z]\d)/i
-    ]
-    
-    for (const pattern of patterns) {
-      const match = text.match(pattern)
-      if (match && match[1]) {
-        return match[1].trim()
-      }
-    }
-    
-    return null
-  }
-
-  private parseNameAndContact(nameContactText: string): { businessName: string; contact: string } {
-    // This method is replaced by parseNameAndContactImproved
-    return this.parseNameAndContactImproved(nameContactText)
-  }
-  
-  private looksLikePersonName(word1: string, word2: string): boolean {
-    // Check if two words look like a person's name
-    return word1.length >= 2 && 
-           word2.length >= 2 && 
-           /^[A-Z][a-z]+$/.test(word1) && 
-           /^[A-Z][a-z]+$/.test(word2) &&
-           !['Street', 'Avenue', 'Road', 'Drive', 'Boulevard', 'Wetaskiwin', 'Alberta', 'View', 'Map'].includes(word1) &&
-           !['Street', 'Avenue', 'Road', 'Drive', 'Boulevard', 'Wetaskiwin', 'Alberta', 'View', 'Map'].includes(word2)
-  }
-
   private cleanPhoneNumber(phone: string): string {
     return phone.replace(/[-.\s,]/g, '-')
   }

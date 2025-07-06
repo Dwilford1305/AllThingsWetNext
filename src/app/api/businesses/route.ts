@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Business } from '@/models'
-import type { ApiResponse } from '@/types'
 
 export async function GET(request: NextRequest) {
   try {
