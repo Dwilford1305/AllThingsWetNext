@@ -2,14 +2,14 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Calendar, Building, Briefcase, ShoppingBag, Mail, Phone, MapPin, Facebook, Twitter, Instagram } from 'lucide-react'
+import { Calendar, Building, Briefcase, ShoppingBag, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Newspaper } from 'lucide-react'
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
 
   const quickLinks = [
     { href: '/events', label: 'Events', icon: Calendar },
-    { href: '/news', label: 'News' },
+    { href: '/news', label: 'News', icon: Newspaper },
     { href: '/businesses', label: 'Businesses', icon: Building },
     { href: '/jobs', label: 'Jobs', icon: Briefcase },
     { href: '/classifieds', label: 'Classifieds', icon: ShoppingBag },
@@ -27,18 +27,19 @@ const Footer = () => {
   return (
     <footer className="bg-gray-900 text-white">
       {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-8 sm:py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
           {/* Brand Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
+            className="sm:col-span-2 lg:col-span-1"
           >
-            <h3 className="text-2xl font-bold mb-4 text-blue-300">
+            <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-blue-300">
               All Things Wetaskiwin
             </h3>
-            <p className="text-gray-300 mb-4 leading-relaxed">
+            <p className="text-gray-300 mb-3 sm:mb-4 leading-relaxed text-sm sm:text-base">
               Your comprehensive community hub connecting residents with local events, 
               businesses, job opportunities, and community news in Wetaskiwin, Alberta.
             </p>
@@ -48,24 +49,27 @@ const Footer = () => {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 className="text-gray-400 hover:text-blue-300 transition-colors"
+                aria-label="Facebook"
               >
-                <Facebook size={24} />
+                <Facebook size={20} className="sm:w-6 sm:h-6" />
               </motion.a>
               <motion.a
                 href="#"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 className="text-gray-400 hover:text-blue-300 transition-colors"
+                aria-label="Twitter"
               >
-                <Twitter size={24} />
+                <Twitter size={20} className="sm:w-6 sm:h-6" />
               </motion.a>
               <motion.a
                 href="#"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 className="text-gray-400 hover:text-blue-300 transition-colors"
+                aria-label="Instagram"
               >
-                <Instagram size={24} />
+                <Instagram size={20} className="sm:w-6 sm:h-6" />
               </motion.a>
             </div>
           </motion.div>
@@ -76,15 +80,15 @@ const Footer = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <h4 className="text-lg font-semibold mb-4 text-white">Quick Links</h4>
-            <ul className="space-y-2">
+            <h4 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-white">Quick Links</h4>
+            <ul className="space-y-1 sm:space-y-1.5">
               {quickLinks.map(({ href, label, icon: Icon }) => (
                 <li key={href}>
                   <Link 
                     href={href}
-                    className="text-gray-300 hover:text-blue-300 transition-colors flex items-center gap-2"
+                    className="text-gray-300 hover:text-blue-300 transition-colors text-sm sm:text-base"
                   >
-                    {Icon && <Icon size={16} />}
+                    {Icon && <Icon size={14} className="sm:w-4 sm:h-4 inline mr-2" />}
                     {label}
                   </Link>
                 </li>
@@ -98,13 +102,13 @@ const Footer = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <h4 className="text-lg font-semibold mb-4 text-white">Community</h4>
-            <ul className="space-y-2">
+            <h4 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-white">Community</h4>
+            <ul className="space-y-1 sm:space-y-1.5">
               {communityLinks.map(({ href, label }) => (
                 <li key={label}>
                   <Link 
                     href={href}
-                    className="text-gray-300 hover:text-blue-300 transition-colors"
+                    className="text-gray-300 hover:text-blue-300 transition-colors text-sm sm:text-base"
                   >
                     {label}
                   </Link>
@@ -119,44 +123,34 @@ const Footer = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <h4 className="text-lg font-semibold mb-4 text-white">Contact Us</h4>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 text-gray-300">
-                <MapPin size={16} className="text-blue-300 flex-shrink-0" />
+            <h4 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-white">Contact Us</h4>
+            <ul className="space-y-1 sm:space-y-1.5">
+              <li className="text-gray-300 text-sm sm:text-base">
+                <MapPin size={14} className="sm:w-4 sm:h-4 text-blue-300 inline mr-2" />
                 <span>Wetaskiwin, Alberta, Canada</span>
-              </div>
-              <div className="flex items-center gap-3 text-gray-300">
-                <Mail size={16} className="text-blue-300 flex-shrink-0" />
-                <a 
-                  href="mailto:info@allthingswetaskiwin.ca"
-                  className="hover:text-blue-300 transition-colors"
-                >
-                  info@allthingswetaskiwin.ca
-                </a>
-              </div>
-              <div className="flex items-center gap-3 text-gray-300">
-                <Phone size={16} className="text-blue-300 flex-shrink-0" />
-                <a 
-                  href="tel:+1-780-352-3321"
-                  className="hover:text-blue-300 transition-colors"
-                >
-                  (780) 352-3321
-                </a>
-              </div>
-            </div>
+              </li>
+              <li className="text-gray-300 text-sm sm:text-base">
+                <Mail size={14} className="sm:w-4 sm:h-4 text-blue-300 inline mr-2" />
+                <a href="mailto:info@allthingswetaskiwin.ca" className="hover:text-blue-300 transition-colors">info@allthingswetaskiwin.ca</a>
+              </li>
+              <li className="text-gray-300 text-sm sm:text-base">
+                <Phone size={14} className="sm:w-4 sm:h-4 text-blue-300 inline mr-2" />
+                <a href="tel:+1-780-352-3321" className="hover:text-blue-300 transition-colors">(780) 352-3321</a>
+              </li>
+            </ul>
           </motion.div>
         </div>
       </div>
 
       {/* Bottom Bar */}
       <div className="border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center">
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="text-gray-400 text-sm mb-4 md:mb-0"
+              className="text-gray-400 text-xs sm:text-sm mb-3 sm:mb-0 text-center sm:text-left"
             >
               © {currentYear} All Things Wetaskiwin. All rights reserved.
             </motion.p>
@@ -164,7 +158,7 @@ const Footer = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="flex space-x-6 text-sm"
+              className="flex flex-wrap justify-center sm:justify-end gap-4 sm:gap-6 text-xs sm:text-sm"
             >
               <Link href="#" className="text-gray-400 hover:text-blue-300 transition-colors">
                 Privacy Policy

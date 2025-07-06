@@ -33,16 +33,16 @@ const ParallaxHero = () => {
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
       
       {/* Content - Split Layout */}
-      <div className="relative z-10 flex flex-col h-full text-white px-4">
+      <div className="relative z-10 flex flex-col h-full text-white px-3 sm:px-4">
         {/* Top Section - Minimal Title */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5 }}
-          className="flex-1 flex items-center justify-center pt-20"
+          className="flex-1 flex items-center justify-center pt-16 sm:pt-20"
         >
           <motion.h1 
-            className="text-3xl md:text-4xl font-bold text-center tracking-tight drop-shadow-lg"
+            className="text-2xl sm:text-3xl md:text-4xl font-bold text-center tracking-tight drop-shadow-lg px-4"
             style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -66,10 +66,10 @@ const ParallaxHero = () => {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1.2 }}
-          className="flex-1 flex flex-col items-center justify-end pb-24 text-center"
+          className="flex-1 flex flex-col items-center justify-end pb-20 sm:pb-24 text-center px-4"
         >
           <motion.p 
-            className="text-lg md:text-xl mb-8 text-gray-200 max-w-2xl mx-auto drop-shadow-lg"
+            className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-gray-200 max-w-2xl mx-auto drop-shadow-lg leading-relaxed"
             style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.8)' }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -79,7 +79,7 @@ const ParallaxHero = () => {
           </motion.p>
           
           <motion.div 
-            className="flex flex-wrap justify-center gap-4"
+            className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 w-full max-w-md sm:max-w-none"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.6 }}
@@ -87,10 +87,11 @@ const ParallaxHero = () => {
             <motion.div
               whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(255,255,255,0.1)" }}
               whileTap={{ scale: 0.95 }}
+              className="w-full sm:w-auto"
             >
               <Link 
                 href="/events"
-                className="block border-2 border-white text-white hover:bg-white hover:text-gray-900 px-8 py-3 rounded-lg font-semibold text-lg transition-all duration-300 backdrop-blur-sm"
+                className="block border-2 border-white text-white hover:bg-white hover:text-gray-900 px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-base sm:text-lg transition-all duration-300 backdrop-blur-sm text-center"
               >
                 Explore Events
               </Link>
@@ -98,10 +99,11 @@ const ParallaxHero = () => {
             <motion.div
               whileHover={{ scale: 1.05, boxShadow: "0 10px 30px rgba(255,255,255,0.1)" }}
               whileTap={{ scale: 0.95 }}
+              className="w-full sm:w-auto"
             >
               <Link 
                 href="/businesses"
-                className="block border-2 border-white text-white hover:bg-white hover:text-gray-900 px-8 py-3 rounded-lg font-semibold text-lg transition-all duration-300 backdrop-blur-sm"
+                className="block border-2 border-white text-white hover:bg-white hover:text-gray-900 px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-base sm:text-lg transition-all duration-300 backdrop-blur-sm text-center"
               >
                 Browse Businesses
               </Link>
@@ -120,10 +122,10 @@ const ParallaxHero = () => {
             repeat: Infinity,
             ease: "easeInOut"
           }}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+          className="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2"
         >
-          <div className="w-6 h-10 border-2 border-white rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-white rounded-full mt-2 animate-pulse"></div>
+          <div className="w-5 h-8 sm:w-6 sm:h-10 border-2 border-white rounded-full flex justify-center">
+            <div className="w-1 h-2 sm:h-3 bg-white rounded-full mt-1.5 sm:mt-2 animate-pulse"></div>
           </div>
         </motion.div>
       </div>
