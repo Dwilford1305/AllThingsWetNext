@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Navigation from '@/components/ui/Navigation';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -185,10 +186,11 @@ const ClassifiedsPage = () => {
                 <Card key={classified.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-white">
                   {classified.images && classified.images.length > 0 ? (
                     <div className="h-48 bg-gray-200 relative">
-                      <img
+                      <Image
                         src={classified.images[0]}
                         alt={classified.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                       {classified.images.length > 1 && (
                         <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white px-2 py-1 rounded text-xs flex items-center">

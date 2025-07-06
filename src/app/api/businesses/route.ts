@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
 
     // Build query
-    const query: any = {}
+    const query: Record<string, unknown> = {}
     
     if (search) {
       query.$or = [
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build sort
-    let sortObj: any = {}
+    let sortObj: { [key: string]: 1 | -1 } = {}
     switch (sort) {
       case 'featured':
         sortObj = { 'subscription.tier': -1, featured: -1, name: 1 }

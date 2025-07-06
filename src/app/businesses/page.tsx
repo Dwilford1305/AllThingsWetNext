@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Navigation from '@/components/ui/Navigation';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -186,6 +187,7 @@ const BusinessesPage = () => {
 
   useEffect(() => {
     fetchBusinesses();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, selectedCategory, selectedLetter, sortBy]);
 
   // Debounced search
@@ -199,6 +201,7 @@ const BusinessesPage = () => {
     }, 500);
 
     return () => clearTimeout(timeoutId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
   const handleClaimBusiness = (business: Business) => {
@@ -409,11 +412,12 @@ const BusinessesPage = () => {
                 {businesses.map((business) => (
                   <Card key={business.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                     {business.imageUrl && (
-                      <div className="h-48 bg-gray-200">
-                        <img
+                      <div className="h-48 bg-gray-200 relative">
+                        <Image
                           src={business.imageUrl}
                           alt={business.name}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
                         />
                       </div>
                     )}

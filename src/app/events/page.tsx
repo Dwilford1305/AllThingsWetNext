@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Navigation from '@/components/ui/Navigation';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -173,10 +174,11 @@ const EventsPage = () => {
                 <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-white">
                   {event.imageUrl && (
                     <div className="h-48 bg-gray-200 relative">
-                      <img
+                      <Image
                         src={event.imageUrl}
                         alt={event.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     </div>
                   )}
@@ -263,11 +265,12 @@ const EventsPage = () => {
                   {filteredEvents.slice(6).map((event) => (
                     <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                       {event.imageUrl && (
-                        <div className="h-48 bg-gray-200">
-                          <img 
+                        <div className="h-48 bg-gray-200 relative">
+                          <Image 
                             src={event.imageUrl} 
                             alt={event.title}
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
                           />
                         </div>
                       )}

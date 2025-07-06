@@ -18,7 +18,7 @@ export async function GET(_request: NextRequest) {
     
     // Extract raw business blocks for debugging
     const blocks: string[] = []
-    $('div, p, td, li').each((_i: number, el: any) => {
+    $('div, p, td, li').each((_i: number, el) => {
       const text = $(el).text().trim()
       
       if (text.includes('Wetaskiwin') && 

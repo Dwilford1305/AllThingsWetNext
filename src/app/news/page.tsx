@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Navigation from '@/components/ui/Navigation';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -156,11 +157,12 @@ const NewsPage = () => {
                   .map((article) => (
                     <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-white">
                       {article.imageUrl && (
-                        <div className="h-48 bg-gray-200">
-                          <img
+                        <div className="h-48 bg-gray-200 relative">
+                          <Image
                             src={article.imageUrl}
                             alt={article.title}
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
                           />
                         </div>
                       )}
@@ -227,11 +229,12 @@ const NewsPage = () => {
                   <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-white">
                     <div className="md:flex">
                       {article.imageUrl && (
-                        <div className="md:w-1/3 h-48 md:h-auto bg-gray-200">
-                          <img
+                        <div className="md:w-1/3 h-48 md:h-auto bg-gray-200 relative">
+                          <Image
                             src={article.imageUrl}
                             alt={article.title}
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
                           />
                         </div>
                       )}

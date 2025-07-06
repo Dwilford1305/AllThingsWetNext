@@ -205,6 +205,7 @@ export class BusinessScraperService {
   }
 
   // Define a type for the business object to ensure analytics and views exist
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private formatBusinessForAPI(business: any): BusinessType {
     const isPremium = ['silver', 'gold', 'platinum'].includes(String(business.subscriptionTier))
     

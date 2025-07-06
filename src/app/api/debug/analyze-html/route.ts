@@ -29,7 +29,13 @@ export async function GET(_request: NextRequest) {
     const paginationMatch = bodyText.match(/(\d+)\s*-\s*(\d+)\s*of\s*(\d+)\s*Listings/i)
     
     // Find table structures
-    const tables: any[] = []
+    const tables: Array<{
+      index: number;
+      rows: number;
+      headers: string[];
+      classes: string;
+      sample: string[];
+    }> = []
     $('table').each((index, table) => {
       const $table = $(table)
       const rows = $table.find('tr')
@@ -37,7 +43,9 @@ export async function GET(_request: NextRequest) {
         const tableInfo = {
           index: index + 1,
           rows: rows.length,
-          sampleRows: [] as string[]
+          headers: [] as string[],
+          classes: $table.attr('class') || '',
+          sample: [] as string[]
         }
         
         // Get first few rows
@@ -45,11 +53,11 @@ export async function GET(_request: NextRequest) {
           const $row = $(row)
           const cellTexts = $row.find('td').map((i, cell) => $(cell).text().trim()).get()
           if (cellTexts.length > 0 && cellTexts.some(cell => cell.length > 10)) {
-            tableInfo.sampleRows.push(cellTexts.join(' | '))
+            tableInfo.sample.push(cellTexts.join(' | '))
           }
         })
         
-        if (tableInfo.sampleRows.length > 0) {
+        if (tableInfo.sample.length > 0) {
           tables.push(tableInfo)
         }
       }
@@ -89,7 +97,7 @@ export async function GET(_request: NextRequest) {
     })
     
     // Look for navigation links
-    const navLinks: any[] = []
+    const navLinks: Array<{ text: string; href: string; classes: string }> = []
     $('a').each((index, link) => {
       const $link = $(link)
       const href = $link.attr('href')
@@ -98,7 +106,8 @@ export async function GET(_request: NextRequest) {
       if ((text.includes('next') || text.includes('previous') || text.match(/\d+/) || href?.includes('page')) && href) {
         navLinks.push({
           text: $link.text().trim(),
-          href: href
+          href: href,
+          classes: $link.attr('class') || ''
         })
       }
     })

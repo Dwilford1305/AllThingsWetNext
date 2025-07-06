@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Navigation from '@/components/ui/Navigation';
@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Building, ArrowLeft, AlertCircle } from 'lucide-react';
 import type { Business } from '@/types';
 
-const BusinessManagePage = () => {
+const BusinessManageContent = () => {
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -142,6 +142,21 @@ const BusinessManagePage = () => {
         </div>
       </div>
     </>
+  );
+};
+
+const BusinessManagePage = () => {
+  return (
+    <Suspense fallback={
+      <>
+        <Navigation />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </>
+    }>
+      <BusinessManageContent />
+    </Suspense>
   );
 };
 
