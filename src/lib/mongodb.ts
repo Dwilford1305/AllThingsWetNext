@@ -42,9 +42,13 @@ async function connectDB(): Promise<typeof mongoose> {
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
       socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      bufferMaxEntries: 0,
+      // Add these for better reliability
+      connectTimeoutMS: 10000, // How long to wait before timing out a connection attempt
+      heartbeatFrequencyMS: 30000, // How often to check the connection
+      maxIdleTimeMS: 30000, // How long a connection can be idle before being closed
     };
 
+    console.log('Attempting to connect to MongoDB...')
     cached!.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       console.log('✅ Connected to MongoDB Atlas')
       return mongoose
