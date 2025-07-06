@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Users, Heart, Sparkles } from 'lucide-react'
+import { ArrowRight, Users, Heart, Sparkles, Smartphone, Bell, Home } from 'lucide-react'
 
 const CallToAction = () => {
   return (
@@ -115,7 +115,7 @@ const CallToAction = () => {
             </motion.div>
           </motion.div>
 
-          {/* Newsletter Signup */}
+          {/* Add to Home Screen */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -123,27 +123,54 @@ const CallToAction = () => {
             viewport={{ once: true, amount: 0.1, margin: "0px 0px -200px 0px" }}
             className="mt-12 sm:mt-16 bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto"
           >
-            <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Stay in the Loop</h3>
-            <p className="text-blue-100 mb-4 sm:mb-6 text-sm sm:text-base">
-              Get weekly updates about community events, local news, and opportunities delivered to your inbox.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white text-sm sm:text-base"
-              />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-white text-blue-700 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors text-sm sm:text-base whitespace-nowrap"
+            <div className="text-center">
+              <motion.div
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                className="inline-block p-3 sm:p-4 bg-white/20 rounded-full mb-3 sm:mb-4"
               >
-                Subscribe
-              </motion.button>
+                <Smartphone className="h-8 w-8 sm:h-10 sm:w-10" />
+              </motion.div>
+              <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Get Instant Updates</h3>
+              <p className="text-blue-100 mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed">
+                Add All Things Wetaskiwin to your home screen and receive push notifications for breaking news, 
+                upcoming events, and community announcements.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="group inline-flex items-center justify-center gap-2 bg-white text-blue-700 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors text-sm sm:text-base shadow-lg"
+                  onClick={() => {
+                    // PWA install logic will go here
+                    alert('Feature coming soon! For now, use your browser\'s "Add to Home Screen" option.')
+                  }}
+                >
+                  <Home className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Add to Home Screen
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="group inline-flex items-center justify-center gap-2 border-2 border-white text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-700 transition-all duration-300 text-sm sm:text-base"
+                  onClick={() => {
+                    // Notification permission logic will go here
+                    if ('Notification' in window) {
+                      Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                          alert('Notifications enabled! You\'ll receive updates about community events and news.')
+                        }
+                      })
+                    }
+                  }}
+                >
+                  <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Enable Notifications
+                </motion.button>
+              </div>
+              <p className="text-xs text-blue-200 mt-3 sm:mt-4">
+                Stay connected with your community • No spam, just important updates
+              </p>
             </div>
-            <p className="text-xs text-blue-200 mt-2 sm:mt-3">
-              We respect your privacy. Unsubscribe at any time.
-            </p>
           </motion.div>
         </div>
       </div>

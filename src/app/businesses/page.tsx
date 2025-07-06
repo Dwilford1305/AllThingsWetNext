@@ -6,6 +6,7 @@ import Navigation from '@/components/ui/Navigation';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import AdPlaceholder from '@/components/AdPlaceholder';
 import { Building, Phone, Mail, Globe, MapPin, Clock, ArrowLeft, Search, Filter, Star, Shield, Award, X } from 'lucide-react';
 import type { Business } from '@/types';
 
@@ -279,6 +280,15 @@ const BusinessesPage = () => {
           </div>
         </div>
 
+        {/* Top Ad - Google AdSense Leaderboard */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <AdPlaceholder 
+            type="google" 
+            size="leaderboard" 
+            className="w-full max-w-4xl mx-auto" 
+          />
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Search and Filter */}
           <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
@@ -372,6 +382,23 @@ const BusinessesPage = () => {
                 <span>Total: {summary.total}</span>
                 <span>Showing: {pagination.totalCount} results</span>
               </div>
+            </div>
+          </div>
+
+          {/* Premium Business Showcase */}
+          <div className="mb-8">
+            <div className="text-center mb-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Premium Business Directory</h3>
+              <p className="text-sm text-gray-600">Featuring our most valued business partners</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+              <AdPlaceholder 
+                type="platinum" 
+                size="large" 
+                className="sm:col-span-1" 
+              />
+              <AdPlaceholder type="gold" size="square" />
+              <AdPlaceholder type="silver" size="square" />
             </div>
           </div>
 
@@ -559,6 +586,27 @@ const BusinessesPage = () => {
               </p>
             </Card>
           )}
+
+          {/* Bottom Business Partners Section */}
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Business Community Partners</h3>
+              <p className="text-sm text-gray-600">Join our thriving business directory</p>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <AdPlaceholder type="silver" size="square" />
+              <AdPlaceholder type="gold" size="square" />
+              <AdPlaceholder type="silver" size="square" />
+              <AdPlaceholder type="gold" size="square" />
+            </div>
+            <div className="flex justify-center">
+              <AdPlaceholder 
+                type="google" 
+                size="banner" 
+                className="w-full max-w-2xl mx-auto" 
+              />
+            </div>
+          </div>
         </div>
 
         {/* Claim Modal */}

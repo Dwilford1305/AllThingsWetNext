@@ -6,6 +6,7 @@ import Navigation from '@/components/ui/Navigation';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import AdPlaceholder from '@/components/AdPlaceholder';
 import { Calendar, Clock, MapPin, Users, ArrowLeft, Search, Filter } from 'lucide-react';
 import type { Event } from '@/types';
 
@@ -108,6 +109,15 @@ const EventsPage = () => {
           </div>
         </div>
 
+        {/* Top Ad - Google AdSense Leaderboard */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <AdPlaceholder 
+            type="google" 
+            size="leaderboard" 
+            className="w-full max-w-4xl mx-auto" 
+          />
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Search and Filter */}
           <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
@@ -140,13 +150,29 @@ const EventsPage = () => {
             </div>
           </div>
 
+          {/* Platinum Business Spotlight */}
+          <div className="mb-8">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Event Sponsors</h3>
+              <p className="text-sm text-gray-600">Supporting our community events</p>
+            </div>
+            <div className="flex justify-center">
+              <AdPlaceholder 
+                type="platinum" 
+                size="large" 
+                className="w-full max-w-md" 
+              />
+            </div>
+          </div>
+
           {/* Events Grid */}
           {filteredEvents.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredEvents.map((event) => (
-                <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+            <>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {filteredEvents.slice(0, 6).map((event) => (
+                <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-white">
                   {event.imageUrl && (
-                    <div className="h-48 bg-gray-200">
+                    <div className="h-48 bg-gray-200 relative">
                       <img
                         src={event.imageUrl}
                         alt={event.title}
@@ -154,7 +180,7 @@ const EventsPage = () => {
                       />
                     </div>
                   )}
-                  <div className="p-6">
+                  <div className="p-6 bg-white relative z-10">
                     <div className="flex items-start justify-between mb-3">
                       <Badge variant={event.featured ? 'default' : 'secondary'}>
                         {event.category}
@@ -212,7 +238,88 @@ const EventsPage = () => {
                   </div>
                 </Card>
               ))}
-            </div>
+              </div>
+
+              {/* Mid-page Ad */}
+              {filteredEvents.length > 6 && (
+                <div className="mb-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mb-6">
+                    <AdPlaceholder type="gold" size="square" />
+                    <AdPlaceholder type="silver" size="square" />
+                  </div>
+                  <div className="flex justify-center">
+                    <AdPlaceholder 
+                      type="google" 
+                      size="banner" 
+                      className="w-full max-w-2xl mx-auto" 
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Remaining Events */}
+              {filteredEvents.length > 6 && (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredEvents.slice(6).map((event) => (
+                    <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                      {event.imageUrl && (
+                        <div className="h-48 bg-gray-200">
+                          <img 
+                            src={event.imageUrl} 
+                            alt={event.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="p-6">
+                        <div className="flex items-start justify-between mb-3">
+                          <Badge variant="secondary">{event.category}</Badge>
+                          {event.featured && <Badge variant="default">Featured</Badge>}
+                        </div>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">{event.title}</h3>
+                        <p className="text-gray-600 mb-4 line-clamp-2">{event.description}</p>
+                        
+                        <div className="space-y-2 mb-4">
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Calendar className="h-4 w-4 mr-2" />
+                            {formatDate(event.date)}
+                          </div>
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Clock className="h-4 w-4 mr-2" />
+                            {formatTime(event.time)}
+                          </div>
+                          <div className="flex items-center text-sm text-gray-500">
+                            <MapPin className="h-4 w-4 mr-2" />
+                            {event.location}
+                          </div>
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Users className="h-4 w-4 mr-2" />
+                            {event.organizer}
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-2">
+                          {event.website && (
+                            <Button asChild size="sm" variant="outline">
+                              <a href={event.website} target="_blank" rel="noopener noreferrer">
+                                Website
+                              </a>
+                            </Button>
+                          )}
+                          {event.ticketUrl && (
+                            <Button asChild size="sm">
+                              <a href={event.ticketUrl} target="_blank" rel="noopener noreferrer">
+                                Get Tickets
+                              </a>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
             <Card className="p-12 text-center">
               <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -223,6 +330,20 @@ const EventsPage = () => {
               </p>
             </Card>
           )}
+
+          {/* Bottom Ad Section */}
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Community Partners</h3>
+              <p className="text-sm text-gray-600">Supporting events in Wetaskiwin</p>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <AdPlaceholder type="silver" size="square" />
+              <AdPlaceholder type="gold" size="square" />
+              <AdPlaceholder type="silver" size="square" />
+              <AdPlaceholder type="gold" size="square" />
+            </div>
+          </div>
         </div>
       </div>
     </>

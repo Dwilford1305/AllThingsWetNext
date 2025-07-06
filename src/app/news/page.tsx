@@ -6,6 +6,7 @@ import Navigation from '@/components/ui/Navigation';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import AdPlaceholder from '@/components/AdPlaceholder';
 import { Newspaper, Calendar, ExternalLink, ArrowLeft, Search, Filter } from 'lucide-react';
 import type { NewsArticle } from '@/types';
 
@@ -88,6 +89,15 @@ const NewsPage = () => {
           </div>
         </div>
 
+        {/* Top Ad - Google AdSense Leaderboard */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <AdPlaceholder 
+            type="google" 
+            size="leaderboard" 
+            className="w-full max-w-4xl mx-auto" 
+          />
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Search and Filter */}
           <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
@@ -120,6 +130,21 @@ const NewsPage = () => {
             </div>
           </div>
 
+          {/* News Sponsor Spotlight */}
+          <div className="mb-8">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">News Sponsors</h3>
+              <p className="text-sm text-gray-600">Supporting local journalism</p>
+            </div>
+            <div className="flex justify-center">
+              <AdPlaceholder 
+                type="platinum" 
+                size="large" 
+                className="w-full max-w-md" 
+              />
+            </div>
+          </div>
+
           {/* Featured Articles */}
           {filteredArticles.some(article => article.featured) && (
             <div className="mb-8">
@@ -129,7 +154,7 @@ const NewsPage = () => {
                   .filter(article => article.featured)
                   .slice(0, 2)
                   .map((article) => (
-                    <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-white">
                       {article.imageUrl && (
                         <div className="h-48 bg-gray-200">
                           <img
@@ -139,7 +164,7 @@ const NewsPage = () => {
                           />
                         </div>
                       )}
-                      <div className="p-6">
+                      <div className="p-6 bg-white relative z-10">
                         <div className="flex items-center justify-between mb-3">
                           <Badge variant="default" className="bg-yellow-500 text-black">
                             Featured
@@ -199,7 +224,7 @@ const NewsPage = () => {
             {filteredArticles.length > 0 ? (
               <div className="space-y-6">
                 {filteredArticles.map((article) => (
-                  <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-white">
                     <div className="md:flex">
                       {article.imageUrl && (
                         <div className="md:w-1/3 h-48 md:h-auto bg-gray-200">
@@ -210,7 +235,7 @@ const NewsPage = () => {
                           />
                         </div>
                       )}
-                      <div className="flex-1 p-6">
+                      <div className="flex-1 p-6 bg-white relative z-10">
                         <div className="flex items-center justify-between mb-3">
                           <Badge variant="secondary">
                             {article.category.replace('-', ' ')}
@@ -275,6 +300,25 @@ const NewsPage = () => {
                 </p>
               </Card>
             )}
+
+            {/* Bottom Ad Section */}
+            <div className="mt-12 pt-8 border-t border-gray-200">
+              <div className="text-center mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">News Partners</h3>
+                <p className="text-sm text-gray-600">Supporting local news coverage</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mb-6">
+                <AdPlaceholder type="gold" size="square" />
+                <AdPlaceholder type="silver" size="square" />
+              </div>
+              <div className="flex justify-center">
+                <AdPlaceholder 
+                  type="google" 
+                  size="banner" 
+                  className="w-full max-w-2xl mx-auto" 
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import Navigation from '@/components/ui/Navigation';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import AdPlaceholder from '@/components/AdPlaceholder';
 import { ShoppingBag, MapPin, User, Phone, Mail, ArrowLeft, Search, Filter, Image as ImageIcon } from 'lucide-react';
 import type { Classified } from '@/types';
 
@@ -121,6 +122,15 @@ const ClassifiedsPage = () => {
           </div>
         </div>
 
+        {/* Top Ad - Google AdSense Leaderboard */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <AdPlaceholder 
+            type="google" 
+            size="leaderboard" 
+            className="w-full max-w-4xl mx-auto" 
+          />
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Search and Filter */}
           <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
@@ -153,11 +163,26 @@ const ClassifiedsPage = () => {
             </div>
           </div>
 
+          {/* Marketplace Sponsors */}
+          <div className="mb-8">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Marketplace Partners</h3>
+              <p className="text-sm text-gray-600">Supporting local buying and selling</p>
+            </div>
+            <div className="flex justify-center">
+              <AdPlaceholder 
+                type="platinum" 
+                size="large" 
+                className="w-full max-w-md" 
+              />
+            </div>
+          </div>
+
           {/* Classifieds Grid */}
           {filteredClassifieds.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredClassifieds.map((classified) => (
-                <Card key={classified.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card key={classified.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-white">
                   {classified.images && classified.images.length > 0 ? (
                     <div className="h-48 bg-gray-200 relative">
                       <img
@@ -178,7 +203,7 @@ const ClassifiedsPage = () => {
                     </div>
                   )}
                   
-                  <div className="p-6">
+                  <div className="p-6 bg-white relative z-10">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex flex-wrap gap-1">
                         <Badge variant="secondary">
@@ -261,6 +286,25 @@ const ClassifiedsPage = () => {
               </p>
             </Card>
           )}
+
+          {/* Bottom Marketplace Section */}
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Community Marketplace</h3>
+              <p className="text-sm text-gray-600">Connect buyers and sellers locally</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mb-6">
+              <AdPlaceholder type="gold" size="square" />
+              <AdPlaceholder type="silver" size="square" />
+            </div>
+            <div className="flex justify-center">
+              <AdPlaceholder 
+                type="google" 
+                size="banner" 
+                className="w-full max-w-2xl mx-auto" 
+              />
+            </div>
+          </div>
         </div>
       </div>
     </>

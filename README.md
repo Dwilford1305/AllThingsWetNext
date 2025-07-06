@@ -4,13 +4,15 @@ A modern, full-stack community hub application built with Next.js 15, TypeScript
 
 ## 🚀 Features
 
-- **Dashboard**: Beautiful homepage with community statistics and recent content
+- **Dashboard**: Beautiful homepage with community statistics, strategic ad placements, and recent content
 - **Events**: Browse and discover upcoming community events with filtering and search
 - **News**: Stay updated with the latest local news and announcements
 - **Businesses**: Directory of local businesses with contact information and hours
 - **Jobs**: Find career opportunities and job postings in the area
 - **Classifieds**: Buy, sell, and trade items locally
 - **Ethical Scrapers**: Automated data collection from official community sources
+- **Progressive Web App (PWA)**: Add to home screen for native app-like experience with push notifications
+- **Monetization Ready**: Google AdSense integration and premium business directory advertising
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 - **Modern UI**: Clean, accessible interface built with Tailwind CSS
 
@@ -77,6 +79,42 @@ The application features a robust, ethical web scraping system that automaticall
 - **Content Filtering**: Only real articles (no section pages or navigation)
 
 See `SCRAPER_SETUP_GUIDE.md` for detailed setup instructions.
+
+## 💰 Monetization & Advertising Strategy
+
+### Revenue Streams
+The application implements a multi-tier monetization strategy combining automated data collection with premium self-service offerings:
+
+#### 1. Google AdSense Integration
+- **Strategic Placement**: Leaderboard ads at top, banner ads mid-content, square ads in sidebar areas
+- **High-Traffic Areas**: Homepage hero section, between content sections, and footer areas
+- **Mobile Optimized**: Responsive ad units that adapt to screen size (728x90 desktop, 320x50 mobile)
+- **User Experience**: Non-intrusive placement that maintains content flow
+
+#### 2. Premium Business Directory Advertising
+- **Featured Business Spots**: Highlighted placement for Gold/Platinum subscribers
+- **Premium Directory Ads**: Dedicated advertising slots for local businesses
+- **Sponsored Content**: Business spotlight sections throughout the homepage
+- **Call-to-Action Integration**: Direct links to business pages and contact information
+
+#### 3. Progressive Web App (PWA) Engagement
+- **Add to Home Screen**: Native app-like experience increases user retention
+- **Push Notifications**: Direct marketing channel for events, news, and business promotions
+- **Offline Access**: Cached content keeps users engaged even without internet
+- **Enhanced User Experience**: Faster loading, better performance than traditional websites
+
+### Ad Placement Strategy
+- **Top Leaderboard**: High-visibility area immediately after hero section
+- **Mid-Content Squares**: Three-column featured business grid between main sections
+- **Banner Ads**: Strategic placement between content sections
+- **Bottom Grid**: Four-column featured business showcase before footer
+- **Mobile Responsive**: All ad units adapt seamlessly to mobile screens
+
+### Implementation Details
+- `AdPlaceholder` component with multiple types (google, premium-directory, featured-business)
+- Configurable sizes (banner, square, leaderboard, sidebar)
+- Smooth animations and viewport-triggered loading
+- Ready for integration with Google AdSense and payment processors
 
 ## � Hybrid Business Directory & Monetization
 

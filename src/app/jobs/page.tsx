@@ -6,6 +6,7 @@ import Navigation from '@/components/ui/Navigation';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import AdPlaceholder from '@/components/AdPlaceholder';
 import { Briefcase, MapPin, DollarSign, Clock, Building, ArrowLeft, Search, Filter, ExternalLink } from 'lucide-react';
 import type { JobPosting } from '@/types';
 
@@ -101,6 +102,15 @@ const JobsPage = () => {
           </div>
         </div>
 
+        {/* Top Ad - Google AdSense Leaderboard */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <AdPlaceholder 
+            type="google" 
+            size="leaderboard" 
+            className="w-full max-w-4xl mx-auto" 
+          />
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Search and Filter */}
           <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
@@ -130,6 +140,21 @@ const JobsPage = () => {
                   ))}
                 </select>
               </div>
+            </div>
+          </div>
+
+          {/* Job Spotlight - Hiring Partners */}
+          <div className="mb-8">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Featured Employers</h3>
+              <p className="text-sm text-gray-600">Top companies hiring in Wetaskiwin</p>
+            </div>
+            <div className="flex justify-center">
+              <AdPlaceholder 
+                type="platinum" 
+                size="large" 
+                className="w-full max-w-md" 
+              />
             </div>
           </div>
 
@@ -239,6 +264,25 @@ const JobsPage = () => {
               </p>
             </Card>
           )}
+
+          {/* Bottom Career Services Section */}
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <div className="text-center mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Career Development Partners</h3>
+              <p className="text-sm text-gray-600">Supporting career growth in our community</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mb-6">
+              <AdPlaceholder type="gold" size="square" />
+              <AdPlaceholder type="silver" size="square" />
+            </div>
+            <div className="flex justify-center">
+              <AdPlaceholder 
+                type="google" 
+                size="banner" 
+                className="w-full max-w-2xl mx-auto" 
+              />
+            </div>
+          </div>
         </div>
       </div>
     </>
