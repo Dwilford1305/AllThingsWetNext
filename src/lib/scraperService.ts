@@ -1,5 +1,5 @@
 import { connectDB } from '@/lib/mongodb'
-import { Event } from '@/models'
+import { Event, NewsArticle } from '@/models'
 import { ConnectWetaskiwinScraper, WetaskiwinCaScraper } from './scrapers'
 import type { ScrapedEvent } from './scrapers'
 
@@ -101,16 +101,28 @@ export class ScraperService {
       await connectDB()
       
       // Delete events that don't have a sourceUrl (these are seed data)
-      const deleteResult = await Event.deleteMany({ 
+      const eventDeleteResult = await Event.deleteMany({ 
         $or: [
           { sourceUrl: { $exists: false } },
           { sourceUrl: null },
-          { sourceUrl: '' }
+          { sourceUrl: '' },
+          { id: { $in: ['ev1', 'ev2', 'ev3', 'ev4', 'ev5'] } } // Remove hardcoded sample IDs
         ]
       })
       
-      console.log(`Deleted ${deleteResult.deletedCount} seed events`)
-      return deleteResult.deletedCount
+      // Delete news that don't have a sourceUrl (these are seed data)
+      const newsDeleteResult = await NewsArticle.deleteMany({ 
+        $or: [
+          { sourceUrl: { $exists: false } },
+          { sourceUrl: null },
+          { sourceUrl: '' },
+          { id: { $in: ['n1', 'n2', 'n3', 'n4'] } } // Remove hardcoded sample IDs
+        ]
+      })
+      
+      const totalDeleted = eventDeleteResult.deletedCount + newsDeleteResult.deletedCount
+      console.log(`Deleted ${eventDeleteResult.deletedCount} seed events and ${newsDeleteResult.deletedCount} seed news articles`)
+      return totalDeleted
     } catch (error) {
       console.error('Error clearing seed data:', error)
       throw error

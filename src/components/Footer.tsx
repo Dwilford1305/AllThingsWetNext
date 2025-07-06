@@ -21,8 +21,7 @@ const Footer = () => {
     { href: '#', label: 'Community Events' },
     { href: '#', label: 'Local Services' },
     { href: '#', label: 'Tourism Info' },
-    { href: 'mailto:wilfordderek@gmail.com?subject=All Things Wetaskiwin - General Inquiry', label: '📧 Contact Support' },
-    { href: '/scraper', label: 'Admin: Scrapers' },
+    { href: 'mailto:wilfordderek@gmail.com?subject=All Things Wetaskiwin - General Inquiry', label: 'Contact Support' },
   ]
 
   return (

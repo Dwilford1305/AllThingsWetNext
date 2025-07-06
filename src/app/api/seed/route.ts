@@ -1,45 +1,66 @@
 import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Event, NewsArticle, Business, JobPosting, Classified } from '@/models'
-import { sampleEvents, sampleNews, sampleBusinesses, sampleJobs, sampleClassifieds } from '@/data/sampleData'
+import { sampleEvents, sampleNews, sampleBusinesses } from '@/data/sampleData'
 import type { ApiResponse } from '@/types'
 
 export async function POST() {
   try {
     await connectDB()
 
-    // Clear existing data (optional - only for development)
-    await Event.deleteMany({})
-    await NewsArticle.deleteMany({})
-    await Business.deleteMany({})
-    await JobPosting.deleteMany({})
-    await Classified.deleteMany({})
+    // Clear existing sample/fake data (optional - only for development)
+    // Delete events without sourceUrl (these are fake sample events)
+    await Event.deleteMany({
+      $or: [
+        { sourceUrl: { $exists: false } },
+        { sourceUrl: null },
+        { sourceUrl: '' },
+        { id: { $in: ['ev1', 'ev2', 'ev3', 'ev4', 'ev5'] } } // Remove hardcoded sample IDs
+      ]
+    })
+    
+    // Delete news without sourceUrl (these are fake sample news)
+    await NewsArticle.deleteMany({
+      $or: [
+        { sourceUrl: { $exists: false } },
+        { sourceUrl: null },
+        { sourceUrl: '' },
+        { id: { $in: ['n1', 'n2', 'n3', 'n4'] } } // Remove hardcoded sample IDs
+      ]
+    })
+    
+    // Don't clear businesses as they are legitimate scraped data
+    // Only clear sample businesses with hardcoded IDs
+    await Business.deleteMany({
+      id: { $in: ['b1', 'b2', 'b3', 'b4', 'b5'] } // Remove hardcoded sample IDs
+    })
 
-    // Insert sample data
-    const [events, news, businesses, jobs, classifieds] = await Promise.all([
-      Event.insertMany(sampleEvents),
-      NewsArticle.insertMany(sampleNews),
-      Business.insertMany(sampleBusinesses),
-      JobPosting.insertMany(sampleJobs),
-      Classified.insertMany(sampleClassifieds)
+    // Insert ONLY legitimate sample data that serves as examples
+    // For now, don't insert any fake data - only keep real scraped data
+    const [events, news, businesses] = await Promise.all([
+      Event.find({}), // Just get current real events
+      NewsArticle.find({}), // Just get current real news  
+      Business.find({}) // Just get current real businesses
     ])
 
     const response: ApiResponse<{
       events: number;
       news: number;
       businesses: number;
-      jobs: number;
-      classifieds: number;
+      clearedFakeEvents: number;
+      clearedFakeNews: number;
+      clearedFakeBusinesses: number;
     }> = {
       success: true,
       data: {
         events: events.length,
         news: news.length,
         businesses: businesses.length,
-        jobs: jobs.length,
-        classifieds: classifieds.length
+        clearedFakeEvents: 0, // We can add deletion counts if needed
+        clearedFakeNews: 0,
+        clearedFakeBusinesses: 0
       },
-      message: 'Database seeded successfully'
+      message: 'Fake data cleared, legitimate data preserved'
     }
 
     return NextResponse.json(response)
@@ -48,7 +69,7 @@ export async function POST() {
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Failed to seed database' 
+        error: error instanceof Error ? error.message : 'Failed to process database' 
       },
       { status: 500 }
     )
