@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Event, NewsArticle, Business, JobPosting, Classified } from '@/models'
-import { sampleEvents, sampleNews, sampleBusinesses } from '@/data/sampleData'
 import type { ApiResponse } from '@/types'
 
 export async function POST() {
