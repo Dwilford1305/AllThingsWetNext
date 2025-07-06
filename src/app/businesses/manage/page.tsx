@@ -88,7 +88,7 @@ const BusinessManageContent = () => {
               <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Business</h2>
               <p className="text-gray-600 mb-6">{error}</p>
-              <div className="space-x-4">
+              <div className="space-x-4 mb-6">
                 <Button asChild variant="primary">
                   <Link href="/businesses">
                     Browse Businesses
@@ -102,6 +102,15 @@ const BusinessManageContent = () => {
                   </Button>
                 )}
               </div>
+              <p className="text-sm text-gray-500">
+                Need help? Contact support at{' '}
+                <a 
+                  href="mailto:wilfordderek@gmail.com?subject=Business Management Support - All Things Wetaskiwin" 
+                  className="text-blue-600 hover:text-blue-700"
+                >
+                  wilfordderek@gmail.com
+                </a>
+              </p>
             </Card>
           </div>
         </div>

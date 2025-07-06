@@ -21,6 +21,7 @@ const Footer = () => {
     { href: '#', label: 'Community Events' },
     { href: '#', label: 'Local Services' },
     { href: '#', label: 'Tourism Info' },
+    { href: 'mailto:wilfordderek@gmail.com?subject=All Things Wetaskiwin - General Inquiry', label: '📧 Contact Support' },
     { href: '/scraper', label: 'Admin: Scrapers' },
   ]
 
@@ -131,7 +132,7 @@ const Footer = () => {
               </li>
               <li className="text-gray-300 text-sm sm:text-base">
                 <Mail size={14} className="sm:w-4 sm:h-4 text-blue-300 inline mr-2" />
-                <a href="mailto:info@allthingswetaskiwin.ca" className="hover:text-blue-300 transition-colors">info@allthingswetaskiwin.ca</a>
+                <a href="mailto:wilfordderek@gmail.com" className="hover:text-blue-300 transition-colors">wilfordderek@gmail.com</a>
               </li>
             </ul>
           </motion.div>

@@ -54,8 +54,14 @@ export async function POST(request: NextRequest) {
     )
 
     // TODO: Send email notification to admin/review team
-    console.log(`Business claim request for ${business.name} by ${claimerName} (${claimerEmail})`)
+    // For now, log the claim request - in production, send email to wilfordderek@gmail.com
+    console.log(`🏢 NEW BUSINESS CLAIM REQUEST`)
+    console.log(`Business: ${business.name}`)
+    console.log(`Claimed by: ${claimerName} (${claimerEmail})`)
+    console.log(`Phone: ${business.phone || 'Not provided'}`)
+    console.log(`Address: ${business.address || 'Not provided'}`)
     console.log(`Message: ${message || 'No message provided'}`)
+    console.log(`📧 ADMIN NOTIFICATION: Send details to wilfordderek@gmail.com`)
 
     const response: ApiResponse<{ business: typeof updatedBusiness }> = {
       success: true,

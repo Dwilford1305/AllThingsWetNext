@@ -79,6 +79,12 @@ const ClaimModal = ({ business, isOpen, onClose, onClaim }: ClaimModalProps) => 
           <p className="text-sm text-gray-600">{business.address}</p>
         </div>
 
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-sm text-blue-800">
+            <span className="font-medium">📧 Admin Review:</span> Your claim request will be sent to wilfordderek@gmail.com for verification. You&apos;ll receive confirmation once approved.
+          </p>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
