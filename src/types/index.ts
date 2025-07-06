@@ -70,7 +70,43 @@ export interface Business {
   phone?: string
   email?: string
   website?: string
-  hours: BusinessHours
+  contact?: string // Contact person name from scraping
+  sourceUrl?: string // Where we scraped it from
+  
+  // Premium subscription features
+  subscriptionTier?: 'free' | 'silver' | 'gold' | 'platinum'
+  subscriptionStatus?: 'active' | 'inactive' | 'trial' | 'cancelled'
+  subscriptionStart?: Date
+  subscriptionEnd?: Date
+  isClaimed?: boolean // Has business owner claimed this listing
+  claimedBy?: string // Email of person who claimed it
+  claimedAt?: Date
+  
+  // Premium features (only available with subscription)
+  logo?: string // Logo image URL
+  photos?: string[] // Gallery photos
+  hours?: BusinessHours
+  socialMedia?: {
+    facebook?: string
+    instagram?: string
+    twitter?: string
+    linkedin?: string
+  }
+  specialOffers?: Array<{
+    title: string
+    description: string
+    validUntil: Date
+  }>
+  
+  // Analytics (for premium users)
+  analytics?: {
+    views: number
+    clicks: number
+    callClicks: number
+    websiteClicks: number
+  }
+  
+  // Basic fields (always available)
   imageUrl?: string
   featured: boolean
   verified: boolean
@@ -78,11 +114,6 @@ export interface Business {
   reviewCount: number
   services: string[]
   tags: string[]
-  socialMedia?: {
-    facebook?: string
-    instagram?: string
-    twitter?: string
-  }
   createdAt: Date
   updatedAt: Date
 }
@@ -92,7 +123,7 @@ export type BusinessCategory =
   | 'retail'
   | 'automotive'
   | 'health'
-  | 'professional-services'
+  | 'professional'
   | 'home-services'
   | 'beauty'
   | 'recreation'

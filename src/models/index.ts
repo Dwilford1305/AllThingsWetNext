@@ -57,13 +57,38 @@ const BusinessSchema = new Schema({
   description: { type: String, required: true },
   category: { 
     type: String, 
-    enum: ['restaurant', 'retail', 'automotive', 'health', 'professional-services', 'home-services', 'beauty', 'recreation', 'education', 'non-profit', 'other'],
+    enum: ['restaurant', 'retail', 'automotive', 'health', 'professional', 'home-services', 'beauty', 'recreation', 'education', 'non-profit', 'other'],
     required: true 
   },
   address: { type: String, required: true },
   phone: { type: String },
   email: { type: String },
   website: { type: String },
+  
+  // Contact information from scraping
+  contact: { type: String }, // Contact person name
+  sourceUrl: { type: String }, // Where we scraped it from
+  
+  // Premium subscription features
+  subscriptionTier: { 
+    type: String, 
+    enum: ['free', 'silver', 'gold', 'platinum'],
+    default: 'free'
+  },
+  subscriptionStatus: {
+    type: String,
+    enum: ['active', 'inactive', 'trial', 'cancelled'],
+    default: 'inactive'
+  },
+  subscriptionStart: { type: Date },
+  subscriptionEnd: { type: Date },
+  isClaimed: { type: Boolean, default: false }, // Has business owner claimed this listing
+  claimedBy: { type: String }, // Email of person who claimed it
+  claimedAt: { type: Date },
+  
+  // Premium features (only available with subscription)
+  logo: { type: String }, // Logo image URL
+  photos: [{ type: String }], // Gallery photos
   hours: {
     monday: { type: String },
     tuesday: { type: String },
@@ -73,18 +98,35 @@ const BusinessSchema = new Schema({
     saturday: { type: String },
     sunday: { type: String }
   },
-  imageUrl: { type: String },
-  featured: { type: Boolean, default: false },
+  socialMedia: {
+    facebook: { type: String },
+    instagram: { type: String },
+    twitter: { type: String },
+    linkedin: { type: String }
+  },
+  specialOffers: [{ 
+    title: { type: String },
+    description: { type: String },
+    validUntil: { type: Date }
+  }],
+  
+  // Analytics (for premium users)
+  analytics: {
+    views: { type: Number, default: 0 },
+    clicks: { type: Number, default: 0 },
+    callClicks: { type: Number, default: 0 },
+    websiteClicks: { type: Number, default: 0 }
+  },
+  
+  // Basic fields (always available)
+  imageUrl: { type: String }, // Basic business image
+  featured: { type: Boolean, default: false }, // Premium placement
   verified: { type: Boolean, default: false },
   rating: { type: Number, min: 0, max: 5 },
   reviewCount: { type: Number, default: 0 },
   services: [{ type: String }],
   tags: [{ type: String }],
-  socialMedia: {
-    facebook: { type: String },
-    instagram: { type: String },
-    twitter: { type: String }
-  },
+  
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 })

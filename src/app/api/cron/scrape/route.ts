@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { NewsScraperService } from '@/lib/newsScraperService'
 import { ScraperService } from '@/lib/scraperService'
+import { BusinessScraperService } from '@/lib/businessScraperService'
 import type { ApiResponse } from '@/types'
 
 // This endpoint handles scheduled scraping for both news and events
@@ -23,12 +24,13 @@ export async function POST(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const type = searchParams.get('type') || 'both' // 'news', 'events', or 'both'
+    const type = searchParams.get('type') || 'all' // 'news', 'events', 'businesses', or 'all'
     const force = searchParams.get('force') === 'true'
     
     const results = {
       news: { total: 0, new: 0, updated: 0, errors: [] as string[] },
       events: { total: 0, new: 0, updated: 0, errors: [] as string[] },
+      businesses: { total: 0, new: 0, updated: 0, errors: [] as string[] },
       timestamp: new Date().toISOString()
     }
     
@@ -48,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Run news scraping
-    if (type === 'news' || type === 'both') {
+    if (type === 'news' || type === 'all') {
       try {
         console.log('Starting scheduled news scraping...')
         const newsScraperService = new NewsScraperService()
@@ -65,7 +67,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Run events scraping  
-    if (type === 'events' || type === 'both') {
+    if (type === 'events' || type === 'all') {
       try {
         console.log('Starting scheduled events scraping...')
         const scraperService = new ScraperService()
@@ -80,10 +82,27 @@ export async function POST(request: NextRequest) {
         results.events.errors.push(error instanceof Error ? error.message : 'Unknown error')
       }
     }
+
+    // Run business scraping (less frequent - only when explicitly requested)
+    if (type === 'businesses' || (type === 'all' && force)) {
+      try {
+        console.log('Starting scheduled business scraping...')
+        const businessScraperService = new BusinessScraperService()
+        const businessResults = await businessScraperService.scrapeBusinesses()
+        results.businesses = businessResults
+        console.log(`Business scraping completed: ${businessResults.new} new, ${businessResults.updated} updated`)
+        
+        // Update last run time for businesses
+        await setLastRunTime('businesses', Date.now())
+      } catch (error) {
+        console.error('Scheduled business scraping error:', error)
+        results.businesses.errors.push(error instanceof Error ? error.message : 'Unknown error')
+      }
+    }
     
     // Update last run time for combined runs
-    if (type === 'both') {
-      await setLastRunTime('both', Date.now())
+    if (type === 'all') {
+      await setLastRunTime('all', Date.now())
     }
     
     const totalNew = results.news.new + results.events.new

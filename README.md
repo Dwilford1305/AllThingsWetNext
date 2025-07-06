@@ -26,12 +26,19 @@ The application features a robust, ethical web scraping system that automaticall
 - **Connect Wetaskiwin** (`connectwetaskiwin.com/calendar-of-events.html`)
 - **City of Wetaskiwin** (`wetaskiwin.ca`)
 
+### Business Sources
+- **City of Wetaskiwin Business Directory** (`wetaskiwin.ca/businessdirectoryii.aspx`)
+  - 560+ local businesses automatically scraped and categorized
+  - Hybrid monetization model: free basic listings with premium upgrades
+  - Business claim system for enhanced control and features
+
 ### 🔄 Automation Features
 - **Scheduled Scraping**: Automatic collection every 6 hours via Vercel Cron Jobs
-- **Smart Deduplication**: Prevents duplicate articles/events
+- **Smart Deduplication**: Prevents duplicate articles/events/businesses
 - **Content Categorization**: Automatic sorting into relevant categories
 - **Source Attribution**: Proper links back to original content
 - **Error Handling**: Comprehensive logging and graceful failure recovery
+- **Business Directory Integration**: Automated scraping of city business directory with hybrid monetization
 
 ### 🚀 Deployment Options
 
@@ -40,7 +47,8 @@ The application features a robust, ethical web scraping system that automaticall
 {
   "crons": [
     { "path": "/api/cron/scrape?type=news", "schedule": "0 */6 * * *" },
-    { "path": "/api/cron/scrape?type=events", "schedule": "30 */6 * * *" }
+    { "path": "/api/cron/scrape?type=events", "schedule": "30 */6 * * *" },
+    { "path": "/api/cron/scrape?type=businesses", "schedule": "0 0 */7 * *" }
   ]
 }
 ```
@@ -54,8 +62,12 @@ The application features a robust, ethical web scraping system that automaticall
 - `GET/POST /api/cron/scrape` - Scheduled scraping endpoint (Vercel Cron)
 - `POST /api/scraper/news` - Manual news scraping
 - `POST /api/scraper/events` - Manual event scraping  
+- `POST /api/scraper/businesses` - Manual business scraping
 - `GET /api/news` - Retrieve scraped news
 - `GET /api/events` - Retrieve scraped events
+- `GET /api/businesses` - Retrieve business listings (with subscription tiers)
+- `POST /api/businesses/claim` - Claim a business listing
+- `POST /api/businesses/subscription` - Upgrade business subscription
 
 ### 🛡️ Ethical Guidelines
 - **Respectful Rate Limiting**: Built-in delays between requests
@@ -66,7 +78,39 @@ The application features a robust, ethical web scraping system that automaticall
 
 See `SCRAPER_SETUP_GUIDE.md` for detailed setup instructions.
 
-## 🛠 Tech Stack
+## � Hybrid Business Directory & Monetization
+
+### Business Model Overview
+The application features a sophisticated hybrid business directory that combines automated data collection with premium self-service offerings, creating multiple revenue streams while providing comprehensive local business coverage.
+
+### 🔄 How It Works
+1. **Automated Foundation**: City business directory automatically scraped and categorized (560+ businesses)
+2. **Free Basic Listings**: All businesses get a basic listing with contact info and hours
+3. **Claim System**: Business owners can claim their listings for enhanced control
+4. **Premium Subscriptions**: Claimed businesses can upgrade to Silver, Gold, or Platinum tiers
+5. **Self-Service Management**: Business dashboard for managing listings, analytics, and subscriptions
+
+### 💎 Subscription Tiers
+- **Free (Default)**: Basic scraped information, claim capability
+- **Silver ($19.99/mo)**: Enhanced listing, contact forms, basic analytics, business hours
+- **Gold ($39.99/mo)**: Everything in Silver + photo gallery, social media, featured placement, special offers
+- **Platinum ($79.99/mo)**: Everything in Gold + logo upload, advanced analytics, priority support
+
+### 🏗️ Technical Implementation
+- **Automated Scraping**: `WetaskiwinBusinessScraper` with smart categorization and deduplication
+- **Subscription Management**: Full API for claims, upgrades, and analytics tracking
+- **Business Dashboard**: Self-service portal for claimed businesses (`/businesses/manage`)
+- **Payment Ready**: Structured for Stripe/PayPal integration
+- **Analytics Tracking**: View counts, click tracking, conversion metrics
+
+### 📈 Revenue Opportunities
+- Monthly/annual subscription fees (Silver: $240/year, Gold: $480/year, Platinum: $960/year)
+- Featured placement upgrades
+- Premium directory advertising
+- Business verification services
+- Enhanced analytics and reporting
+
+## �🛠 Tech Stack
 
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
@@ -176,10 +220,13 @@ src/
 - Links to full articles
 
 ### Businesses (`/businesses`)
-- Local business directory
-- Business hours and contact information
-- Category filtering (retail, restaurant, service, etc.)
-- Click-to-call and email functionality
+- **Hybrid Business Directory**: Automatically scraped from city records + premium self-service listings
+- **Free Basic Listings**: All businesses from city directory included automatically
+- **Business Claim System**: Owners can claim and manage their listings
+- **Subscription Tiers**: Silver ($19.99/mo), Gold ($39.99/mo), Platinum ($79.99/mo)
+- **Premium Features**: Enhanced listings, analytics, featured placement, photo galleries
+- **Self-Service Management**: Business dashboard for claimed listings (`/businesses/manage`)
+- **Monetization Ready**: API endpoints for payments and subscription management
 
 ### Jobs (`/jobs`)
 - Job posting listings
