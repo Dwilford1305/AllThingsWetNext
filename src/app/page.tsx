@@ -6,12 +6,14 @@ import CallToAction from '@/components/CallToAction';
 import Footer from '@/components/Footer';
 import AnimatedSection from '@/components/AnimatedSection';
 import AdPlaceholder from '@/components/AdPlaceholder';
+import FoldableLayout from '@/components/FoldableLayout';
 
 export default function Home() {
   return (
-    <div className="relative">
-      <Navigation />
-      <ParallaxHero />
+    <FoldableLayout>
+      <div className="relative">
+        <Navigation />
+        <ParallaxHero />
       
       {/* Top Banner Ad - High visibility */}
       <AnimatedSection>
@@ -113,6 +115,7 @@ export default function Home() {
       </AnimatedSection>
 
       <Footer />
-    </div>
+      </div>
+    </FoldableLayout>
   );
 }

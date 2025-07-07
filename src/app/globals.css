@@ -356,3 +356,16 @@ main {
 [data-scroll-container] {
   position: relative !important;
 }
+
+/* Foldable device layout adjustments */
+@media (min-width: 673px) and (max-width: 820px) {
+  /* Ensure content doesn't overlap sidebar */
+  .main-content-foldable {
+    padding-left: 5rem;
+  }
+  
+  /* Fix any potential overflow issues on foldable */
+  body {
+    overflow-x: hidden;
+  }
+}
