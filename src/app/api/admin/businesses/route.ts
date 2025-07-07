@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let updateData: any = {};
+    let updateData: Record<string, unknown> = {};
 
     switch (action) {
       case 'approve':

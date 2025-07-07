@@ -13,8 +13,6 @@ import {
   Building, 
   Calendar, 
   Newspaper, 
-  Briefcase, 
-  ShoppingBag,
   Activity,
   TrendingUp,
   AlertTriangle,
@@ -58,8 +56,8 @@ export default function AdminPage() {
       if (data.success) {
         setStats(data.data);
       }
-    } catch (error) {
-      console.error('Error fetching admin stats:', error);
+    } catch (_error) {
+      console.error('Error fetching admin stats:', _error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -87,7 +85,7 @@ export default function AdminPage() {
       } else {
         alert(`${type} scraper failed: ${result.error}`);
       }
-    } catch (error) {
+    } catch (_error) {
       alert(`Error running ${type} scraper`);
     }
   };

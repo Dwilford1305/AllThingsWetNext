@@ -43,7 +43,7 @@ export const AdminAuth = ({ children }: AdminAuthProps) => {
       } else {
         setError('Invalid password');
       }
-    } catch (error) {
+    } catch (_error) {
       setError('Authentication failed');
     } finally {
       setLoading(false);

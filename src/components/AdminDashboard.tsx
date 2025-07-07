@@ -8,20 +8,13 @@ import {
   Building, 
   Calendar, 
   Newspaper, 
-  Briefcase, 
-  ShoppingBag,
   Users,
   Settings,
   BarChart3,
-  Shield,
-  AlertCircle,
   CheckCircle,
-  XCircle,
   Eye,
-  Edit,
   Trash2,
-  UserCheck,
-  DollarSign
+  UserCheck
 } from 'lucide-react';
 import type { Business, Event, NewsArticle } from '@/types';
 
@@ -66,8 +59,8 @@ export const AdminDashboard = () => {
             categoryStats: businessData.data.categoryStats || []
           });
         }
-      } catch (error) {
-        console.error('Error fetching admin data:', error);
+      } catch (_error) {
+        console.error('Error fetching admin data:', _error);
       } finally {
         setLoading(false);
       }
@@ -92,7 +85,7 @@ export const AdminDashboard = () => {
       } else {
         alert(`Failed to ${action} business: ${result.error}`);
       }
-    } catch (error) {
+    } catch (_error) {
       alert(`Error performing ${action} on business`);
     }
   };
@@ -112,7 +105,7 @@ export const AdminDashboard = () => {
       } else {
         alert(`Failed to ${action} ${type}: ${result.error}`);
       }
-    } catch (error) {
+    } catch (_error) {
       alert(`Error performing ${action} on ${type}`);
     }
   };
