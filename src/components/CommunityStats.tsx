@@ -61,8 +61,8 @@ const CommunityStats = () => {
   ]
 
   return (
-    <section className="py-12 sm:py-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+    <section className="relative py-12 sm:py-16 bg-gray-50 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 overflow-hidden">
         {/* Stats Section */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -78,7 +78,7 @@ const CommunityStats = () => {
             Join thousands of Wetaskiwin residents who stay connected through our community hub
           </p>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 w-full overflow-hidden">
             {[
               { value: stats.events, label: 'Active Events', icon: Calendar, color: 'text-blue-600' },
               { value: stats.businesses, label: 'Local Businesses', icon: Building, color: 'text-green-600' },
@@ -92,7 +92,7 @@ const CommunityStats = () => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
                 whileHover={{ scale: 1.05 }}
-                className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border-2 border-transparent hover:border-blue-200 transition-all duration-300"
+                className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border-2 border-transparent hover:border-blue-200 transition-all duration-300 w-full min-w-0"
               >
                 <stat.icon className={`h-6 w-6 sm:h-8 sm:w-8 ${stat.color} mx-auto mb-2 sm:mb-3`} />
                 <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{stat.value.toLocaleString()}</div>
@@ -108,7 +108,7 @@ const CommunityStats = () => {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
           viewport={{ once: true, amount: 0.2, margin: "0px 0px -100px 0px" }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8"
+          className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-full overflow-hidden"
         >
           {features.map((feature, index) => (
             <motion.div
@@ -118,7 +118,7 @@ const CommunityStats = () => {
               transition={{ duration: 0.6, delay: 0.1 * index, ease: "easeOut" }}
               viewport={{ once: true, amount: 0.2, margin: "0px 0px -100px 0px" }}
               whileHover={{ y: -3 }}
-              className="bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 hover:shadow-xl transition-all duration-300"
+              className="bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 hover:shadow-xl transition-all duration-300 w-full min-w-0"
             >
               <div className="flex items-start space-x-3 sm:space-x-4">
                 <div className={`p-2 sm:p-3 rounded-lg bg-gray-50 ${feature.color} flex-shrink-0`}>

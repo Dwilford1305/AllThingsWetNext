@@ -21,6 +21,10 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   overflow-x: hidden;
+  position: relative;
+  max-width: 100vw !important;
+  width: 100vw !important;
+  box-sizing: border-box !important;
 }
 
 /* Mobile responsive utilities */
@@ -31,8 +35,19 @@ body {
 }
 
 /* Prevent horizontal scroll */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  position: relative;
+}
+
 * {
   max-width: 100%;
+  box-sizing: border-box;
+}
+
+*::before, *::after {
   box-sizing: border-box;
 }
 
@@ -79,4 +94,265 @@ img {
     min-height: 44px;
     min-width: 44px;
   }
+}
+
+/* Foldable device support */
+@media (max-width: 380px) {
+  /* Extra narrow screens like Galaxy Fold cover screen */
+  .nav-title {
+    font-size: 1rem !important;
+    max-width: 120px !important;
+  }
+  
+  /* Ensure navigation never overflows */
+  nav {
+    min-width: 0;
+  }
+  
+  .nav-container {
+    min-width: 0;
+  }
+}
+
+/* Pixel 9 Pro Fold cover screen specific */
+@media (max-width: 344px) {
+  .nav-title {
+    max-width: 100px !important;
+    font-size: 0.875rem !important;
+  }
+}
+
+/* Improve viewport stability during load */
+@media (max-width: 480px) {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Prevent layout shift during load */
+  nav {
+    position: fixed;
+    width: 100vw;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+}
+
+/* Better responsive breakpoints for foldables */
+@media (min-width: 280px) and (max-width: 480px) {
+  /* Ensure proper flex behavior on very small screens */
+  .flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-width: 0;
+  }
+  
+  .flex-shrink-0 {
+    flex-shrink: 0;
+  }
+  
+  .min-w-0 {
+    min-width: 0;
+  }
+}
+
+/* Critical: Prevent navigation layout shift during page load */
+nav.nav-container {
+  position: fixed !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  left: 0 !important;
+  right: 0 !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+/* Ensure navigation container doesn't cause overflow */
+.nav-container > div {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure hamburger menu is always visible */
+@media (max-width: 768px) {
+  .nav-container .flex-between {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+  
+  .nav-container button {
+    flex-shrink: 0 !important;
+    margin-left: auto !important;
+  }
+  
+  /* Prevent title from pushing hamburger menu off screen */
+  .nav-title {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* Foldable device specific fixes for layout stability */
+@media (max-width: 400px) {
+  .nav-container {
+    min-width: 100vw !important;
+  }
+  
+  .nav-container > div {
+    max-width: none !important;
+    width: 100% !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}
+
+/* Viewport meta adjustments for better foldable support */
+@supports (display: flex) {
+  @media (max-width: 480px) {
+    .nav-container .flex-between {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      width: 100% !important;
+    }
+  }
+}
+
+/* Force prevent all horizontal overflow - iPhone fix */
+body {
+  position: relative;
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  width: 100vw !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure all main containers respect viewport width */
+.max-w-7xl,
+.max-w-6xl,
+.max-w-5xl,
+.max-w-4xl,
+.max-w-3xl,
+.max-w-2xl,
+.max-w-xl,
+.max-w-lg,
+.container {
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Fix for any elements that might extend beyond viewport - More targeted */
+div, section, main, header, footer, nav, article {
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Allow specific elements to use their natural width but not exceed viewport */
+img, video, iframe {
+  max-width: 100% !important;
+  height: auto;
+  box-sizing: border-box;
+}
+
+/* Specific iPhone fixes */
+@media (max-width: 430px) {
+  /* iPhone 12 Pro is 390px width */
+  html {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+  }
+  
+  body {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+    position: relative !important;
+  }
+  
+  /* Ensure no elements can extend beyond screen */
+  div, section, main, header, footer, nav {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix text that might be too wide */
+  h1, h2, h3, h4, h5, h6, p {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Debugging: Uncomment to find elements causing horizontal scroll */
+/*
+* {
+  outline: 1px solid red !important;
+  background: rgba(255, 0, 0, 0.1) !important;
+}
+
+*:hover {
+  outline: 2px solid blue !important;
+  background: rgba(0, 0, 255, 0.2) !important;
+}
+*/
+
+/* Additional iPhone-specific fixes */
+@media (max-width: 390px) {
+  /* iPhone 12 Pro specific width */
+  .nav-container {
+    max-width: 390px !important;
+    width: 100% !important;
+  }
+  
+  .nav-container > div {
+    max-width: 390px !important;
+    width: 100% !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  /* Ensure title truncation is aggressive enough */
+  .nav-title {
+    max-width: 130px !important;
+    font-size: 1rem !important;
+  }
+}
+
+/* Custom utility classes for preventing horizontal scroll */
+.no-horizontal-scroll {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  box-sizing: border-box !important;
+}
+
+.safe-width {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.force-contain {
+  contain: layout style !important;
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+}
+
+/* Root element absolute fixes */
+#__next,
+main {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  width: 100vw !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure scroll containers have proper positioning for framer-motion */
+[data-scroll-container] {
+  position: relative !important;
 }

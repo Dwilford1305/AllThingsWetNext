@@ -15,7 +15,7 @@ const ParallaxHero = () => {
   const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [1, 0.8, 0.3])
 
   return (
-    <div ref={ref} className="relative h-screen overflow-hidden">
+    <div ref={ref} className="relative h-screen overflow-hidden" data-scroll-container="true">
       {/* Parallax Background */}
       <motion.div
         style={{ 

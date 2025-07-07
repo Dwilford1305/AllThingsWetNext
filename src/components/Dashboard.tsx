@@ -79,7 +79,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="bg-white py-12 sm:py-16">
+    <div className="relative bg-white py-12 sm:py-16">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
         {/* Section Title */}
         <motion.div

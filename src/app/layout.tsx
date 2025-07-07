@@ -44,8 +44,11 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
   viewportFit: "cover",
   themeColor: "#2563eb",
+  colorScheme: "light",
 };
 
 export default function RootLayout({
@@ -56,12 +59,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="All Things Wetaskiwin" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-hidden max-w-full w-screen`}
       >
         {children}
       </body>

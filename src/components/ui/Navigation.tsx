@@ -8,6 +8,7 @@ import { Menu, X, Home, Calendar, Newspaper, Building, Briefcase, ShoppingBag } 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(0);
   const pathname = usePathname();
   const isHomePage = pathname === '/';
 
@@ -16,8 +17,35 @@ const Navigation = () => {
       setIsScrolled(window.scrollY > 50);
     };
 
+    const handleResize = () => {
+      const newWidth = window.innerWidth;
+      setViewportWidth(newWidth);
+      // Close mobile menu on resize to larger screen
+      if (newWidth >= 768) {
+        setIsOpen(false);
+      }
+    };
+
+    // Set initial viewport width with a small delay to ensure proper hydration
+    const setInitialWidth = () => {
+      if (typeof window !== 'undefined') {
+        setViewportWidth(window.innerWidth);
+      }
+    };
+
+    // Set immediately and after a brief delay for safety
+    setInitialWidth();
+    setTimeout(setInitialWidth, 100);
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
   }, []);
 
   const navItems = [
@@ -28,6 +56,18 @@ const Navigation = () => {
     { href: '/jobs', label: 'Jobs', icon: Briefcase },
     { href: '/classifieds', label: 'Classifieds', icon: ShoppingBag },
   ];
+
+  // Get dynamic max width based on viewport
+  const getTitleMaxWidth = () => {
+    // If viewport width is not set yet, use a safe default for mobile
+    if (viewportWidth === 0) return 'max-w-[140px] sm:max-w-none';
+    
+    if (viewportWidth <= 344) return 'max-w-[100px]'; // Pixel 9 Pro Fold cover
+    if (viewportWidth <= 380) return 'max-w-[120px]'; // Very narrow foldables
+    if (viewportWidth <= 390) return 'max-w-[130px]'; // iPhone 12 Pro
+    if (viewportWidth <= 475) return 'max-w-[140px]'; // Small phones
+    return 'max-w-[180px] sm:max-w-none'; // Normal responsive behavior
+  };
 
   // For non-home pages, always show solid background
   // For home page, use transparent when at top
@@ -48,12 +88,12 @@ const Navigation = () => {
   };
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${getNavStyles()}`}>
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-        <div className="flex justify-between h-14 sm:h-16">
-          <div className="flex items-center">
-            <Link href="/" className="flex-shrink-0">
-              <h1 className={`text-lg sm:text-xl font-bold transition-colors duration-300 ${getTextStyles()} truncate max-w-[200px] sm:max-w-none`}>
+    <nav className={`fixed w-full max-w-full z-50 transition-all duration-300 nav-container overflow-x-hidden ${getNavStyles()}`}>
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 overflow-x-hidden">
+        <div className="flex justify-between items-center h-14 sm:h-16 min-w-0 flex-between w-full overflow-x-hidden">
+          <div className="flex items-center min-w-0 flex-1 mr-3 overflow-x-hidden">
+            <Link href="/" className="flex-shrink-0 min-w-0 overflow-x-hidden">
+              <h1 className={`nav-title text-lg sm:text-xl font-bold transition-colors duration-300 ${getTextStyles()} truncate ${getTitleMaxWidth()} overflow-x-hidden`}>
                 All Things Wetaskiwin
               </h1>
             </Link>
@@ -78,10 +118,10 @@ const Navigation = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center flex-shrink-0">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className={`p-2 transition-colors ${
+              className={`p-2 min-w-[44px] min-h-[44px] transition-colors touch-manipulation ${
                 !isHomePage || isScrolled
                   ? 'text-gray-600 hover:text-blue-600' 
                   : 'text-white/90 hover:text-white'

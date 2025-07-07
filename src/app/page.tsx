@@ -9,7 +9,7 @@ import AdPlaceholder from '@/components/AdPlaceholder';
 
 export default function Home() {
   return (
-    <>
+    <div className="relative">
       <Navigation />
       <ParallaxHero />
       
@@ -113,6 +113,6 @@ export default function Home() {
       </AnimatedSection>
 
       <Footer />
-    </>
+    </div>
   );
 }
