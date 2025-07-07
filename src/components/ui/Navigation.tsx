@@ -61,32 +61,34 @@ const Navigation = () => {
   const isFoldableUnfolded = () => {
     if (viewportWidth === 0) return false;
     
-    // Comprehensive foldable detection based on popular devices in market
-    // Samsung Galaxy Z Fold series: Z Fold 6 (~768px), Z Fold 5 (~768px), Z Fold 4 (~768px)
-    // Google Pixel Fold / Pixel 9 Pro Fold: ~673px
-    // OnePlus Open: ~673px (similar to Pixel)
-    // Honor Magic V2/V3: ~673px
-    // Xiaomi Mix Fold series: ~748px
-    // Huawei Mate X series: ~748px
-    // Microsoft Surface Duo: ~720px (when both screens combined)
-    // Motorola Razr+ (when unfolded): ~673px
-    // Oppo Find N series: ~748px
-    // Vivo X Fold series: ~748px
-    
+    // Primary detection based on known foldable widths
     const isDefinitelyFoldable = (
-      (viewportWidth >= 670 && viewportWidth <= 678) || // Pixel Fold, OnePlus Open, Honor Magic V, Motorola Razr+
-      (viewportWidth >= 685 && viewportWidth <= 695) || // Z Fold variants (your specific device)
-      (viewportWidth >= 715 && viewportWidth <= 725) || // Surface Duo range
-      (viewportWidth >= 745 && viewportWidth <= 755) || // Xiaomi Mix Fold, Huawei Mate X, Oppo Find N, Vivo X Fold
-      (viewportWidth >= 760 && viewportWidth <= 780)    // Samsung Galaxy Z Fold series (768px)
+      (viewportWidth >= 650 && viewportWidth <= 690) || // Pixel Fold, OnePlus Open, Honor Magic V, Motorola Razr+ (expanded range)
+      (viewportWidth >= 715 && viewportWidth <= 735) || // Surface Duo range (expanded)
+      (viewportWidth >= 740 && viewportWidth <= 785)    // Samsung Z Fold series, Xiaomi, Huawei (expanded)
     );
     
-    // Debug logging for development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Foldable detection:', { viewportWidth, isDefinitelyFoldable });
-    }
+    // Secondary detection: aspect ratio-based for unfolded devices
+    // Foldables typically have very wide aspect ratios when unfolded
+    const aspectRatioDetection = () => {
+      if (typeof window === 'undefined') return false;
+      const aspectRatio = window.innerWidth / window.innerHeight;
+      // Most foldables have aspect ratios between 1.3 and 2.2 when unfolded
+      return aspectRatio > 1.4 && aspectRatio < 2.1 && viewportWidth >= 640 && viewportWidth <= 800;
+    };
     
-    return isDefinitelyFoldable;
+    const isFoldable = isDefinitelyFoldable || aspectRatioDetection();
+    
+    // Debug logging for development - always show for now to help identify your device
+    console.log('Navigation detection:', { 
+      viewportWidth, 
+      aspectRatio: typeof window !== 'undefined' ? (window.innerWidth / window.innerHeight).toFixed(2) : 'N/A',
+      isDefinitelyFoldable, 
+      aspectRatioDetection: aspectRatioDetection(),
+      finalResult: isFoldable 
+    });
+    
+    return isFoldable;
   };
 
   // Get dynamic max width based on viewport
