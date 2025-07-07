@@ -193,9 +193,47 @@ const ClassifiedSchema = new Schema({
   updatedAt: { type: Date, default: Date.now }
 })
 
+// Scraper Log Schema
+const ScraperLogSchema = new Schema({
+  type: { 
+    type: String, 
+    enum: ['news', 'events', 'businesses'], 
+    required: true 
+  },
+  status: { 
+    type: String, 
+    enum: ['started', 'completed', 'error'], 
+    required: true 
+  },
+  message: { type: String, required: true },
+  duration: { type: Number }, // in milliseconds
+  itemsProcessed: { type: Number, default: 0 },
+  errors: [{ type: String }],
+  createdAt: { type: Date, default: Date.now }
+})
+
+// Scraper Configuration Schema
+const ScraperConfigSchema = new Schema({
+  type: { 
+    type: String, 
+    enum: ['news', 'events', 'businesses'], 
+    required: true,
+    unique: true
+  },
+  isEnabled: { type: Boolean, default: true },
+  intervalHours: { type: Number, required: true }, // interval in hours
+  lastRun: { type: Date },
+  nextRun: { type: Date },
+  isActive: { type: Boolean, default: false }, // currently running
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+})
+
 // Export models
 export const Event = models.Event || model('Event', EventSchema)
 export const NewsArticle = models.NewsArticle || model('NewsArticle', NewsSchema)
 export const Business = models.Business || model('Business', BusinessSchema)
 export const JobPosting = models.JobPosting || model('JobPosting', JobSchema)
 export const Classified = models.Classified || model('Classified', ClassifiedSchema)
+export const ScraperLog = models.ScraperLog || model('ScraperLog', ScraperLogSchema)
+export const ScraperConfig = models.ScraperConfig || model('ScraperConfig', ScraperConfigSchema)

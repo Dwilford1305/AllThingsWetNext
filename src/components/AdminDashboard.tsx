@@ -14,9 +14,12 @@ import {
   CheckCircle,
   Eye,
   Trash2,
-  UserCheck
+  UserCheck,
+  RefreshCw,
+  Activity
 } from 'lucide-react';
 import type { Business, Event, NewsArticle } from '@/types';
+import ScraperLogs from './ScraperLogs';
 
 interface ContentStats {
   businesses: Business[];
@@ -31,10 +34,46 @@ interface ContentStats {
   }>;
 }
 
+interface ScraperConfig {
+  _id: string;
+  type: 'news' | 'events' | 'businesses';
+  isEnabled: boolean;
+  intervalHours: number;
+  lastRun?: string;
+  nextRun?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'content' | 'users' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'content' | 'users' | 'scrapers' | 'settings'>('overview');
   const [data, setData] = useState<ContentStats | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Scraper configurations from database
+  const [scraperConfigs, setScraperConfigs] = useState<ScraperConfig[]>([]);
+  const [configsLoading, setConfigsLoading] = useState(true);
+
+  // Scraper state management
+  const [scraperStates, setScraperStates] = useState<{
+    news: { status: 'idle' | 'running' | 'error'; lastRun?: string };
+    events: { status: 'idle' | 'running' | 'error'; lastRun?: string };
+    businesses: { status: 'idle' | 'running' | 'error'; lastRun?: string };
+  }>({
+    news: { status: 'idle' },
+    events: { status: 'idle' },
+    businesses: { status: 'idle' }
+  });
+
+  // Logs modal state
+  const [logsModal, setLogsModal] = useState<{
+    isOpen: boolean;
+    type: 'news' | 'events' | 'businesses' | null;
+  }>({
+    isOpen: false,
+    type: null
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -66,8 +105,92 @@ export const AdminDashboard = () => {
       }
     };
 
+    const fetchScraperConfigs = async () => {
+      try {
+        const response = await fetch('/api/admin/scraper-config');
+        const result = await response.json();
+        
+        if (result.success) {
+          setScraperConfigs(result.configs);
+        }
+      } catch (_error) {
+        console.error('Error fetching scraper configs:', _error);
+      } finally {
+        setConfigsLoading(false);
+      }
+    };
+
     fetchData();
+    fetchScraperConfigs();
   }, []);
+
+  // Helper functions for scraper configurations
+  const getScraperConfig = (type: 'news' | 'events' | 'businesses') => {
+    return scraperConfigs.find(config => config.type === type);
+  };
+
+  const updateScraperConfig = async (type: 'news' | 'events' | 'businesses', updates: Partial<ScraperConfig>) => {
+    try {
+      // Get current config to ensure we always send required fields
+      const currentConfig = getScraperConfig(type);
+      
+      // Ensure intervalHours is always included and valid
+      const payload = {
+        type,
+        intervalHours: updates.intervalHours || currentConfig?.intervalHours || (type === 'businesses' ? 168 : 6),
+        isEnabled: updates.isEnabled !== undefined ? updates.isEnabled : (currentConfig?.isEnabled ?? true),
+        ...updates
+      };
+
+      const response = await fetch('/api/admin/scraper-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        // Update local state
+        setScraperConfigs(prev => 
+          prev.map(config => 
+            config.type === type ? { ...config, ...result.config } : config
+          )
+        );
+        return true;
+      } else {
+        console.error('Failed to update scraper config:', result.error);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error updating scraper config:', error);
+      return false;
+    }
+  };
+
+  const updateScraperStatus = async (type: 'news' | 'events' | 'businesses', isActive: boolean, lastRun?: string) => {
+    try {
+      const response = await fetch('/api/admin/scraper-config', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, isActive, lastRun })
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        // Update local state
+        setScraperConfigs(prev => 
+          prev.map(config => 
+            config.type === type ? { ...config, ...result.config } : config
+          )
+        );
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error updating scraper status:', error);
+      return false;
+    }
+  };
 
   const handleBusinessAction = async (businessId: string, action: 'approve' | 'reject' | 'feature') => {
     try {
@@ -110,6 +233,158 @@ export const AdminDashboard = () => {
     }
   };
 
+  const formatTimeFromNow = (dateString?: string) => {
+    if (!dateString) return 'Never';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffDays > 0) {
+      return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    } else if (diffHours > 0) {
+      return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    } else {
+      const diffMinutes = Math.floor(diffMs / (1000 * 60));
+      return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
+    }
+  };
+
+  const formatTimeUntil = (dateString?: string) => {
+    if (!dateString) return 'Not scheduled';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = date.getTime() - now.getTime();
+    
+    if (diffMs <= 0) return 'Overdue';
+    
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffDays > 0) {
+      return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+    } else if (diffHours > 0) {
+      return `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
+    } else {
+      const diffMinutes = Math.floor(diffMs / (1000 * 60));
+      return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
+    }
+  };
+
+  // Scraper management functions
+  const logScraperActivity = async (
+    type: 'news' | 'events' | 'businesses', 
+    status: 'started' | 'completed' | 'error',
+    message: string,
+    duration?: number,
+    itemsProcessed?: number,
+    errors?: string[]
+  ) => {
+    try {
+      await fetch('/api/admin/scraper-logs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type,
+          status,
+          message,
+          duration,
+          itemsProcessed,
+          errors
+        })
+      });
+    } catch (error) {
+      console.error('Error logging scraper activity:', error);
+    }
+  };
+
+  const runScraper = async (type: 'news' | 'events' | 'businesses') => {
+    const startTime = Date.now();
+    
+    try {
+      setScraperStates(prev => ({
+        ...prev,
+        [type]: { ...prev[type], status: 'running' }
+      }));
+
+      // Update database to mark as active
+      await updateScraperStatus(type, true);
+
+      // Log scraper start
+      await logScraperActivity(type, 'started', `${type} scraper initiated by admin`);
+
+      const response = await fetch(`/api/scraper/${type}`, {
+        method: 'POST'
+      });
+      
+      const result = await response.json();
+      const duration = Date.now() - startTime;
+      
+      if (result.success) {
+        const lastRun = new Date().toISOString();
+        
+        setScraperStates(prev => ({
+          ...prev,
+          [type]: { status: 'idle', lastRun }
+        }));
+
+        // Update database with completion status
+        await updateScraperStatus(type, false, lastRun);
+
+        const itemsProcessed = result.data?.length || result.count || 0;
+        const message = `Successfully scraped ${itemsProcessed} ${type} items`;
+        
+        await logScraperActivity(type, 'completed', message, duration, itemsProcessed);
+        
+        alert(`✅ ${type} scraper completed successfully!\n` +
+              `• Items processed: ${itemsProcessed}\n` +
+              `• Duration: ${(duration/1000).toFixed(1)} seconds\n` +
+              `• Next scheduled run updated automatically`);
+      } else {
+        setScraperStates(prev => ({
+          ...prev,
+          [type]: { ...prev[type], status: 'error' }
+        }));
+
+        // Update database to mark as inactive
+        await updateScraperStatus(type, false);
+
+        const errorMessage = `${type} scraper failed: ${result.error || 'Unknown error'}`;
+        await logScraperActivity(type, 'error', errorMessage, duration, 0, [result.error || 'Unknown error']);
+        
+        alert(`❌ ${type} scraper failed!\n` +
+              `• Error: ${result.error || 'Unknown error'}\n` +
+              `• Duration: ${(duration/1000).toFixed(1)} seconds\n` +
+              `• Check logs for more details`);
+      }
+    } catch (_error) {
+      const duration = Date.now() - startTime;
+      const errorMessage = `${type} scraper crashed: Network or system error`;
+      
+      setScraperStates(prev => ({
+        ...prev,
+        [type]: { ...prev[type], status: 'error' }
+      }));
+
+      // Update database to mark as inactive
+      await updateScraperStatus(type, false);
+
+      await logScraperActivity(type, 'error', errorMessage, duration, 0, ['Network error', 'Connection failed']);
+      
+      alert(`💥 ${type} scraper crashed!\n` +
+            `• Error: Network or system error\n` +
+            `• Duration: ${(duration/1000).toFixed(1)} seconds\n` +
+            `• Please check your connection and try again`);
+    }
+  };
+
+  const openLogs = (type: 'news' | 'events' | 'businesses') => {
+    setLogsModal({ isOpen: true, type });
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -123,6 +398,7 @@ export const AdminDashboard = () => {
     { id: 'businesses', label: 'Businesses', icon: Building },
     { id: 'content', label: 'Content', icon: Newspaper },
     { id: 'users', label: 'Users', icon: Users },
+    { id: 'scrapers', label: 'Scrapers', icon: Activity },
     { id: 'settings', label: 'Settings', icon: Settings },
   ] as const;
 
@@ -406,6 +682,472 @@ export const AdminDashboard = () => {
             <Button className="mt-4">Save Settings</Button>
           </div>
         </Card>
+      )}
+
+      {activeTab === 'scrapers' && (
+        <div className="space-y-6">
+          {/* Scraper Status Overview */}
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <Activity className="h-5 w-5 mr-2" />
+              Scraper Status Overview
+            </h3>
+            {configsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="h-6 w-6 animate-spin text-gray-400 mr-2" />
+                <span className="text-gray-600">Loading scraper configurations...</span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* News Scraper */}
+                {(() => {
+                  const config = getScraperConfig('news');
+                  const isActive = config?.isActive;
+                  const isEnabled = config?.isEnabled ?? true;
+                  
+                  return (
+                    <div className={`p-4 border rounded-lg ${
+                      isActive 
+                        ? 'bg-green-50 border-green-200' 
+                        : isEnabled 
+                          ? 'bg-blue-50 border-blue-200' 
+                          : 'bg-gray-50 border-gray-200'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Newspaper className={`h-5 w-5 mr-2 ${
+                            isActive ? 'text-green-600' : isEnabled ? 'text-blue-600' : 'text-gray-600'
+                          }`} />
+                          <span className={`font-medium ${
+                            isActive ? 'text-green-900' : isEnabled ? 'text-blue-900' : 'text-gray-900'
+                          }`}>News Scraper</span>
+                        </div>
+                        <Badge className={`${
+                          isActive 
+                            ? 'bg-green-100 text-green-800' 
+                            : isEnabled 
+                              ? 'bg-blue-100 text-blue-800' 
+                              : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {isActive ? 'Running' : isEnabled ? 'Scheduled' : 'Disabled'}
+                        </Badge>
+                      </div>
+                      <p className={`text-sm mt-2 ${
+                        isActive ? 'text-green-700' : isEnabled ? 'text-blue-700' : 'text-gray-700'
+                      }`}>
+                        Last run: {formatTimeFromNow(config?.lastRun)}
+                      </p>
+                      <p className={`text-sm ${
+                        isActive ? 'text-green-700' : isEnabled ? 'text-blue-700' : 'text-gray-700'
+                      }`}>
+                        Interval: {config?.intervalHours ? `${config.intervalHours} hours` : 'Not set'}
+                      </p>
+                      <p className={`text-sm ${
+                        isActive ? 'text-green-700' : isEnabled ? 'text-blue-700' : 'text-gray-700'
+                      }`}>
+                        Next run: {formatTimeUntil(config?.nextRun)}
+                      </p>
+                    </div>
+                  );
+                })()}
+
+                {/* Events Scraper */}
+                {(() => {
+                  const config = getScraperConfig('events');
+                  const isActive = config?.isActive;
+                  const isEnabled = config?.isEnabled ?? true;
+                  
+                  return (
+                    <div className={`p-4 border rounded-lg ${
+                      isActive 
+                        ? 'bg-green-50 border-green-200' 
+                        : isEnabled 
+                          ? 'bg-blue-50 border-blue-200' 
+                          : 'bg-gray-50 border-gray-200'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Calendar className={`h-5 w-5 mr-2 ${
+                            isActive ? 'text-green-600' : isEnabled ? 'text-blue-600' : 'text-gray-600'
+                          }`} />
+                          <span className={`font-medium ${
+                            isActive ? 'text-green-900' : isEnabled ? 'text-blue-900' : 'text-gray-900'
+                          }`}>Events Scraper</span>
+                        </div>
+                        <Badge className={`${
+                          isActive 
+                            ? 'bg-green-100 text-green-800' 
+                            : isEnabled 
+                              ? 'bg-blue-100 text-blue-800' 
+                              : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {isActive ? 'Running' : isEnabled ? 'Scheduled' : 'Disabled'}
+                        </Badge>
+                      </div>
+                      <p className={`text-sm mt-2 ${
+                        isActive ? 'text-green-700' : isEnabled ? 'text-blue-700' : 'text-gray-700'
+                      }`}>
+                        Last run: {formatTimeFromNow(config?.lastRun)}
+                      </p>
+                      <p className={`text-sm ${
+                        isActive ? 'text-green-700' : isEnabled ? 'text-blue-700' : 'text-gray-700'
+                      }`}>
+                        Interval: {config?.intervalHours ? `${config.intervalHours} hours` : 'Not set'}
+                      </p>
+                      <p className={`text-sm ${
+                        isActive ? 'text-green-700' : isEnabled ? 'text-blue-700' : 'text-gray-700'
+                      }`}>
+                        Next run: {formatTimeUntil(config?.nextRun)}
+                      </p>
+                    </div>
+                  );
+                })()}
+
+                {/* Business Scraper */}
+                {(() => {
+                  const config = getScraperConfig('businesses');
+                  const isActive = config?.isActive;
+                  const isEnabled = config?.isEnabled ?? true;
+                  
+                  return (
+                    <div className={`p-4 border rounded-lg ${
+                      isActive 
+                        ? 'bg-green-50 border-green-200' 
+                        : isEnabled 
+                          ? 'bg-orange-50 border-orange-200' 
+                          : 'bg-gray-50 border-gray-200'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Building className={`h-5 w-5 mr-2 ${
+                            isActive ? 'text-green-600' : isEnabled ? 'text-orange-600' : 'text-gray-600'
+                          }`} />
+                          <span className={`font-medium ${
+                            isActive ? 'text-green-900' : isEnabled ? 'text-orange-900' : 'text-gray-900'
+                          }`}>Business Scraper</span>
+                        </div>
+                        <Badge className={`${
+                          isActive 
+                            ? 'bg-green-100 text-green-800' 
+                            : isEnabled 
+                              ? 'bg-orange-100 text-orange-800' 
+                              : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {isActive ? 'Running' : isEnabled ? 'Scheduled' : 'Disabled'}
+                        </Badge>
+                      </div>
+                      <p className={`text-sm mt-2 ${
+                        isActive ? 'text-green-700' : isEnabled ? 'text-orange-700' : 'text-gray-700'
+                      }`}>
+                        Last run: {formatTimeFromNow(config?.lastRun)}
+                      </p>
+                      <p className={`text-sm ${
+                        isActive ? 'text-green-700' : isEnabled ? 'text-orange-700' : 'text-gray-700'
+                      }`}>
+                        Interval: {config?.intervalHours ? `${config.intervalHours} hours` : 'Not set'}
+                      </p>
+                      <p className={`text-sm ${
+                        isActive ? 'text-green-700' : isEnabled ? 'text-orange-700' : 'text-gray-700'
+                      }`}>
+                        Next run: {formatTimeUntil(config?.nextRun)}
+                      </p>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+          </Card>
+
+          {/* Manual Scraper Controls */}
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <Settings className="h-5 w-5 mr-2" />
+              Manual Controls & Configuration
+            </h3>
+            
+            {configsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="h-6 w-6 animate-spin text-gray-400 mr-2" />
+                <span className="text-gray-600">Loading configurations...</span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* News Scraper Config */}
+                {(() => {
+                  const config = getScraperConfig('news');
+                  const isRunning = scraperStates.news.status === 'running';
+                  
+                  return (
+                    <div className="p-4 border rounded-lg">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center">
+                          <Newspaper className="h-5 w-5 text-blue-600 mr-2" />
+                          <h4 className="font-medium text-gray-900">News Scraper</h4>
+                        </div>
+                        <div className={`flex items-center text-sm ${
+                          isRunning ? 'text-green-600' : 
+                          scraperStates.news.status === 'error' ? 'text-red-600' : 'text-gray-500'
+                        }`}>
+                          <div className={`w-2 h-2 rounded-full mr-1 ${
+                            isRunning ? 'bg-green-500' : 
+                            scraperStates.news.status === 'error' ? 'bg-red-500' : 'bg-gray-400'
+                          }`}></div>
+                          {isRunning ? 'Running' : 
+                           scraperStates.news.status === 'error' ? 'Error' : 'Idle'}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3 mb-4">
+                        <div>
+                          <label className="block text-sm text-gray-700 mb-1">Interval</label>
+                          <select 
+                            value={config?.intervalHours || 6}
+                            onChange={(e) => updateScraperConfig('news', { intervalHours: parseInt(e.target.value) })}
+                            className="w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            disabled={isRunning}
+                            aria-label="News scraper interval"
+                          >
+                            <option value="1">Every 1 hour</option>
+                            <option value="2">Every 2 hours</option>
+                            <option value="4">Every 4 hours</option>
+                            <option value="6">Every 6 hours</option>
+                            <option value="12">Every 12 hours</option>
+                            <option value="24">Daily</option>
+                          </select>
+                        </div>
+                        
+                        <label className="flex items-center">
+                          <input 
+                            type="checkbox" 
+                            checked={config?.isEnabled || false}
+                            onChange={(e) => updateScraperConfig('news', { isEnabled: e.target.checked })}
+                            className="mr-2" 
+                            disabled={isRunning}
+                          />
+                          <span className="text-sm text-gray-700">Auto-schedule enabled</span>
+                        </label>
+                      </div>
+
+                      <div className="space-y-2">
+                        {isRunning ? (
+                          <Button size="sm" className="w-full" disabled>
+                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                            Running...
+                          </Button>
+                        ) : (
+                          <Button 
+                            size="sm" 
+                            className="w-full"
+                            onClick={() => runScraper('news')}
+                          >
+                            Run Now
+                          </Button>
+                        )}
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => openLogs('news')}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Logs
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Events Scraper Config */}
+                {(() => {
+                  const config = getScraperConfig('events');
+                  const isRunning = scraperStates.events.status === 'running';
+                  
+                  return (
+                    <div className="p-4 border rounded-lg">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center">
+                          <Calendar className="h-5 w-5 text-green-600 mr-2" />
+                          <h4 className="font-medium text-gray-900">Events Scraper</h4>
+                        </div>
+                        <div className={`flex items-center text-sm ${
+                          isRunning ? 'text-green-600' : 
+                          scraperStates.events.status === 'error' ? 'text-red-600' : 'text-gray-500'
+                        }`}>
+                          <div className={`w-2 h-2 rounded-full mr-1 ${
+                            isRunning ? 'bg-green-500' : 
+                            scraperStates.events.status === 'error' ? 'bg-red-500' : 'bg-gray-400'
+                          }`}></div>
+                          {isRunning ? 'Running' : 
+                           scraperStates.events.status === 'error' ? 'Error' : 'Idle'}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3 mb-4">
+                        <div>
+                          <label className="block text-sm text-gray-700 mb-1">Interval</label>
+                          <select 
+                            value={config?.intervalHours || 6}
+                            onChange={(e) => updateScraperConfig('events', { intervalHours: parseInt(e.target.value) })}
+                            className="w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                            disabled={isRunning}
+                            aria-label="Events scraper interval"
+                          >
+                            <option value="1">Every 1 hour</option>
+                            <option value="2">Every 2 hours</option>
+                            <option value="4">Every 4 hours</option>
+                            <option value="6">Every 6 hours</option>
+                            <option value="12">Every 12 hours</option>
+                            <option value="24">Daily</option>
+                          </select>
+                        </div>
+                        
+                        <label className="flex items-center">
+                          <input 
+                            type="checkbox" 
+                            checked={config?.isEnabled || false}
+                            onChange={(e) => updateScraperConfig('events', { isEnabled: e.target.checked })}
+                            className="mr-2" 
+                            disabled={isRunning}
+                          />
+                          <span className="text-sm text-gray-700">Auto-schedule enabled</span>
+                        </label>
+                      </div>
+
+                      <div className="space-y-2">
+                        {isRunning ? (
+                          <Button size="sm" className="w-full" disabled>
+                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                            Running...
+                          </Button>
+                        ) : (
+                          <Button 
+                            size="sm" 
+                            className="w-full"
+                            onClick={() => runScraper('events')}
+                          >
+                            Run Now
+                          </Button>
+                        )}
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => openLogs('events')}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Logs
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Business Scraper Config */}
+                {(() => {
+                  const config = getScraperConfig('businesses');
+                  const isRunning = scraperStates.businesses.status === 'running';
+                  
+                  return (
+                    <div className="p-4 border rounded-lg">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center">
+                          <Building className="h-5 w-5 text-purple-600 mr-2" />
+                          <h4 className="font-medium text-gray-900">Business Scraper</h4>
+                        </div>
+                        <div className={`flex items-center text-sm ${
+                          isRunning ? 'text-green-600' : 
+                          scraperStates.businesses.status === 'error' ? 'text-red-600' : 'text-gray-500'
+                        }`}>
+                          <div className={`w-2 h-2 rounded-full mr-1 ${
+                            isRunning ? 'bg-green-500' : 
+                            scraperStates.businesses.status === 'error' ? 'bg-red-500' : 'bg-gray-400'
+                          }`}></div>
+                          {isRunning ? 'Running' : 
+                           scraperStates.businesses.status === 'error' ? 'Error' : 'Idle'}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3 mb-4">
+                        <div>
+                          <label className="block text-sm text-gray-700 mb-1">Interval</label>
+                          <select 
+                            value={config?.intervalHours || 168}
+                            onChange={(e) => updateScraperConfig('businesses', { intervalHours: parseInt(e.target.value) })}
+                            className="w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            disabled={isRunning}
+                            aria-label="Business scraper interval"
+                          >
+                            <option value="12">Every 12 hours</option>
+                            <option value="24">Daily</option>
+                            <option value="72">Every 3 days</option>
+                            <option value="168">Weekly</option>
+                            <option value="720">Monthly</option>
+                          </select>
+                        </div>
+                        
+                        <label className="flex items-center">
+                          <input 
+                            type="checkbox" 
+                            checked={config?.isEnabled || false}
+                            onChange={(e) => updateScraperConfig('businesses', { isEnabled: e.target.checked })}
+                            className="mr-2" 
+                            disabled={isRunning}
+                          />
+                          <span className="text-sm text-gray-700">Auto-schedule enabled</span>
+                        </label>
+                      </div>
+
+                      <div className="space-y-2">
+                        {isRunning ? (
+                          <Button size="sm" className="w-full" disabled>
+                            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                            Running...
+                          </Button>
+                        ) : (
+                          <Button 
+                            size="sm" 
+                            className="w-full"
+                            onClick={() => runScraper('businesses')}
+                          >
+                            Run Now
+                          </Button>
+                        )}
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => openLogs('businesses')}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Logs
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+              <h5 className="font-medium text-blue-900 mb-2">Configuration Notes:</h5>
+              <ul className="text-sm text-blue-800 space-y-1">
+                <li>• Changes are saved automatically when you modify settings</li>
+                <li>• Disabling auto-schedule prevents automatic runs but allows manual execution</li>
+                <li>• Interval changes take effect after the current scheduled run completes</li>
+                <li>• Manual &quot;Run Now&quot; works regardless of enabled status</li>
+              </ul>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Scraper Logs Modal */}
+      {logsModal.isOpen && logsModal.type && (
+        <ScraperLogs 
+          type={logsModal.type}
+          isOpen={logsModal.isOpen}
+          onClose={() => setLogsModal({ isOpen: false, type: null })}
+        />
       )}
     </div>
   );

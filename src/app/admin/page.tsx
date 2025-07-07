@@ -12,11 +12,8 @@ import {
   Shield, 
   Users, 
   Building, 
-  Calendar, 
-  Newspaper, 
   Activity,
   TrendingUp,
-  AlertTriangle,
   RefreshCw
 } from 'lucide-react';
 
@@ -72,23 +69,6 @@ export default function AdminPage() {
   const handleRefresh = () => {
     setRefreshing(true);
     fetchAdminStats();
-  };
-
-  const runScraper = async (type: 'news' | 'events' | 'businesses') => {
-    try {
-      const response = await fetch(`/api/scraper/${type}`, {
-        method: 'POST'
-      });
-      const result = await response.json();
-      if (result.success) {
-        alert(`${type} scraper completed successfully!`);
-        handleRefresh();
-      } else {
-        alert(`${type} scraper failed: ${result.error}`);
-      }
-    } catch (_error) {
-      alert(`Error running ${type} scraper`);
-    }
   };
 
   if (loading) {
@@ -202,80 +182,6 @@ export default function AdminPage() {
                   </div>
                 </Card>
               </div>
-
-              {/* Scraper Controls */}
-              <Card className="p-6 mb-8">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                  <RefreshCw className="h-5 w-5 mr-2" />
-                  Scraper Controls
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex items-center mb-2">
-                      <Newspaper className="h-5 w-5 mr-2 text-blue-600" />
-                      <h3 className="font-medium text-gray-900">News Scraper</h3>
-                    </div>
-                    <p className="text-sm text-gray-800 mb-3">
-                      Scrape latest news from Wetaskiwin Times and Pipestone Flyer
-                    </p>
-                    <Button 
-                      size="sm" 
-                      onClick={() => runScraper('news')}
-                      className="w-full"
-                    >
-                      Run News Scraper
-                    </Button>
-                  </div>
-
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex items-center mb-2">
-                      <Calendar className="h-5 w-5 mr-2 text-green-600" />
-                      <h3 className="font-medium text-gray-900">Events Scraper</h3>
-                    </div>
-                    <p className="text-sm text-gray-800 mb-3">
-                      Scrape events from Connect Wetaskiwin and City website
-                    </p>
-                    <Button 
-                      size="sm" 
-                      onClick={() => runScraper('events')}
-                      className="w-full"
-                    >
-                      Run Events Scraper
-                    </Button>
-                  </div>
-
-                  <div className="p-4 border rounded-lg">
-                    <div className="flex items-center mb-2">
-                      <Building className="h-5 w-5 mr-2 text-purple-600" />
-                      <h3 className="font-medium text-gray-900">Business Scraper</h3>
-                    </div>
-                    <p className="text-sm text-gray-800 mb-3">
-                      Update business directory from City website
-                    </p>
-                    <Button 
-                      size="sm" 
-                      onClick={() => runScraper('businesses')}
-                      className="w-full"
-                    >
-                      Run Business Scraper
-                    </Button>
-                  </div>
-                </div>
-
-                {stats.scrapers.errors > 0 && (
-                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <div className="flex items-center text-red-800">
-                      <AlertTriangle className="h-5 w-5 mr-2" />
-                      <span className="font-medium">
-                        {stats.scrapers.errors} scraper error(s) detected
-                      </span>
-                    </div>
-                    <p className="text-sm text-red-600 mt-1">
-                      Check the logs for more details and consider running scrapers manually.
-                    </p>
-                  </div>
-                )}
-              </Card>
 
               {/* Main Admin Dashboard Component */}
               <AdminDashboard />
