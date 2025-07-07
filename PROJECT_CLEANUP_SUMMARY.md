@@ -56,7 +56,7 @@
 ### Monitoring & Utilities
 - ✅ `monitor-scrapers.ps1` - System monitoring script
 - ✅ `scrape-events.ps1` & `scrape-news.ps1` - Manual scraping scripts
-- ✅ `test-scrapers.ps1` - PowerShell test runner
+- ✅ `comprehensive-test.ps1` - Comprehensive test script for all functionality
 - ✅ `scripts/scrape-events.js` - Event scraping utility
 
 ### Debug API Endpoints (Kept for troubleshooting)

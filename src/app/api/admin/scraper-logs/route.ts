@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       message,
       duration,
       itemsProcessed,
-      errors
+      errorMessages: errors || [] // Map 'errors' input to 'errorMessages' field
     });
     
     await newLog.save();

@@ -23,7 +23,7 @@ interface ScraperLog {
   createdAt: string;
   duration?: number;
   itemsProcessed?: number;
-  errors?: string[];
+  errorMessages?: string[]; // Renamed from 'errors' to match Mongoose schema
 }
 
 interface ScraperLogsProps {
@@ -185,11 +185,11 @@ export const ScraperLogs = ({ type, isOpen, onClose }: ScraperLogsProps) => {
                           </div>
                         </div>
                         <p className="text-gray-900 mb-2">{log.message}</p>
-                        {log.errors && log.errors.length > 0 && (
+                        {log.errorMessages && log.errorMessages.length > 0 && (
                           <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
                             <p className="text-sm font-medium text-red-800 mb-1">Errors:</p>
                             <ul className="text-sm text-red-700 list-disc list-inside">
-                              {log.errors.map((error, index) => (
+                              {log.errorMessages.map((error: string, index: number) => (
                                 <li key={index}>{error}</li>
                               ))}
                             </ul>

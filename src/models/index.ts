@@ -208,7 +208,7 @@ const ScraperLogSchema = new Schema({
   message: { type: String, required: true },
   duration: { type: Number }, // in milliseconds
   itemsProcessed: { type: Number, default: 0 },
-  errors: [{ type: String }],
+  errorMessages: [{ type: String }], // Renamed from 'errors' to avoid Mongoose warning
   createdAt: { type: Date, default: Date.now }
 })
 
