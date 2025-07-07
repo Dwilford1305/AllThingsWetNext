@@ -99,7 +99,7 @@ For local development and testing, you can use Windows Task Scheduler with the p
 ### Files Created:
 - `scrape-news.ps1` - Script to scrape news articles
 - `scrape-events.ps1` - Script to scrape events  
-- `test-scrapers.ps1` - Test script to verify everything works
+- `comprehensive-test.ps1` - Comprehensive test script to verify all functionality
 - `monitor-scrapers.ps1` - Monitor script to check scraper status and logs
 - `scraper-logs.txt` - Log file that will be created automatically
 
@@ -110,8 +110,8 @@ First, test that everything works:
 # Navigate to project directory
 cd d:\AllThingsWetNext
 
-# Test both scrapers
-.\test-scrapers.ps1
+# Test all functionality (including scrapers)
+.\comprehensive-test.ps1 -RunScrapers
 
 # Check status and logs
 .\monitor-scrapers.ps1
@@ -187,7 +187,7 @@ For each task, right-click → **Properties** and configure:
 - **Events Scraping**: Every 6 hours starting at 3:00 AM (3:00 AM, 9:00 AM, 3:00 PM, 9:00 PM)
 
 ### Testing Local Setup:
-1. Run `d:\AllThingsWetNext\test-scrapers.ps1` manually to test both scrapers
+1. Run `d:\AllThingsWetNext\comprehensive-test.ps1 -RunScrapers` to test all functionality including scrapers
 2. Run `d:\AllThingsWetNext\monitor-scrapers.ps1` to check status and recent activity
 3. In Task Scheduler, right-click each task and select **"Run"** to test
 4. Check the log file at `d:\AllThingsWetNext\scraper-logs.txt`

@@ -422,3 +422,81 @@ div {
   max-width: 100% !important;
   overflow-x: hidden !important;
 }
+
+/* Improved text contrast and accessibility - TARGETED FIXES ONLY */
+.text-muted {
+  color: #374151 !important; /* gray-700 instead of gray-500 */
+}
+
+.text-secondary {
+  color: #1f2937 !important; /* gray-800 instead of gray-600 */
+}
+
+/* Ensure good contrast for form inputs */
+input, textarea, select {
+  color: #111827 !important; /* gray-900 */
+}
+
+input::placeholder, textarea::placeholder {
+  color: #6b7280 !important; /* gray-500 for placeholders is okay */
+}
+
+/* Better focus states */
+input:focus, textarea:focus, select:focus {
+  color: #111827 !important;
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* SPECIFIC admin dashboard text fixes - only target problematic areas */
+.admin-dashboard .text-gray-500 {
+  color: #374151 !important; /* Convert to gray-700 */
+}
+
+.admin-dashboard .text-gray-600 {
+  color: #1f2937 !important; /* Convert to gray-800 */
+}
+
+/* Fix only small text in admin cards that doesn't have explicit colors */
+.admin-dashboard .text-sm:not([class*="text-white"]):not([class*="text-blue"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-yellow"]):not([class*="text-purple"]) {
+  color: #1f2937 !important;
+}
+
+/* Fix checkbox labels specifically */
+.admin-dashboard label span {
+  color: #1f2937 !important;
+}
+
+/* Preserve button text colors */
+button, .btn, [role="button"] {
+  color: inherit !important;
+}
+
+/* Preserve colored backgrounds and their text */
+.bg-red-500, .bg-red-600, .bg-blue-500, .bg-blue-600, .bg-green-500, .bg-green-600,
+.bg-yellow-500, .bg-yellow-600, .bg-purple-500, .bg-purple-600, .bg-gray-800, .bg-gray-900 {
+  color: inherit !important;
+}
+
+/* Preserve white text on colored backgrounds */
+.text-white {
+  color: white !important;
+}
+
+/* Target only specific admin dashboard text that needs fixing */
+.admin-dashboard .text-sm.text-gray-500,
+.admin-dashboard .text-sm.text-gray-600,
+.admin-dashboard .text-xs.text-gray-500,
+.admin-dashboard .text-xs.text-gray-600 {
+  color: #1f2937 !important;
+}
+
+/* Navigation hamburger menu fix - specific target */
+nav button[aria-label="Toggle navigation menu"] {
+  color: #1f2937 !important; /* Ensure dark text for hamburger menu */
+}
+
+/* Refresh button specific fix */
+.refresh-button {
+  color: #1f2937 !important;
+}
