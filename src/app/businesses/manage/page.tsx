@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Navigation from '@/components/ui/Navigation';
+import FoldableLayout from '@/components/FoldableLayout';
 import { BusinessDashboard } from '@/components/BusinessDashboard';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -119,7 +120,7 @@ const BusinessManageContent = () => {
   }
 
   return (
-    <>
+    <FoldableLayout>
       <Navigation />
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
@@ -150,19 +151,19 @@ const BusinessManageContent = () => {
           />
         </div>
       </div>
-    </>
+    </FoldableLayout>
   );
 };
 
 const BusinessManagePage = () => {
   return (
     <Suspense fallback={
-      <>
+      <FoldableLayout>
         <Navigation />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
-      </>
+      </FoldableLayout>
     }>
       <BusinessManageContent />
     </Suspense>

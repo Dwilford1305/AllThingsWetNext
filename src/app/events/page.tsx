@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Navigation from '@/components/ui/Navigation';
+import FoldableLayout from '@/components/FoldableLayout';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -86,7 +87,7 @@ const EventsPage = () => {
   }
 
   return (
-    <>
+    <FoldableLayout>
       <Navigation />
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
@@ -349,7 +350,7 @@ const EventsPage = () => {
           </div>
         </div>
       </div>
-    </>
+    </FoldableLayout>
   );
 };
 
