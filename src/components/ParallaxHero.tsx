@@ -39,7 +39,7 @@ const ParallaxHero = () => {
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5 }}
-          className="flex-1 flex items-center justify-center pt-16 sm:pt-20"
+          className="flex-1 flex items-center justify-center pt-24 sm:pt-20 md:pt-16"
         >
           <motion.h1 
             className="text-2xl sm:text-3xl md:text-4xl font-bold text-center tracking-tight drop-shadow-lg px-4"
