@@ -99,30 +99,32 @@ const Navigation = () => {
     <>
       {/* Foldable Sidebar Navigation */}
       {isFoldableUnfolded() && (
-        <aside className="fixed left-0 top-0 h-full w-20 bg-white/95 backdrop-blur-md shadow-lg border-r z-40 flex flex-col items-center py-4 foldable-sidebar">
+        <aside className="fixed left-0 top-0 h-full w-24 bg-white/95 backdrop-blur-md shadow-lg border-r z-40 flex flex-col items-center py-4 foldable-sidebar">
           {/* Logo/Home */}
-          <Link href="/" className="mb-8 p-3 rounded-lg hover:bg-blue-50 transition-colors">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Home size={20} className="text-white" />
+          <Link href="/" className="mb-6 p-2 rounded-lg hover:bg-blue-50 transition-colors flex flex-col items-center">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mb-1">
+              <Home size={18} className="text-white" />
             </div>
+            <span className="text-xs font-medium text-gray-700">Home</span>
           </Link>
           
           {/* Navigation Items */}
-          <nav className="flex flex-col space-y-3 flex-1">
+          <nav className="flex flex-col space-y-2 flex-1">
             {navItems.slice(1).map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
-                className={`p-3 rounded-lg transition-colors group relative ${
+                className={`p-2 rounded-lg transition-colors group relative flex flex-col items-center ${
                   pathname === href 
                     ? 'bg-blue-600 text-white' 
                     : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600'
                 }`}
                 title={label}
               >
-                <Icon size={20} />
-                {/* Tooltip */}
-                <span className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                <Icon size={18} className="mb-1" />
+                <span className={`text-xs font-medium leading-tight text-center ${
+                  pathname === href ? 'text-white' : 'text-gray-700'
+                }`}>
                   {label}
                 </span>
               </Link>

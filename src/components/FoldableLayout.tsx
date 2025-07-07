@@ -42,7 +42,7 @@ const FoldableLayout = ({ children }: FoldableLayoutProps) => {
   };
 
   return (
-    <div className={`min-h-screen transition-all duration-300 ${isFoldableUnfolded() ? 'pl-20' : ''}`}>
+    <div className={`min-h-screen transition-all duration-300 ${isFoldableUnfolded() ? 'pl-24' : ''}`}>
       {children}
     </div>
   );

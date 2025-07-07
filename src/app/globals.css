@@ -361,7 +361,7 @@ main {
 @media (min-width: 673px) and (max-width: 820px) {
   /* Ensure content doesn't overlap sidebar */
   .main-content-foldable {
-    padding-left: 5rem;
+    padding-left: 6rem; /* 96px sidebar width */
   }
   
   /* Fix any potential overflow issues on foldable */
