@@ -7,6 +7,7 @@ import { AdminAuth } from '@/components/AdminAuth';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import FoldableLayout from '@/components/FoldableLayout';
 import { 
   Shield, 
   Users, 
@@ -92,20 +93,21 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <>
+      <FoldableLayout>
         <Navigation />
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center pt-24 sm:pt-20 md:pt-16">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
-      </>
+      </FoldableLayout>
     );
   }
 
   return (
     <AdminAuth>
-      <Navigation />
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <FoldableLayout>
+        <Navigation />
+        <div className="min-h-screen bg-gray-50 py-8 pt-24 sm:pt-20 md:pt-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -119,7 +121,7 @@ export default function AdminPage() {
               onClick={handleRefresh} 
               disabled={refreshing}
               variant="outline"
-              className="flex items-center"
+              className="flex items-center refresh-button"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
               Refresh
@@ -281,6 +283,7 @@ export default function AdminPage() {
           )}
         </div>
       </div>
+      </FoldableLayout>
     </AdminAuth>
   );
 }

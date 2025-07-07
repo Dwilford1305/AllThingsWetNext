@@ -490,3 +490,13 @@ button, .btn, [role="button"] {
 .admin-dashboard .text-xs.text-gray-600 {
   color: #1f2937 !important;
 }
+
+/* Navigation hamburger menu fix - specific target */
+nav button[aria-label="Toggle navigation menu"] {
+  color: #1f2937 !important; /* Ensure dark text for hamburger menu */
+}
+
+/* Refresh button specific fix */
+.refresh-button {
+  color: #1f2937 !important;
+}
