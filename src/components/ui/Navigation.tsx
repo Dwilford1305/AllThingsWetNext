@@ -65,16 +65,17 @@ const Navigation = () => {
     const isDefinitelyFoldable = (
       (viewportWidth >= 650 && viewportWidth <= 690) || // Pixel Fold, OnePlus Open, Honor Magic V, Motorola Razr+ (expanded range)
       (viewportWidth >= 715 && viewportWidth <= 735) || // Surface Duo range (expanded)
-      (viewportWidth >= 740 && viewportWidth <= 785)    // Samsung Z Fold series, Xiaomi, Huawei (expanded)
+      (viewportWidth >= 740 && viewportWidth <= 785) || // Samsung Z Fold series, Xiaomi, Huawei (expanded)
+      (viewportWidth >= 840 && viewportWidth <= 860)    // Pixel 9 Pro Fold (851px)
     );
     
     // Secondary detection: aspect ratio-based for unfolded devices
-    // Foldables typically have very wide aspect ratios when unfolded
+    // Foldables typically have wide aspect ratios when unfolded
     const aspectRatioDetection = () => {
       if (typeof window === 'undefined') return false;
       const aspectRatio = window.innerWidth / window.innerHeight;
-      // Most foldables have aspect ratios between 1.3 and 2.2 when unfolded
-      return aspectRatio > 1.4 && aspectRatio < 2.1 && viewportWidth >= 640 && viewportWidth <= 800;
+      // Adjusted for Pixel 9 Pro Fold (1.21 ratio) and other foldables
+      return aspectRatio > 1.15 && aspectRatio < 2.1 && viewportWidth >= 640 && viewportWidth <= 900;
     };
     
     const isFoldable = isDefinitelyFoldable || aspectRatioDetection();
