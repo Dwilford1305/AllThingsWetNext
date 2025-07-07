@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Home, Calendar, Newspaper, Building, Briefcase, ShoppingBag } from 'lucide-react';
+import { Menu, X, Home, Calendar, Newspaper, Building, Briefcase, ShoppingBag, Shield } from 'lucide-react';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -55,6 +55,7 @@ const Navigation = () => {
     { href: '/businesses', label: 'Businesses', icon: Building },
     { href: '/jobs', label: 'Jobs', icon: Briefcase },
     { href: '/classifieds', label: 'Classifieds', icon: ShoppingBag },
+    { href: '/admin', label: 'Admin', icon: Shield },
   ];
 
   // Detect if device is likely a foldable in unfolded state
