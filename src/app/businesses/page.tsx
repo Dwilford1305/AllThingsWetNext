@@ -9,138 +9,9 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import AdPlaceholder from '@/components/AdPlaceholder';
-import { Building, Phone, Mail, Globe, MapPin, Clock, ArrowLeft, Search, Filter, Star, Shield, Award, X } from 'lucide-react';
+import ComingSoonModal from '@/components/ComingSoonModal';
+import { Building, Phone, Mail, Globe, MapPin, Clock, ArrowLeft, Search, Filter, Star, Shield, Award } from 'lucide-react';
 import type { Business } from '@/types';
-
-interface ClaimModalProps {
-  business: Business;
-  isOpen: boolean;
-  onClose: () => void;
-  onClaim: (business: Business) => void;
-}
-
-const ClaimModal = ({ business, isOpen, onClose, onClaim }: ClaimModalProps) => {
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const response = await fetch('/api/businesses/claim', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          businessId: business.id,
-          claimerEmail: email,
-          claimerName: name,
-          message
-        })
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        alert('Business claimed successfully! You can now manage your listing.');
-        onClaim(result.data.business);
-        onClose();
-      } else {
-        alert(result.error || 'Failed to claim business');
-      }
-    } catch (error) {
-      console.error('Claim error:', error);
-      alert('Failed to claim business');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full p-6">
-        <div className="flex items-start justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Claim Your Business</h2>
-          <button 
-            onClick={onClose} 
-            className="text-gray-400 hover:text-gray-600"
-            aria-label="Close modal"
-          >
-            <X className="h-6 w-6" />
-          </button>
-        </div>
-        
-        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-          <h3 className="font-medium text-gray-900">{business.name}</h3>
-          <p className="text-sm text-gray-600">{business.address}</p>
-        </div>
-
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <span className="font-medium">📧 Admin Review:</span> Your claim request will be sent to wilfordderek@gmail.com for verification. You&apos;ll receive confirmation once approved.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Your Name *
-            </label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your full name"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address *
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your.email@example.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Message (Optional)
-            </label>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Tell us why you're claiming this business..."
-            />
-          </div>
-
-          <div className="flex space-x-3">
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary" disabled={loading} className="flex-1">
-              {loading ? 'Claiming...' : 'Claim Business'}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
 
 const BusinessesPage = () => {
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -214,12 +85,6 @@ const BusinessesPage = () => {
   const handleClaimBusiness = (business: Business) => {
     setSelectedBusinessForClaim(business);
     setClaimModalOpen(true);
-  };
-
-  const handleBusinessClaimed = (updatedBusiness: Business) => {
-    setBusinesses(prev => 
-      prev.map(b => b.id === updatedBusiness.id ? updatedBusiness : b)
-    );
   };
 
   const handlePageChange = (newPage: number) => {
@@ -620,16 +485,15 @@ const BusinessesPage = () => {
           </div>
         </div>
 
-        {/* Claim Modal */}
+        {/* Coming Soon Modal */}
         {selectedBusinessForClaim && (
-          <ClaimModal
+          <ComingSoonModal
             business={selectedBusinessForClaim}
             isOpen={claimModalOpen}
             onClose={() => {
               setClaimModalOpen(false);
               setSelectedBusinessForClaim(null);
             }}
-            onClaim={handleBusinessClaimed}
           />
         )}
       </div>

@@ -126,7 +126,7 @@ const Navigation = () => {
     <>
       {/* Foldable Sidebar Navigation */}
       {isFoldableUnfolded() && (
-        <aside className="fixed left-0 top-0 h-full w-24 bg-white/95 backdrop-blur-md shadow-lg border-r z-40 flex flex-col items-center py-4 foldable-sidebar">
+        <aside className="fixed left-0 top-12 h-full w-24 bg-white/95 backdrop-blur-md shadow-lg border-r z-40 flex flex-col items-center py-4 foldable-sidebar">
           {/* Logo/Home */}
           <Link href="/" className="mb-6 p-2 rounded-lg hover:bg-blue-50 transition-colors flex flex-col items-center">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mb-1">
@@ -161,7 +161,7 @@ const Navigation = () => {
       )}
 
       {/* Traditional Navigation for non-foldable devices */}
-      <nav className={`fixed w-full max-w-full z-50 transition-all duration-300 nav-container overflow-x-hidden ${getNavStyles()} ${isFoldableUnfolded() ? 'hidden' : ''}`}>
+      <nav className={`fixed w-full max-w-full top-12 z-40 transition-all duration-300 nav-container overflow-x-hidden ${getNavStyles()} ${isFoldableUnfolded() ? 'hidden' : ''}`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 overflow-x-hidden">
           <div className="flex justify-between items-center h-14 sm:h-16 min-w-0 flex-between w-full overflow-x-hidden">
             <div className="flex items-center min-w-0 flex-1 mr-3 overflow-x-hidden">
