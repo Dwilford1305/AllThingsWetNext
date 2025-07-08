@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import AdPlaceholder from '@/components/AdPlaceholder';
+import NewBadge from '@/components/NewBadge';
 import { Calendar, Clock, MapPin, Users, ArrowLeft, Search, Filter } from 'lucide-react';
 import type { Event } from '@/types';
 
@@ -185,9 +186,12 @@ const EventsPage = () => {
                   )}
                   <div className="p-6 bg-white relative z-10">
                     <div className="flex items-start justify-between mb-3">
-                      <Badge variant={event.featured ? 'default' : 'secondary'}>
-                        {event.category}
-                      </Badge>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant={event.featured ? 'default' : 'secondary'}>
+                          {event.category}
+                        </Badge>
+                        <NewBadge addedAt={event.addedAt} />
+                      </div>
                       {event.featured && (
                         <Badge variant="default" className="bg-yellow-500 text-black">
                           Featured
@@ -277,7 +281,10 @@ const EventsPage = () => {
                       )}
                       <div className="p-6">
                         <div className="flex items-start justify-between mb-3">
-                          <Badge variant="secondary">{event.category}</Badge>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="secondary">{event.category}</Badge>
+                            <NewBadge addedAt={event.addedAt} />
+                          </div>
                           {event.featured && <Badge variant="default">Featured</Badge>}
                         </div>
                         <h3 className="text-xl font-semibold text-gray-900 mb-2">{event.title}</h3>

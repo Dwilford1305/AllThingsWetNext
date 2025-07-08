@@ -4,8 +4,16 @@ import type { ApiResponse } from '@/types'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { source } = body
+    let source: string | undefined = undefined
+    
+    // Try to parse JSON body, but don't fail if it's empty
+    try {
+      const body = await request.json()
+      source = body.source
+    } catch (_error) {
+      // No JSON body provided, use default
+      console.log('No JSON body provided, using default sources')
+    }
     
     const scraperService = new NewsScraperService()
     const sources = source ? [source] : ['all']
@@ -20,12 +28,12 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(response)
-  } catch (error) {
-    console.error('News scraper API error:', error)
+  } catch (_error) {
+    console.error('News scraper API error:', _error)
     return NextResponse.json(
       { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+        error: _error instanceof Error ? _error.message : 'Unknown error occurred' 
       },
       { status: 500 }
     )
@@ -43,12 +51,12 @@ export async function GET() {
     }
 
     return NextResponse.json(response)
-  } catch (error) {
-    console.error('News scraper status API error:', error)
+  } catch (_error) {
+    console.error('News scraper status API error:', _error)
     return NextResponse.json(
       { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+        error: _error instanceof Error ? _error.message : 'Unknown error occurred' 
       },
       { status: 500 }
     )

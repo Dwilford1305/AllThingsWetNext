@@ -64,14 +64,15 @@ export class ScraperService {
           }
 
           if (existingEvent) {
-            // Update existing event
+            // Update existing event (don't change addedAt)
             await Event.findOneAndUpdate({ id: eventId }, eventData)
             results.updated++
             console.log(`Updated event: ${scrapedEvent.title}`)
           } else {
-            // Create new event
+            // Create new event with addedAt timestamp
             const newEvent = new Event({
               ...eventData,
+              addedAt: new Date(), // Set when event is first added to our system
               createdAt: new Date()
             })
             await newEvent.save()

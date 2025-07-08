@@ -17,6 +17,7 @@ export interface Event {
   ticketUrl?: string
   sourceUrl?: string
   sourceName?: string
+  addedAt: Date
   createdAt: Date
   updatedAt: Date
 }

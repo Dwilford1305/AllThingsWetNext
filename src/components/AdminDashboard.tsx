@@ -75,54 +75,87 @@ export const AdminDashboard = () => {
     type: null
   });
 
+  // Comprehensive scraper state
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [comprehensiveScraperStatus, setComprehensiveScraperStatus] = useState<{
+    isRunning: boolean;
+    lastRun: Date | null;
+    stats: {
+      events: { lastRun: Date | null; isRunning: boolean; totalRuns: number; lastErrors: string[] };
+      news: { lastRun: Date | null; isRunning: boolean; totalRuns: number; lastErrors: string[] };
+      businesses: { lastRun: Date | null; isRunning: boolean; totalRuns: number; lastErrors: string[] };
+      overall: { totalItems: number; lastFullScrape: Date | null; systemHealth: 'healthy' | 'warning' | 'error' };
+    };
+  }>({
+    isRunning: false,
+    lastRun: null,
+    stats: {
+      events: { lastRun: null, isRunning: false, totalRuns: 0, lastErrors: [] },
+      news: { lastRun: null, isRunning: false, totalRuns: 0, lastErrors: [] },
+      businesses: { lastRun: null, isRunning: false, totalRuns: 0, lastErrors: [] },
+      overall: { totalItems: 0, lastFullScrape: null, systemHealth: 'healthy' }
+    }
+  });
+
+
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch businesses with analytics
-        const businessResponse = await fetch('/api/businesses/analytics');
-        const businessData = await businessResponse.json();
-
-        // Fetch recent content
-        const eventsResponse = await fetch('/api/events?limit=10');
-        const eventsData = await eventsResponse.json();
-
-        const newsResponse = await fetch('/api/news?limit=10');
-        const newsData = await newsResponse.json();
-
-        if (businessData.success && eventsData.success && newsData.success) {
-          setData({
-            businesses: businessData.data.recentUpdates || [],
-            events: eventsData.data || [],
-            news: newsData.data || [],
-            recentClaims: businessData.data.recentClaims || [],
-            categoryStats: businessData.data.categoryStats || []
-          });
-        }
-      } catch (_error) {
-        console.error('Error fetching admin data:', _error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchScraperConfigs = async () => {
-      try {
-        const response = await fetch('/api/admin/scraper-config');
-        const result = await response.json();
-        
-        if (result.success) {
-          setScraperConfigs(result.configs);
-        }
-      } catch (_error) {
-        console.error('Error fetching scraper configs:', _error);
-      } finally {
-        setConfigsLoading(false);
-      }
-    };
-
     fetchData();
     fetchScraperConfigs();
+    // Intentionally omitting fetchData and fetchScraperConfigs from dependencies to avoid re-running effect on every render.
+    // These functions are defined after useEffect and are stable in this context.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Helper function to fetch all data
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch businesses with analytics
+      const businessResponse = await fetch('/api/businesses/analytics');
+      const businessData = await businessResponse.json();
+
+      // Fetch recent content
+      const eventsResponse = await fetch('/api/events?limit=10');
+      const eventsData = await eventsResponse.json();
+
+      const newsResponse = await fetch('/api/news?limit=10');
+      const newsData = await newsResponse.json();
+
+      if (businessData.success && eventsData.success && newsData.success) {
+        setData({
+          businesses: businessData.data.recentUpdates || [],
+          events: eventsData.data || [],
+          news: newsData.data || [],
+          recentClaims: businessData.data.recentClaims || [],
+          categoryStats: businessData.data.categoryStats || []
+        });
+      }
+
+      // Fetch comprehensive scraper status
+      await fetchComprehensiveScraperStatus();
+    } catch (_error) {
+      console.error('Error fetching admin data:', _error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchScraperConfigs = async () => {
+    try {
+      const response = await fetch('/api/admin/scraper-config');
+      const result = await response.json();
+      
+      if (result.success) {
+        setScraperConfigs(result.configs);
+      }
+    } catch (_error) {
+      console.error('Error fetching scraper configs:', _error);
+    } finally {
+      setConfigsLoading(false);
+    }
+  };
 
   // Helper functions for scraper configurations
   const getScraperConfig = (type: 'news' | 'events' | 'businesses') => {
@@ -383,6 +416,88 @@ export const AdminDashboard = () => {
 
   const openLogs = (type: 'news' | 'events' | 'businesses') => {
     setLogsModal({ isOpen: true, type });
+  };
+
+  const fetchComprehensiveScraperStatus = async () => {
+    try {
+      const response = await fetch('/api/scraper/comprehensive');
+      const result = await response.json();
+      
+      if (result.success) {
+        setComprehensiveScraperStatus({
+          isRunning: false,
+          lastRun: result.data.overall.lastFullScrape ? new Date(result.data.overall.lastFullScrape) : null,
+          stats: result.data
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching comprehensive scraper status:', error);
+    }
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const runComprehensiveScrapers = async (clearOldData = false, forceRefresh = false) => {
+    try {
+      setComprehensiveScraperStatus(prev => ({ ...prev, isRunning: true }));
+      
+      const params = new URLSearchParams();
+      if (clearOldData) params.append('clearOldData', 'true');
+      if (forceRefresh) params.append('forceRefresh', 'true');
+      
+      const response = await fetch(`/api/scraper/comprehensive?${params.toString()}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log('✅ Comprehensive scraping completed:', result.data);
+        alert(`Comprehensive scraping completed successfully!\n\nSummary:\n- Total items: ${result.data.summary.totalItems}\n- New: ${result.data.summary.totalNew}\n- Updated: ${result.data.summary.totalUpdated}\n- Deleted: ${result.data.summary.totalDeleted}\n- Duration: ${result.data.summary.duration}ms`);
+        
+        // Refresh data
+        await fetchData();
+        await fetchComprehensiveScraperStatus();
+      } else {
+        console.error('❌ Comprehensive scraping failed:', result.error);
+        alert(`Comprehensive scraping failed: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('❌ Error running comprehensive scrapers:', error);
+      alert(`Error running comprehensive scrapers: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setComprehensiveScraperStatus(prev => ({ ...prev, isRunning: false }));
+    }
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const clearAllScrapedData = async () => {
+    if (!confirm('Are you sure you want to clear ALL scraped data? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/scraper/comprehensive', {
+        method: 'DELETE'
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log('✅ All scraped data cleared:', result.data);
+        alert(`All scraped data cleared successfully!\n\nCleared:\n- Events: ${result.data.events}\n- News: ${result.data.news}\n- Businesses: ${result.data.businesses}`);
+        
+        // Refresh data
+        await fetchData();
+        await fetchComprehensiveScraperStatus();
+      } else {
+        console.error('❌ Failed to clear data:', result.error);
+        alert(`Failed to clear data: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('❌ Error clearing data:', error);
+      alert(`Error clearing data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   if (loading) {

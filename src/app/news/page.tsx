@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import AdPlaceholder from '@/components/AdPlaceholder';
+import NewBadge from '@/components/NewBadge';
 import { Newspaper, Calendar, ExternalLink, ArrowLeft, Search, Filter } from 'lucide-react';
 import type { NewsArticle } from '@/types';
 
@@ -169,9 +170,12 @@ const NewsPage = () => {
                       )}
                       <div className="p-6 bg-white relative z-10">
                         <div className="flex items-center justify-between mb-3">
-                          <Badge variant="default" className="bg-yellow-500 text-black">
-                            Featured
-                          </Badge>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="default" className="bg-yellow-500 text-black">
+                              Featured
+                            </Badge>
+                            <NewBadge date={article.publishedAt || article.createdAt} />
+                          </div>
                           <Badge variant="secondary">
                             {article.category.replace('-', ' ')}
                           </Badge>
@@ -241,9 +245,12 @@ const NewsPage = () => {
                       )}
                       <div className="flex-1 p-6 bg-white relative z-10">
                         <div className="flex items-center justify-between mb-3">
-                          <Badge variant="secondary">
-                            {article.category.replace('-', ' ')}
-                          </Badge>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="secondary">
+                              {article.category.replace('-', ' ')}
+                            </Badge>
+                            <NewBadge date={article.publishedAt || article.createdAt} />
+                          </div>
                           {article.featured && (
                             <Badge variant="default" className="bg-yellow-500 text-black">
                               Featured

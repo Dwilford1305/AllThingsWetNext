@@ -2,6 +2,7 @@ import { connectDB } from '@/lib/mongodb'
 import { NewsArticle } from '@/models'
 import { WetaskiwinTimesScraper } from './scrapers/wetaskiwinTimes'
 import { PipestoneFlyerScraper } from './scrapers/pipestoneFlyer'
+import { CentralAlbertaOnlineScraper } from './scrapers/centralAlbertaOnline'
 import type { ScrapedNewsArticle } from './scrapers/newsBase'
 
 export interface NewsScrapingResult {
@@ -14,7 +15,8 @@ export interface NewsScrapingResult {
 export class NewsScraperService {
   private scrapers = {
     'wetaskiwin-times': new WetaskiwinTimesScraper(),
-    'pipestone-flyer': new PipestoneFlyerScraper()
+    'pipestone-flyer': new PipestoneFlyerScraper(),
+    'central-alberta-online': new CentralAlbertaOnlineScraper()
   }
 
   async scrapeNews(sources: string[] = ['all']): Promise<NewsScrapingResult> {

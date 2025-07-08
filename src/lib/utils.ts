@@ -51,3 +51,40 @@ export function isValidPhone(phone: string): boolean {
   const phoneRegex = /^[\d\s\-\(\)\+\.]+$/
   return phoneRegex.test(phone) && phone.replace(/\D/g, '').length >= 10
 }
+
+export function isNewItem(date: Date | string): boolean {
+  const itemDate = new Date(date)
+  const now = new Date()
+  
+  // Check if the item was added within the last 24 hours
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+  
+  return itemDate > twentyFourHoursAgo
+}
+
+export function isNewEvent(addedAt: Date | string): boolean {
+  const addedDate = new Date(addedAt)
+  const now = new Date()
+  
+  // Check if the event was added within the last 24 hours
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+  
+  return addedDate > twentyFourHoursAgo
+}
+
+export function formatDateRelative(date: Date | string): string {
+  const d = new Date(date)
+  const now = new Date()
+  const diffTime = now.getTime() - d.getTime()
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+  
+  if (diffDays === 0) {
+    return 'Today'
+  } else if (diffDays === 1) {
+    return 'Yesterday'
+  } else if (diffDays < 7) {
+    return `${diffDays} days ago`
+  } else {
+    return formatDate(d)
+  }
+}

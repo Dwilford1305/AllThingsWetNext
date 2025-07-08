@@ -14,6 +14,7 @@ export const sampleEvents: Event[] = [
     website: 'https://wetaskiwinmarket.ca',
     featured: true,
     price: 0,
+    addedAt: new Date(),
     createdAt: new Date(),
     updatedAt: new Date()
   },
@@ -29,6 +30,7 @@ export const sampleEvents: Event[] = [
     contactPhone: '780-352-3321',
     featured: true,
     price: 0,
+    addedAt: new Date(),
     createdAt: new Date(),
     updatedAt: new Date()
   },
@@ -45,6 +47,7 @@ export const sampleEvents: Event[] = [
     featured: false,
     price: 15,
     ticketUrl: 'https://reynoldsmuseum.ca/tickets',
+    addedAt: new Date(),
     createdAt: new Date(),
     updatedAt: new Date()
   },
@@ -60,6 +63,7 @@ export const sampleEvents: Event[] = [
     contactEmail: 'events@wetaskiwincc.ca',
     featured: false,
     price: 0,
+    addedAt: new Date(),
     createdAt: new Date(),
     updatedAt: new Date()
   },
@@ -75,6 +79,7 @@ export const sampleEvents: Event[] = [
     contactPhone: '780-352-7777',
     featured: true,
     price: 10,
+    addedAt: new Date(),
     createdAt: new Date(),
     updatedAt: new Date()
   }

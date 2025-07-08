@@ -24,6 +24,7 @@ const EventSchema = new Schema({
   ticketUrl: { type: String },
   sourceUrl: { type: String },
   sourceName: { type: String },
+  addedAt: { type: Date, default: Date.now }, // Track when event was first added to our system
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 })

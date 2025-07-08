@@ -118,33 +118,34 @@ export class BusinessScraperService {
   }
 
   private generateBusinessId(name: string, address: string): string {
-    // Create a unique, URL-friendly ID based on name and key address parts
-    const cleanName = name.toLowerCase()
+    // Normalize business name - remove common suffixes that don't change the business identity
+    const normalizedName = name.toLowerCase()
+      .replace(/\b(ltd|inc|corp|co|llc|limited|incorporated|corporation|company)\b\.?/g, '') // Remove business suffixes
       .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+      .replace(/\s+/g, ' ') // Normalize spaces
+      .trim()
+    
+    // Create clean name for ID
+    const cleanName = normalizedName
       .replace(/\s+/g, '-') // Replace spaces with hyphens
       .substring(0, 50) // Limit name length
     
-    // Extract key address parts (street number and name)
-    const addressParts = address.toLowerCase()
-      .match(/(\d+)\s+([a-z0-9\s]+)/) // Get street number and street name
+    // Extract just the street number for address uniqueness
+    const streetNumber = address.match(/^#?\d+[a-z]?/i)?.[0] || ''
+    const cleanStreetNumber = streetNumber.toLowerCase().replace(/[^0-9a-z]/g, '')
     
-    let addressKey = ''
-    if (addressParts) {
-      addressKey = `${addressParts[1]}-${addressParts[2]}`
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .substring(0, 30)
+    // For businesses with the same name, differentiate by street number only
+    if (cleanStreetNumber) {
+      return `${cleanName}-${cleanStreetNumber}`
+        .replace(/-+/g, '-') // Replace multiple hyphens with single
+        .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
+        .substring(0, 80)
     } else {
-      addressKey = address.toLowerCase()
-        .replace(/[^a-z0-9\s]/g, '')
-        .replace(/\s+/g, '-')
-        .substring(0, 30)
+      return cleanName
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+        .substring(0, 80)
     }
-    
-    return `${cleanName}-${addressKey}`
-      .replace(/-+/g, '-') // Replace multiple hyphens with single
-      .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
-      .substring(0, 100)
   }
 
   private generateBasicDescription(business: ScrapedBusiness): string {

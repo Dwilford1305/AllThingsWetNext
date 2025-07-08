@@ -20,6 +20,12 @@ export class WetaskiwinTimesScraper extends BaseNewsScraper {
       // Also scrape the local news section for more articles
       await this.scrapeNewsSection('https://www.wetaskiwintimes.com/category/news/local-news/', articles)
       
+      // Scrape sports section for local sports news
+      await this.scrapeNewsSection('https://www.wetaskiwintimes.com/category/sports/', articles)
+      
+      // Scrape community section for local community news
+      await this.scrapeNewsSection('https://www.wetaskiwintimes.com/category/news/', articles)
+      
       console.log(`Wetaskiwin Times scraper found ${articles.length} articles`)
       return articles
     } catch (error) {
@@ -49,8 +55,8 @@ export class WetaskiwinTimesScraper extends BaseNewsScraper {
         }
       })
       
-      // Limit to most recent articles (3 for latest news as requested)
-      const recentLinks = Array.from(articleLinks).slice(0, 6)
+      // Limit to most recent articles (increase from 6 to 12 for latest news)
+      const recentLinks = Array.from(articleLinks).slice(0, 12)
       
       for (const articleUrl of recentLinks) {
         try {
@@ -87,8 +93,8 @@ export class WetaskiwinTimesScraper extends BaseNewsScraper {
         }
       })
       
-      // Limit to recent articles to avoid overloading
-      const recentLinks = Array.from(articleLinks).slice(0, 5)
+      // Limit to recent articles to avoid overloading (increase from 5 to 10)
+      const recentLinks = Array.from(articleLinks).slice(0, 10)
       
       for (const articleUrl of recentLinks) {
         try {
