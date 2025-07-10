@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Calendar, Building, Briefcase, ShoppingBag, Mail, MapPin, Twitter, Instagram, Newspaper } from 'lucide-react'
+import { Calendar, Building, Briefcase, ShoppingBag, Mail, MapPin, Newspaper } from 'lucide-react'
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
