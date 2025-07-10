@@ -37,6 +37,24 @@ yarn-error.log*
 .scraper-last-run
 
 # vercel
+
+# Ignore all README files except the main one in the root
+**/README.md
+!README.md
+
+# Ignore logs
+logs/
+*.log
+
+# Ignore archives and backups
+archive/
+*.bak
+*.tmp
+
+# Ignore OS and editor files
+.idea/
+.vscode/
+Thumbs.db
 .vercel
 
 # typescript
