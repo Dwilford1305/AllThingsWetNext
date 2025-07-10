@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Calendar, Building, Briefcase, ShoppingBag, Mail, MapPin, Facebook, Twitter, Instagram, Newspaper } from 'lucide-react'
+import { Calendar, Building, Briefcase, ShoppingBag, Mail, MapPin, Twitter, Instagram, Newspaper } from 'lucide-react'
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
@@ -44,14 +44,26 @@ const Footer = () => {
             </p>
             <div className="flex space-x-4">
               <motion.a
-                href="#"
+                href="https://www.facebook.com/profile.php?id=61578336054811"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 className="text-gray-400 hover:text-blue-300 transition-colors"
                 aria-label="Facebook"
               >
-                <Facebook size={20} className="sm:w-6 sm:h-6" />
+                {/* Facebook SVG from simpleicons.org */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width={20}
+                  height={20}
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="sm:w-6 sm:h-6"
+                  aria-hidden="true"
+                >
+                  <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073c0 6.019 4.388 10.995 10.125 11.854v-8.385H7.078v-3.47h3.047V9.413c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953h-1.513c-1.491 0-1.953.926-1.953 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.068 24 18.092 24 12.073z"/>
+                </svg>
               </motion.a>
+              {/*
               <motion.a
                 href="#"
                 whileHover={{ scale: 1.1 }}
@@ -61,6 +73,7 @@ const Footer = () => {
               >
                 <Twitter size={20} className="sm:w-6 sm:h-6" />
               </motion.a>
+              
               <motion.a
                 href="#"
                 whileHover={{ scale: 1.1 }}
@@ -70,6 +83,7 @@ const Footer = () => {
               >
                 <Instagram size={20} className="sm:w-6 sm:h-6" />
               </motion.a>
+              */}
             </div>
           </motion.div>
 
