@@ -16,12 +16,11 @@ const Footer = () => {
   ]
 
   const communityLinks = [
-    { href: '#', label: 'City of Wetaskiwin' },
-    { href: '#', label: 'Chamber of Commerce' },
-    { href: '#', label: 'Community Events' },
-    { href: '#', label: 'Local Services' },
-    { href: '#', label: 'Tourism Info' },
-    { href: 'mailto:wilfordderek@gmail.com?subject=All Things Wetaskiwin - General Inquiry', label: 'Contact Support' },
+    { href: 'https://www.wetaskiwin.ca/', label: 'City of Wetaskiwin' },
+    { href: 'https://www.connectwetaskiwin.com/', label: 'Connect Wetaskiwin' },
+    { href: 'https://www.wetaskiwintimes.com/', label: 'The Wetaskiwin Times' },
+    { href: 'https://www.pipestoneflyer.ca/', label: 'Pipestone Flyer' },
+    { href: '#', label: 'List of Facebook Groups' },
   ]
 
   return (
@@ -131,8 +130,12 @@ const Footer = () => {
               </li>
               <li className="text-gray-300 text-sm sm:text-base">
                 <Mail size={14} className="sm:w-4 sm:h-4 text-blue-300 inline mr-2" />
-                <a href="mailto:wilfordderek@gmail.com" className="hover:text-blue-300 transition-colors">wilfordderek@gmail.com</a>
+                <a href="mailto:allthingswetaskiwin@gmail.com?subject=General Inquiry" className="hover:text-blue-300 transition-colors">allthingswetaskiwin@gmail.com</a>
               </li>
+              <li>
+                <Mail size={14} className="sm:w-4 sm:h-4 text-blue-300 inline mr-2" />
+                <a href='mailto:wilfordderek@gmail.com?subject=All Things Wetaskiwin - Support' className="hover:text-blue-300 transition-colors">Contact Support</a> 
+                </li>
             </ul>
           </motion.div>
         </div>
@@ -156,13 +159,13 @@ const Footer = () => {
               transition={{ duration: 0.6, delay: 0.5 }}
               className="flex flex-wrap justify-center sm:justify-end gap-4 sm:gap-6 text-xs sm:text-sm"
             >
-              <Link href="#" className="text-gray-400 hover:text-blue-300 transition-colors">
+              <Link href="/privacy-policy" className="text-gray-400 hover:text-blue-300 transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="#" className="text-gray-400 hover:text-blue-300 transition-colors">
+              <Link href="/terms-of-service" className="text-gray-400 hover:text-blue-300 transition-colors">
                 Terms of Service
               </Link>
-              <Link href="#" className="text-gray-400 hover:text-blue-300 transition-colors">
+              <Link href="/accessibility" className="text-gray-400 hover:text-blue-300 transition-colors">
                 Accessibility
               </Link>
             </motion.div>

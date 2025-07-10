@@ -59,10 +59,10 @@ const DevelopmentBanner = () => {
           <span className="text-sm font-bold">
             🚧 DEVELOPMENT SITE - This is a beta version. Some features are disabled during testing. Contact{' '}
             <a 
-              href="mailto:wilfordderek@gmail.com" 
+              href="mailto:allthingswetaskiwin@gmail.com?subject=Banner Inquiry" 
               className="underline hover:no-underline font-semibold"
             >
-              wilfordderek@gmail.com
+              allthingswetaskiwin@gmail.com
             </a>
             {' '}for more information.
           </span>
