@@ -15,15 +15,20 @@ const ParallaxHero = () => {
   const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [1, 0.8, 0.3])
 
   return (
-    <div ref={ref} className="relative h-screen overflow-hidden" data-scroll-container="true">
+    <div ref={ref} className="relative h-screen overflow-hidden max-h-screen" data-scroll-container="true">
       {/* Parallax Background */}
       <motion.div
         style={{ 
           y, 
           opacity,
-          backgroundImage: "url('/Water-Tower-Wetaskiwin-Alberta-Canada-02A.jpg')"
+          backgroundImage: "url('/WaterTower.png')",
+          backgroundPosition: 'center 30%', // Move image up for desktop
+          backgroundSize: 'cover',
         }}
-        className="absolute inset-0 w-full h-[120%] bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 w-full h-[120%] bg-cover bg-center bg-no-repeat
+          sm:bg-center sm:h-[120%]
+          md:bg-[length:100%_100%] md:bg-center md:h-full
+          lg:bg-[length:80%_100%] lg:bg-center lg:h-full"
       />
       
       {/* Gradient Overlay - Lighter to showcase water tower */}
@@ -33,13 +38,13 @@ const ParallaxHero = () => {
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
       
       {/* Content - Split Layout */}
-      <div className="relative z-10 flex flex-col h-full text-white px-3 sm:px-4">
+      <div className="relative z-10 flex flex-col h-full text-white px-3 sm:px-4 overflow-hidden max-h-screen">
         {/* Top Section - Minimal Title */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5 }}
-          className="flex-1 flex items-center justify-center pt-24 sm:pt-20 md:pt-16"
+          className="flex-1 flex items-center justify-center pt-24 sm:pt-20 md:pt-16 overflow-hidden max-h-screen"
         >
           <motion.h1 
             className="text-2xl sm:text-3xl md:text-4xl font-bold text-center tracking-tight drop-shadow-lg px-4"
@@ -66,7 +71,7 @@ const ParallaxHero = () => {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1.2 }}
-          className="flex-1 flex flex-col items-center justify-end pb-20 sm:pb-24 text-center px-4"
+          className="flex-1 flex flex-col items-center justify-end pb-20 sm:pb-24 text-center px-4 overflow-hidden max-h-screen"
         >
           <motion.p 
             className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-gray-200 max-w-2xl mx-auto drop-shadow-lg leading-relaxed"
@@ -91,7 +96,7 @@ const ParallaxHero = () => {
             >
               <Link 
                 href="/events"
-                className="block border-2 border-white text-white hover:bg-white hover:text-gray-900 px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-base sm:text-lg transition-all duration-300 backdrop-blur-sm text-center"
+                className="group inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-white hover:text-blue-700 transition-all duration-300 text-center"
               >
                 Explore Events
               </Link>
@@ -103,7 +108,7 @@ const ParallaxHero = () => {
             >
               <Link 
                 href="/businesses"
-                className="block border-2 border-white text-white hover:bg-white hover:text-gray-900 px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold text-base sm:text-lg transition-all duration-300 backdrop-blur-sm text-center"
+                className="group inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-white hover:text-blue-700 transition-all duration-300 text-center"
               >
                 Browse Businesses
               </Link>

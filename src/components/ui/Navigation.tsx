@@ -9,6 +9,7 @@ const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [viewportWidth, setViewportWidth] = useState(0);
+  const [hasMounted, setHasMounted] = useState(false);
   const pathname = usePathname();
   const isHomePage = pathname === '/';
 
@@ -33,7 +34,7 @@ const Navigation = () => {
       }
     };
 
-    // Set immediately and after a brief delay for safety
+    setHasMounted(true);
     setInitialWidth();
     setTimeout(setInitialWidth, 100);
 
@@ -125,8 +126,8 @@ const Navigation = () => {
 
   return (
     <>
-      {/* Foldable Sidebar Navigation */}
-      {isFoldableUnfolded() && (
+      {/* Foldable Sidebar Navigation (client-only) */}
+      {hasMounted && isFoldableUnfolded() && (
         <aside className="fixed left-0 top-20 sm:top-16 md:top-12 h-full w-24 bg-white/95 backdrop-blur-md shadow-lg border-r z-40 flex flex-col items-center py-4 foldable-sidebar">
           {/* Logo/Home */}
           <Link href="/" className="mb-6 p-2 rounded-lg hover:bg-blue-50 transition-colors flex flex-col items-center">
@@ -135,7 +136,6 @@ const Navigation = () => {
             </div>
             <span className="text-xs font-medium text-gray-700">Home</span>
           </Link>
-          
           {/* Navigation Items */}
           <nav className="flex flex-col space-y-2 flex-1">
             {navItems.slice(1).map(({ href, label, icon: Icon }) => (
@@ -161,16 +161,21 @@ const Navigation = () => {
         </aside>
       )}
 
-      {/* Traditional Navigation for non-foldable devices */}
-      <nav className={`fixed w-full max-w-full top-20 sm:top-16 md:top-12 z-40 transition-all duration-300 nav-container overflow-x-hidden ${getNavStyles()} ${isFoldableUnfolded() ? 'hidden' : ''}`}>
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 overflow-x-hidden">
-          <div className="flex justify-between items-center h-14 sm:h-16 min-w-0 flex-between w-full overflow-x-hidden">
-            <div className="flex items-center min-w-0 flex-1 mr-3 overflow-x-hidden">
-              <Link href="/" className="flex-shrink-0 min-w-0 overflow-x-hidden">
-                <h1 className={`nav-title text-lg sm:text-xl font-bold transition-colors duration-300 ${getTextStyles()} truncate ${getTitleMaxWidth()} overflow-x-hidden`}>
-                  All Things Wetaskiwin
-                </h1>
-              </Link>
+      {/* Traditional Navigation for non-foldable devices (always rendered) */}
+      <nav className={`fixed w-full max-w-full top-20 sm:top-16 md:top-12 z-40 transition-all duration-300 nav-container overflow-x-hidden no-horizontal-scroll safe-width` +
+        ` ${getNavStyles()} ${hasMounted && isFoldableUnfolded() ? 'hidden' : ''}`}
+      >
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 overflow-x-hidden no-horizontal-scroll safe-width">
+          <div className="flex justify-between items-center h-14 sm:h-16 min-w-0 flex-between w-full overflow-x-hidden no-horizontal-scroll safe-width">
+            <div className="flex items-center min-w-0 flex-1 mr-3 overflow-x-hidden no-horizontal-scroll safe-width">
+              {/* Heading only appears after scroll and after mount */}
+              {hasMounted && isScrolled && (
+                <Link href="/" className="flex-shrink-0 min-w-0 overflow-x-hidden no-horizontal-scroll safe-width">
+                  <h1 className={`nav-title text-2xl sm:text-3xl md:text-3xl font-bold transition-colors duration-300 ${getTextStyles()} truncate ${getTitleMaxWidth()} overflow-x-hidden no-horizontal-scroll safe-width`}>
+                    All Things Wetaskiwin
+                  </h1>
+                </Link>
+              )}
             </div>
 
             {/* Desktop Navigation */}
@@ -180,7 +185,7 @@ const Navigation = () => {
                   key={href}
                   href={href}
                   className={`px-2 lg:px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
-                    !isHomePage || isScrolled
+                    !isHomePage || (hasMounted && isScrolled)
                       ? 'text-gray-600 hover:text-blue-600' 
                       : 'text-white/90 hover:text-white'
                   }`}
@@ -196,13 +201,15 @@ const Navigation = () => {
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`p-2 min-w-[44px] min-h-[44px] transition-colors touch-manipulation ${
-                  !isHomePage || isScrolled
+                  !isHomePage || (hasMounted && isScrolled)
                     ? 'text-gray-900 hover:text-blue-600' 
-                    : 'text-white/90 hover:text-white'
+                    : 'text-white hover:text-white'
                 }`}
                 aria-label="Toggle navigation menu"
               >
-                {isOpen ? <X size={24} /> : <Menu size={24} />}
+                {isOpen 
+                  ? <X size={24} color={(!isHomePage || (hasMounted && isScrolled)) ? undefined : '#fff'} /> 
+                  : <Menu size={24} color={(!isHomePage || (hasMounted && isScrolled)) ? undefined : '#fff'} />}
               </button>
             </div>
           </div>

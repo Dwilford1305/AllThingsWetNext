@@ -94,7 +94,7 @@ const CallToAction = () => {
             >
               <Link
                 href="/events"
-                className="group inline-flex items-center justify-center gap-2 bg-white text-blue-700 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-blue-50 transition-all duration-300 shadow-lg w-full sm:w-auto"
+                className="group inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-white hover:text-blue-700 transition-all duration-300 w-full sm:w-auto"
               >
                 Browse Events
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
@@ -107,7 +107,7 @@ const CallToAction = () => {
             >
               <Link
                 href="/businesses"
-                className="group inline-flex items-center justify-center gap-2 border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-white hover:text-blue-700 transition-all duration-300 w-full sm:w-auto"
+                className="group inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-white hover:text-blue-700 transition-all duration-300 w-full sm:w-auto"
               >
                 Explore Businesses
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
@@ -139,7 +139,7 @@ const CallToAction = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="group inline-flex items-center justify-center gap-2 bg-white text-blue-700 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors text-sm sm:text-base shadow-lg"
+                  className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white border-2 border-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-colors text-sm sm:text-base shadow-lg"
                   onClick={() => {
                     // PWA install logic will go here
                     alert('Feature coming soon! For now, use your browser\'s "Add to Home Screen" option.')
