@@ -1,158 +1,121 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { NewsScraperService } from '@/lib/newsScraperService'
+import { headers } from 'next/headers'
+import { connectDB } from '@/lib/mongodb'
+import { ScraperLog, ScraperConfig } from '@/models'
+import { ComprehensiveScraperService } from '@/lib/comprehensiveScraperService'
+import { NewsScraperService, type NewsScrapingResult } from '@/lib/newsScraperService'
 import { ScraperService } from '@/lib/scraperService'
 import { BusinessScraperService } from '@/lib/businessScraperService'
-import type { ApiResponse } from '@/types'
 
-// This endpoint handles scheduled scraping for both news and events
-// It can be called by Vercel Cron Jobs or external schedulers
-export async function POST(request: NextRequest) {
+interface ScraperResults {
+  news?: NewsScrapingResult
+  events?: {
+    total: number
+    new: number 
+    updated: number
+    errors: string[]
+  }
+  businesses?: {
+    total: number
+    new: number 
+    updated: number
+    errors: string[]
+  }
+}
+
+// Helper function to log scraper activities
+async function logScraperActivity(
+  type: 'news' | 'events' | 'businesses',
+  status: 'started' | 'completed' | 'error',
+  message: string,
+  duration?: number,
+  itemsProcessed?: number,
+  errors?: string[]
+) {
   try {
-    // Verify this is coming from a cron job or has the right authorization
-    const authHeader = request.headers.get('authorization')
-    const cronSecret = process.env.CRON_SECRET
+    await connectDB()
     
-    // Check for cron secret or Vercel cron headers
-    const isVercelCron = request.headers.get('vercel-cron') === '1'
-    const hasValidAuth = cronSecret && authHeader === `Bearer ${cronSecret}`
+    const log = new ScraperLog({
+      type,
+      status,
+      message,
+      duration,
+      itemsProcessed: itemsProcessed || 0,
+      errorMessages: errors || []
+    })
     
-    if (!isVercelCron && !hasValidAuth) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
-    const { searchParams } = new URL(request.url)
-    const type = searchParams.get('type') || 'all' // 'news', 'events', 'businesses', or 'all'
-    const force = searchParams.get('force') === 'true'
-    
-    const results = {
-      news: { total: 0, new: 0, updated: 0, errors: [] as string[] },
-      events: { total: 0, new: 0, updated: 0, errors: [] as string[] },
-      businesses: { total: 0, new: 0, updated: 0, errors: [] as string[] },
-      timestamp: new Date().toISOString()
-    }
-    
-    // Check if we should run based on timing (unless forced)
-    if (!force) {
-      const lastRun = await getLastRunTime(type)
-      const hoursSinceLastRun = lastRun ? (Date.now() - lastRun) / (1000 * 60 * 60) : 999
-      
-      // Only run if it's been more than 5 hours since last run (to avoid overlap)
-      if (hoursSinceLastRun < 5) {
-        return NextResponse.json({
-          success: true,
-          message: `Skipped ${type} scraping - last run was ${hoursSinceLastRun.toFixed(1)} hours ago`,
-          data: { skipped: true, lastRun: new Date(lastRun!), type }
-        })
-      }
-    }
-    
-    // Run news scraping
-    if (type === 'news' || type === 'all') {
-      try {
-        console.log('Starting scheduled news scraping...')
-        const newsScraperService = new NewsScraperService()
-        const newsResults = await newsScraperService.scrapeNews(['all'])
-        results.news = newsResults
-        console.log(`News scraping completed: ${newsResults.new} new, ${newsResults.updated} updated`)
-        
-        // Update last run time for news
-        await setLastRunTime('news', Date.now())
-      } catch (error) {
-        console.error('Scheduled news scraping error:', error)
-        results.news.errors.push(error instanceof Error ? error.message : 'Unknown error')
-      }
-    }
-    
-    // Run events scraping  
-    if (type === 'events' || type === 'all') {
-      try {
-        console.log('Starting scheduled events scraping...')
-        const scraperService = new ScraperService()
-        const eventsResults = await scraperService.scrapeAllEvents()
-        results.events = eventsResults
-        console.log(`Events scraping completed: ${eventsResults.new} new, ${eventsResults.updated} updated`)
-        
-        // Update last run time for events
-        await setLastRunTime('events', Date.now())
-      } catch (error) {
-        console.error('Scheduled events scraping error:', error)
-        results.events.errors.push(error instanceof Error ? error.message : 'Unknown error')
-      }
-    }
-
-    // Run business scraping (less frequent - only when explicitly requested)
-    if (type === 'businesses' || (type === 'all' && force)) {
-      try {
-        console.log('Starting scheduled business scraping...')
-        const businessScraperService = new BusinessScraperService()
-        const businessResults = await businessScraperService.scrapeBusinesses()
-        results.businesses = businessResults
-        console.log(`Business scraping completed: ${businessResults.new} new, ${businessResults.updated} updated`)
-        
-        // Update last run time for businesses
-        await setLastRunTime('businesses', Date.now())
-      } catch (error) {
-        console.error('Scheduled business scraping error:', error)
-        results.businesses.errors.push(error instanceof Error ? error.message : 'Unknown error')
-      }
-    }
-    
-    // Update last run time for combined runs
-    if (type === 'all') {
-      await setLastRunTime('all', Date.now())
-    }
-    
-    const totalNew = results.news.new + results.events.new
-    const totalUpdated = results.news.updated + results.events.updated
-    const hasErrors = results.news.errors.length > 0 || results.events.errors.length > 0
-    
-    const response: ApiResponse<typeof results> = {
-      success: !hasErrors,
-      data: results,
-      message: `Scheduled scraping completed: ${totalNew} new items, ${totalUpdated} updated items${hasErrors ? ' (with errors)' : ''}`
-    }
-
-    return NextResponse.json(response)
+    await log.save()
   } catch (error) {
-    console.error('Scheduled scraper API error:', error)
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to run scheduled scrapers',
-        timestamp: new Date().toISOString()
+    console.error('Failed to log scraper activity:', error)
+  }
+}
+
+// Helper function to update scraper configuration after successful run
+async function updateScraperConfig(type: 'news' | 'events' | 'businesses') {
+  try {
+    await connectDB()
+    
+    const now = new Date()
+    
+    // Calculate next run time based on scraper type
+    let nextRun: Date
+    
+    if (type === 'businesses') {
+      // Business scraper runs weekly at 6 AM Mountain Time (same time as daily scrapers, but weekly)
+      nextRun = new Date(now)
+      nextRun.setUTCHours(13, 0, 0, 0) // 6 AM Mountain Time = 1 PM UTC
+      
+      // Add 7 days for weekly schedule
+      nextRun.setUTCDate(nextRun.getUTCDate() + 7)
+      
+      // If the calculated next run is in the past (shouldn't happen with +7 days, but safety check)
+      if (nextRun <= now) {
+        nextRun.setUTCDate(nextRun.getUTCDate() + 7)
+      }
+    } else {
+      // News and events scrapers run daily at 6 AM Mountain Time
+      // Mountain Time is UTC-7 (or UTC-6 during DST), so 6 AM MT = 13:00 UTC (or 12:00 UTC during DST)
+      // For simplicity, using 13:00 UTC (1 PM UTC = 6 AM MT during standard time)
+      nextRun = new Date(now)
+      nextRun.setUTCHours(13, 0, 0, 0) // 6 AM Mountain Time = 1 PM UTC
+      
+      // If we've already passed 1 PM UTC today, schedule for tomorrow
+      if (nextRun <= now) {
+        nextRun.setUTCDate(nextRun.getUTCDate() + 1)
+      }
+    }
+    
+    await ScraperConfig.findOneAndUpdate(
+      { type },
+      {
+        lastRun: now,
+        nextRun: nextRun,
+        isActive: false, // Mark as not currently running
+        updatedAt: now
       },
-      { status: 500 }
+      { upsert: true }
     )
+    
+    console.log(`✅ Updated ${type} scraper config: lastRun=${now.toISOString()}, nextRun=${nextRun.toISOString()}`)
+  } catch (error) {
+    console.error(`Failed to update ${type} scraper config:`, error)
   }
 }
 
 export async function GET() {
   try {
-    const newsLastRun = await getLastRunTime('news')
-    const eventsLastRun = await getLastRunTime('events')
-    const bothLastRun = await getLastRunTime('both')
+    // Status endpoint - check when scrapers last ran
+    const scraperService = new ComprehensiveScraperService()
+    const stats = await scraperService.getScrapingStats()
     
     return NextResponse.json({
       success: true,
       data: {
-        news: {
-          lastRun: newsLastRun ? new Date(newsLastRun) : null,
-          nextScheduled: newsLastRun ? new Date(newsLastRun + 6 * 60 * 60 * 1000) : null,
-        },
-        events: {
-          lastRun: eventsLastRun ? new Date(eventsLastRun) : null,  
-          nextScheduled: eventsLastRun ? new Date(eventsLastRun + 6 * 60 * 60 * 1000) : null,
-        },
-        both: {
-          lastRun: bothLastRun ? new Date(bothLastRun) : null,
-          nextScheduled: bothLastRun ? new Date(bothLastRun + 6 * 60 * 60 * 1000) : null,
-        },
-        status: 'ready'
-      },
-      message: 'Scheduled scraper status'
+        lastEventsRun: stats.events.lastRun,
+        lastNewsRun: stats.news.lastRun,
+        systemHealth: stats.overall.systemHealth,
+        nextScheduled: '6:00 AM Mountain Time daily'
+      }
     })
   } catch (_error) {
     return NextResponse.json(
@@ -162,15 +125,147 @@ export async function GET() {
   }
 }
 
-// Simple in-memory storage for last run times (in production, use Redis or database)
-const lastRunTimes = new Map<string, number>()
+export async function POST(request: NextRequest) {
+  const startTime = Date.now()
+  
+  try {
+    // Verify this is actually from Vercel Cron
+    const headersList = await headers()
+    const cronSecret = headersList.get('authorization')
+    const _vercelCron = headersList.get('vercel-cron')
+    
+    // Basic security check
+    if (process.env.CRON_SECRET && cronSecret !== `Bearer ${process.env.CRON_SECRET}`) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    }
 
-async function getLastRunTime(type: string): Promise<number | null> {
-  // In production, you might want to store this in your database or Redis
-  return lastRunTimes.get(type) || null
-}
+    const { searchParams } = new URL(request.url)
+    const type = searchParams.get('type') || 'both'
+    const force = searchParams.get('force') === 'true'
 
-async function setLastRunTime(type: string, timestamp: number): Promise<void> {
-  // In production, you might want to store this in your database or Redis
-  lastRunTimes.set(type, timestamp)
+    console.log(`🔄 Cron job triggered: type=${type}, force=${force}`)
+
+    const results: ScraperResults = {}
+
+    if (type === 'news' || type === 'both') {
+      console.log('📰 Running news scraper...')
+      
+      // Log news scraper start
+      await logScraperActivity('news', 'started', 'News scraper initiated by cron job')
+      
+      const newsStartTime = Date.now()
+      try {
+        const newsService = new NewsScraperService()
+        const newsResults = await newsService.scrapeNews(['all'])
+        results.news = newsResults
+        
+        const newsDuration = Date.now() - newsStartTime
+        await logScraperActivity(
+          'news', 
+          'completed', 
+          `News scraping completed: ${newsResults.new} new, ${newsResults.updated} updated, ${newsResults.errors.length} errors`,
+          newsDuration,
+          newsResults.total,
+          newsResults.errors
+        )
+        
+        // Update scraper configuration with last run time
+        await updateScraperConfig('news')
+      } catch (error) {
+        const newsDuration = Date.now() - newsStartTime
+        const errorMessage = error instanceof Error ? error.message : 'News scraper failed'
+        await logScraperActivity('news', 'error', errorMessage, newsDuration, 0, [errorMessage])
+        throw error
+      }
+    }
+
+    if (type === 'events' || type === 'both') {
+      console.log('📅 Running events scraper...')
+      
+      // Log events scraper start
+      await logScraperActivity('events', 'started', 'Events scraper initiated by cron job')
+      
+      const eventsStartTime = Date.now()
+      try {
+        const eventsService = new ScraperService()
+        const eventsResults = await eventsService.scrapeAllEvents()
+        results.events = eventsResults
+        
+        const eventsDuration = Date.now() - eventsStartTime
+        await logScraperActivity(
+          'events', 
+          'completed', 
+          `Events scraping completed: ${eventsResults.new} new, ${eventsResults.updated} updated, ${eventsResults.errors.length} errors`,
+          eventsDuration,
+          eventsResults.total,
+          eventsResults.errors
+        )
+        
+        // Update scraper configuration with last run time
+        await updateScraperConfig('events')
+      } catch (error) {
+        const eventsDuration = Date.now() - eventsStartTime
+        const errorMessage = error instanceof Error ? error.message : 'Events scraper failed'
+        await logScraperActivity('events', 'error', errorMessage, eventsDuration, 0, [errorMessage])
+        throw error
+      }
+    }
+
+    if (type === 'businesses' || type === 'all') {
+      console.log('🏢 Running business scraper...')
+      
+      // Log business scraper start
+      await logScraperActivity('businesses', 'started', 'Business scraper initiated by cron job')
+      
+      const businessStartTime = Date.now()
+      try {
+        const businessService = new BusinessScraperService()
+        const businessResults = await businessService.scrapeBusinesses()
+        results.businesses = businessResults
+        
+        const businessDuration = Date.now() - businessStartTime
+        await logScraperActivity(
+          'businesses', 
+          'completed', 
+          `Business scraping completed: ${businessResults.new} new, ${businessResults.updated} updated, ${businessResults.errors.length} errors`,
+          businessDuration,
+          businessResults.total,
+          businessResults.errors
+        )
+        
+        // Update scraper configuration with last run time
+        await updateScraperConfig('businesses')
+      } catch (error) {
+        const businessDuration = Date.now() - businessStartTime
+        const errorMessage = error instanceof Error ? error.message : 'Business scraper failed'
+        await logScraperActivity('businesses', 'error', errorMessage, businessDuration, 0, [errorMessage])
+        throw error
+      }
+    }
+
+    const totalDuration = Date.now() - startTime
+    console.log(`✅ Cron job completed successfully in ${totalDuration}ms`)
+
+    return NextResponse.json({
+      success: true,
+      data: results,
+      timestamp: new Date().toISOString(),
+      message: `Scheduled scraping completed for ${type}`,
+      duration: totalDuration
+    })
+
+  } catch (error) {
+    const totalDuration = Date.now() - startTime
+    console.error('❌ Cron job failed:', error)
+    
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Scraping failed',
+        timestamp: new Date().toISOString(),
+        duration: totalDuration
+      },
+      { status: 500 }
+    )
+  }
 }

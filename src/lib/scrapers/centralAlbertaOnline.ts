@@ -150,12 +150,15 @@ export class CentralAlbertaOnlineScraper extends BaseNewsScraper {
       // Extract tags/categories
       const tags = this.extractTags($)
       
+      // Categorize the article based on title and content
+      const category = this.categorizeNews(title, content)
+      
       return {
         title,
         content,
         summary,
-        category: 'Local News',
-        author,
+        category,
+        author: author || undefined,
         publishedAt: publishedDate,
         sourceUrl: url,
         imageUrl,
@@ -169,27 +172,106 @@ export class CentralAlbertaOnlineScraper extends BaseNewsScraper {
   }
 
   private extractContent($: cheerio.CheerioAPI): string {
-    // Try various content selectors
+    // Try various content selectors in order of preference
     const contentSelectors = [
       'article .content',
-      'article .post-content',
+      'article .post-content', 
       'article .entry-content',
       '.article-content',
       '.post-content',
       '.entry-content',
-      'article p',
-      '.content p'
+      'main article',
+      '.main-content article'
     ]
     
     for (const selector of contentSelectors) {
       const elements = $(selector)
       if (elements.length > 0) {
-        return elements.map((i: number, el) => $(el).text().trim()).get().join('\n\n')
+        const content = elements.map((i: number, el) => {
+          const $el = $(el)
+          // Remove unwanted elements
+          $el.find('script, style, nav, .social-share, .ads, .advertisement, .sidebar, .comments').remove()
+          return $el.text().trim()
+        }).get().join('\n\n')
+        
+        if (content && content.length > 100) {
+          return this.cleanContent(content)
+        }
       }
     }
     
-    // Fallback to all paragraph tags
-    return $('p').map((i: number, el) => $(el).text().trim()).get().join('\n\n')
+    // More specific fallback - only paragraphs within article or main content
+    const articleP = $('article p, main p, .main-content p')
+    if (articleP.length > 0) {
+      const content = articleP.map((i: number, el) => {
+        const text = $(el).text().trim()
+        // Skip very short paragraphs (likely navigation/ads)
+        return text.length > 20 ? text : ''
+      }).get().filter(text => text.length > 0).join('\n\n')
+      
+      if (content && content.length > 100) {
+        return this.cleanContent(content)
+      }
+    }
+    
+    // Last resort - all paragraphs but heavily filtered
+    const allP = $('p')
+    const content = allP.map((i: number, el) => {
+      const text = $(el).text().trim()
+      // Only include substantial paragraphs
+      return text.length > 30 ? text : ''
+    }).get().filter(text => text.length > 0).slice(0, 10).join('\n\n') // Limit to first 10 paragraphs
+    
+    return this.cleanContent(content)
+  }
+  
+  private cleanContent(content: string): string {
+    if (!content) return ''
+    
+    // Remove common junk patterns
+    content = content
+      .replace(/googletag\.cmd\.push\([^)]+\);/g, '') // Remove Google ad scripts
+      .replace(/window\.location\.pathname[^;]+;/g, '') // Remove pathname scripts
+      .replace(/setTargeting\([^)]+\)/g, '') // Remove ad targeting
+      .replace(/\s*\$\s*\(\s*document\s*\)[^}]+}/g, '') // Remove jQuery document ready
+      .replace(/function\s*\([^)]*\)\s*{[^}]*}/g, '') // Remove inline functions
+      .replace(/var\s+\w+\s*=[^;]+;/g, '') // Remove variable declarations
+      .replace(/if\s*\([^)]+\)\s*{[^}]*}/g, '') // Remove if statements
+      .replace(/\{[^}]*googletag[^}]*\}/g, '') // Remove googletag blocks
+      .replace(/\{[^}]*window\.location[^}]*\}/g, '') // Remove location blocks
+      .replace(/\([^)]*\d{3,}[^)]*\)/g, '') // Remove coordinate-like patterns
+      .replace(/\s*\d{3,}\s*,\s*\d{3,}/g, '') // Remove coordinate pairs
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .replace(/\n\s*\n/g, '\n') // Remove extra line breaks
+      .trim()
+    
+    // Split into sentences and clean
+    const sentences = content.split(/[.!?]+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 10 && !this.isJunkSentence(s))
+    
+    // Limit content length
+    const cleanedContent = sentences.join('. ').trim()
+    return cleanedContent.length > 800 ? cleanedContent.substring(0, 800) + '...' : cleanedContent
+  }
+  
+  private isJunkSentence(sentence: string): boolean {
+    const junkPatterns = [
+      /googletag/i,
+      /window\.location/i,
+      /setTargeting/i,
+      /\$\(document\)/i,
+      /function\s*\(/i,
+      /var\s+\w+\s*=/i,
+      /\d{10,}/i, // Long numbers (likely IDs)
+      /\{[^}]*\}/i, // Code blocks
+      /onclick/i,
+      /href=/i,
+      /class=/i,
+      /id=/i
+    ]
+    
+    return junkPatterns.some(pattern => pattern.test(sentence))
   }
 
   private extractPublishDate($: cheerio.CheerioAPI): Date {
@@ -250,42 +332,51 @@ export class CentralAlbertaOnlineScraper extends BaseNewsScraper {
       return metaAuthor
     }
     
-    return 'Central Alberta Online'
+    // Don't return the source name as author - let it be empty
+    return ''
   }
 
   private extractSummary($: cheerio.CheerioAPI, content: string): string {
     // Try to find excerpt or summary
     const summarySelectors = [
       '.excerpt',
-      '.summary',
+      '.summary', 
       '.post-excerpt',
       '.entry-summary'
     ]
     
     for (const selector of summarySelectors) {
       const summary = $(selector).text().trim()
-      if (summary) {
-        return summary
+      if (summary && summary.length > 20) {
+        return summary.length > 250 ? summary.substring(0, 250) + '...' : summary
       }
     }
     
     // Try meta description
     const metaDescription = $('meta[name="description"]').attr('content')
-    if (metaDescription) {
-      return metaDescription
+    if (metaDescription && metaDescription.length > 20) {
+      return metaDescription.length > 250 ? metaDescription.substring(0, 250) + '...' : metaDescription
     }
     
-    // Try Open Graph description
+    // Try Open Graph description  
     const ogDescription = $('meta[property="og:description"]').attr('content')
-    if (ogDescription) {
-      return ogDescription
+    if (ogDescription && ogDescription.length > 20) {
+      return ogDescription.length > 250 ? ogDescription.substring(0, 250) + '...' : ogDescription
     }
     
-    // Fallback to first paragraph of content
+    // Fallback to first sentences of cleaned content
     if (content) {
-      const firstParagraph = content.split('\n\n')[0]
-      if (firstParagraph && firstParagraph.length > 10) {
-        return firstParagraph.length > 200 ? firstParagraph.substring(0, 200) + '...' : firstParagraph
+      const sentences = content.split(/[.!?]+/)
+        .map(s => s.trim())
+        .filter(s => s.length > 10)
+      
+      if (sentences.length > 0) {
+        let summary = sentences[0]
+        // Add second sentence if first is very short
+        if (summary.length < 100 && sentences.length > 1) {
+          summary += '. ' + sentences[1]
+        }
+        return summary.length > 250 ? summary.substring(0, 250) + '...' : summary
       }
     }
     

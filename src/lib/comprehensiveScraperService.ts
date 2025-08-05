@@ -326,7 +326,7 @@ export class ComprehensiveScraperService {
       // Keep only last 100 log entries
       const logCount = await ScraperLog.countDocuments()
       if (logCount > 100) {
-        const oldLogs = await ScraperLog.find().sort({ timestamp: 1 }).limit(logCount - 100)
+        const oldLogs = await ScraperLog.find().sort({ createdAt: 1 }).limit(logCount - 100)
         await ScraperLog.deleteMany({ _id: { $in: oldLogs.map(log => log._id) } })
       }
       
@@ -350,10 +350,10 @@ export class ComprehensiveScraperService {
       
       // Get recent logs for each type
       const [eventsLogs, newsLogs, businessLogs, comprehensiveLogs] = await Promise.all([
-        ScraperLog.find({ type: 'events' }).sort({ timestamp: -1 }).limit(10),
-        ScraperLog.find({ type: 'news' }).sort({ timestamp: -1 }).limit(10),
-        ScraperLog.find({ type: 'businesses' }).sort({ timestamp: -1 }).limit(10),
-        ScraperLog.find({ type: 'comprehensive' }).sort({ timestamp: -1 }).limit(5)
+        ScraperLog.find({ type: 'events' }).sort({ createdAt: -1 }).limit(10),
+        ScraperLog.find({ type: 'news' }).sort({ createdAt: -1 }).limit(10),
+        ScraperLog.find({ type: 'businesses' }).sort({ createdAt: -1 }).limit(10),
+        ScraperLog.find({ type: 'comprehensive' }).sort({ createdAt: -1 }).limit(5)
       ])
       
       // Get current counts
@@ -367,7 +367,7 @@ export class ComprehensiveScraperService {
       const newsStats = this.calculateStats(newsLogs)
       const businessStats = this.calculateStats(businessLogs)
       
-      const lastFullScrape = comprehensiveLogs.length > 0 ? comprehensiveLogs[0].timestamp : null
+      const lastFullScrape = comprehensiveLogs.length > 0 ? (comprehensiveLogs[0] as { createdAt: Date }).createdAt : null
       
       // Determine system health
       let systemHealth: 'healthy' | 'warning' | 'error' = 'healthy'
@@ -414,14 +414,14 @@ export class ComprehensiveScraperService {
     const totalDuration = (logs as { duration?: number }[]).reduce((sum, log) => sum + (log.duration || 0), 0)
     
     return {
-      lastRun: new Date((logs[0] as { timestamp: string | Date }).timestamp),
+      lastRun: new Date((logs[0] as { createdAt: string | Date }).createdAt),
       nextRun: null, // Will be calculated based on schedule
       isRunning: (logs[0] as { status: string }).status === 'running',
       totalRuns: logs.length,
       successfulRuns,
       failedRuns,
       averageDuration: (totalDuration as number) / logs.length,
-      lastErrors: (logs.slice(0, 3) as { errors?: string[] }[]).flatMap(log => log.errors || [])
+      lastErrors: (logs.slice(0, 3) as { errorMessages?: string[] }[]).flatMap(log => log.errorMessages || [])
     }
   }
 

@@ -15,6 +15,21 @@ export class ScraperService {
     try {
       await connectDB()
       
+      // Clean up events that should be deleted (events that have passed - delete day after)
+      console.log('🗑️ Cleaning up past events...')
+      const yesterday = new Date()
+      yesterday.setDate(yesterday.getDate() - 1)
+      yesterday.setHours(23, 59, 59, 999) // End of yesterday
+      
+      const pastEventsResult = await Event.deleteMany({
+        $or: [
+          { startDate: { $lte: yesterday } }, // Events that started yesterday or earlier
+          { date: { $lte: yesterday } },      // Events scheduled for yesterday or earlier  
+          { endDate: { $lte: yesterday } }    // Events that ended yesterday or earlier
+        ]
+      })
+      console.log(`Deleted ${pastEventsResult.deletedCount || 0} past events`)
+      
       // Get all scraped events
       const allScrapedEvents: ScrapedEvent[] = []
       

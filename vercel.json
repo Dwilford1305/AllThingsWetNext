@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/cron/scrape?type=news",
-      "schedule": "0 6 * * *"
+      "schedule": "0 13 * * *"
     },
     {
       "path": "/api/cron/scrape?type=events", 
-      "schedule": "0 18 * * *"
+      "schedule": "0 13 * * *"
     }
   ]
 }

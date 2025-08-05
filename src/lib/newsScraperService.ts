@@ -30,6 +30,19 @@ export class NewsScraperService {
     try {
       await connectDB()
 
+      // Clean up old news articles first (older than 14 days = 2 weeks)
+      console.log('🗑️ Cleaning up old news articles (older than 14 days)...')
+      const fourteenDaysAgo = new Date()
+      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
+      
+      const oldNewsResult = await NewsArticle.deleteMany({
+        $or: [
+          { publishedAt: { $lt: fourteenDaysAgo } },
+          { createdAt: { $lt: fourteenDaysAgo } }
+        ]
+      })
+      console.log(`Deleted ${oldNewsResult.deletedCount || 0} old news articles`)
+
       const sourcesToScrape = sources.includes('all') ? 
         Object.keys(this.scrapers) : 
         sources.filter(source => source in this.scrapers)
