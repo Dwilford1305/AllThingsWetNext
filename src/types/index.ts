@@ -246,3 +246,6 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
     pages: number
   }
 }
+
+// Re-export auth types for convenience
+export * from './auth'

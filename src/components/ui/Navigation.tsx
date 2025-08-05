@@ -3,15 +3,20 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Home, Calendar, Newspaper, Building, Briefcase, ShoppingBag, Shield } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { AuthModal } from '@/components/AuthModal';
+import { Menu, X, Home, Calendar, Newspaper, Building, Briefcase, ShoppingBag, Shield, LogIn, UserPlus, LogOut, User } from 'lucide-react';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [viewportWidth, setViewportWidth] = useState(0);
   const [hasMounted, setHasMounted] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const pathname = usePathname();
   const isHomePage = pathname === '/';
+  const { user, logout, isSuperAdmin } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,8 +61,18 @@ const Navigation = () => {
     { href: '/businesses', label: 'Businesses', icon: Building },
     { href: '/jobs', label: 'Jobs', icon: Briefcase },
     { href: '/classifieds', label: 'Classifieds', icon: ShoppingBag },
-    { href: '/admin', label: 'Admin', icon: Shield },
+    // Only show admin link for super admins
+    ...(isSuperAdmin ? [{ href: '/admin', label: 'Admin', icon: Shield }] : []),
   ];
+
+  const handleLogin = (mode: 'login' | 'register') => {
+    setAuthMode(mode);
+    setShowAuthModal(true);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   // Detect if device is likely a foldable in unfolded state
   const isFoldableUnfolded = () => {
@@ -128,21 +143,22 @@ const Navigation = () => {
     <>
       {/* Foldable Sidebar Navigation (client-only) */}
       {hasMounted && isFoldableUnfolded() && (
-        <aside className="fixed left-0 top-20 sm:top-16 md:top-12 h-full w-24 bg-white/95 backdrop-blur-md shadow-lg border-r z-40 flex flex-col items-center py-4 foldable-sidebar">
+        <aside className="fixed left-0 top-20 sm:top-16 md:top-12 bottom-0 w-24 bg-white/95 backdrop-blur-md shadow-lg border-r z-40 flex flex-col items-center py-4 foldable-sidebar overflow-y-auto">
           {/* Logo/Home */}
-          <Link href="/" className="mb-6 p-2 rounded-lg hover:bg-blue-50 transition-colors flex flex-col items-center">
+          <Link href="/" className="mb-4 p-2 rounded-lg hover:bg-blue-50 transition-colors flex flex-col items-center flex-shrink-0">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mb-1">
               <Home size={18} className="text-white" />
             </div>
             <span className="text-xs font-medium text-gray-700">Home</span>
           </Link>
+          
           {/* Navigation Items */}
-          <nav className="flex flex-col space-y-2 flex-1">
+          <nav className="flex flex-col space-y-2 flex-1 min-h-0">
             {navItems.slice(1).map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
-                className={`p-2 rounded-lg transition-colors group relative flex flex-col items-center ${
+                className={`p-2 rounded-lg transition-colors group relative flex flex-col items-center flex-shrink-0 ${
                   pathname === href 
                     ? 'bg-blue-600 text-white' 
                     : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600'
@@ -158,6 +174,61 @@ const Navigation = () => {
               </Link>
             ))}
           </nav>
+
+          {/* Authentication Section - Fixed at bottom */}
+          <div className="mt-2 pt-3 border-t border-gray-300 flex flex-col space-y-2 flex-shrink-0">
+            {user ? (
+              <>
+                {/* User Profile */}
+                <div className="p-2 rounded-lg bg-gray-100 flex flex-col items-center text-center flex-shrink-0">
+                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center mb-1">
+                    <User size={14} className="text-white" />
+                  </div>
+                  <span className="text-xs font-medium text-gray-700 leading-tight text-center">
+                    {user.firstName}
+                  </span>
+                </div>
+                
+                {/* Logout Button */}
+                <button
+                  onClick={handleLogout}
+                  className="p-2 rounded-lg transition-colors group relative flex flex-col items-center flex-shrink-0 text-gray-600 hover:bg-red-50 hover:text-red-600"
+                  title="Logout"
+                >
+                  <LogOut size={18} className="mb-1" />
+                  <span className="text-xs font-medium leading-tight text-center text-gray-700">
+                    Logout
+                  </span>
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Login Button */}
+                <button
+                  onClick={() => handleLogin('login')}
+                  className="p-2 rounded-lg transition-colors group relative flex flex-col items-center flex-shrink-0 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+                  title="Login"
+                >
+                  <LogIn size={18} className="mb-1 text-gray-700" />
+                  <span className="text-xs font-medium leading-tight text-center text-gray-700">
+                    Login
+                  </span>
+                </button>
+                
+                {/* Register Button */}
+                <button
+                  onClick={() => handleLogin('register')}
+                  className="p-2 rounded-lg transition-colors group relative flex flex-col items-center flex-shrink-0 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+                  title="Register"
+                >
+                  <UserPlus size={18} className="mb-1 text-gray-700" />
+                  <span className="text-xs font-medium leading-tight text-center text-gray-700">
+                    Register
+                  </span>
+                </button>
+              </>
+            )}
+          </div>
         </aside>
       )}
 
@@ -194,6 +265,63 @@ const Navigation = () => {
                   <span className="hidden lg:inline">{label}</span>
                 </Link>
               ))}
+              
+              {/* Authentication Buttons */}
+              <div className="flex items-center space-x-2 ml-4">
+                {user ? (
+                  <div className="flex items-center space-x-2">
+                    <div className={`flex items-center space-x-2 px-3 py-2 rounded-md ${
+                      !isHomePage || (hasMounted && isScrolled)
+                        ? 'text-gray-700' 
+                        : 'text-white/90'
+                    }`}>
+                      <User size={16} />
+                      <span className="hidden lg:inline text-sm">
+                        {user.firstName} {user.lastName}
+                      </span>
+                      <span className="lg:hidden text-sm">
+                        {user.firstName}
+                      </span>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        !isHomePage || (hasMounted && isScrolled)
+                          ? 'text-gray-600 hover:text-red-600' 
+                          : 'text-white/90 hover:text-white'
+                      }`}
+                    >
+                      <LogOut size={16} />
+                      <span className="hidden lg:inline">Logout</span>
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleLogin('login')}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        !isHomePage || (hasMounted && isScrolled)
+                          ? 'text-gray-600 hover:text-blue-600' 
+                          : 'text-white/90 hover:text-white'
+                      }`}
+                    >
+                      <LogIn size={16} />
+                      <span className="hidden lg:inline">Login</span>
+                    </button>
+                    <button
+                      onClick={() => handleLogin('register')}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 border ${
+                        !isHomePage || (hasMounted && isScrolled)
+                          ? 'border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white' 
+                          : 'border-white text-white hover:bg-white hover:text-gray-900'
+                      }`}
+                    >
+                      <UserPlus size={16} />
+                      <span className="hidden lg:inline">Register</span>
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Mobile menu button */}
@@ -230,10 +358,64 @@ const Navigation = () => {
                   {label}
                 </Link>
               ))}
+              
+              {/* Mobile Authentication */}
+              <div className="border-t pt-3 mt-3">
+                {user ? (
+                  <>
+                    <div className="px-3 py-2 text-gray-700 flex items-center gap-2">
+                      <User size={20} />
+                      <span className="font-medium">
+                        {user.firstName} {user.lastName}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsOpen(false);
+                      }}
+                      className="w-full text-left text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2"
+                    >
+                      <LogOut size={20} />
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        handleLogin('login');
+                        setIsOpen(false);
+                      }}
+                      className="w-full text-left text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2"
+                    >
+                      <LogIn size={20} />
+                      Login
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleLogin('register');
+                        setIsOpen(false);
+                      }}
+                      className="w-full text-left text-blue-600 hover:text-blue-700 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2 border border-blue-600 mt-2"
+                    >
+                      <UserPlus size={20} />
+                      Register
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         )}
       </nav>
+
+      {/* Authentication Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        initialMode={authMode}
+      />
     </>
   );
 };

@@ -238,3 +238,6 @@ export const JobPosting = models.JobPosting || model('JobPosting', JobSchema)
 export const Classified = models.Classified || model('Classified', ClassifiedSchema)
 export const ScraperLog = models.ScraperLog || model('ScraperLog', ScraperLogSchema)
 export const ScraperConfig = models.ScraperConfig || model('ScraperConfig', ScraperConfigSchema)
+
+// Re-export auth models for convenience
+export * from './auth'

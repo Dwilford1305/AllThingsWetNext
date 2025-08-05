@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 import Script from "next/script";
 import DevelopmentBanner from "@/components/DevelopmentBanner";
@@ -86,8 +87,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-hidden max-w-full w-screen`}
       >
-        <DevelopmentBanner />
-        {children}
+        <AuthProvider>
+          <DevelopmentBanner />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
