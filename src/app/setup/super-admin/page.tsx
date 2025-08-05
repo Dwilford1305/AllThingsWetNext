@@ -58,7 +58,7 @@ export default function SuperAdminSetup() {
       } else {
         setMessage({ type: 'error', text: data.error || 'Failed to create super admin account' })
       }
-    } catch (error) {
+    } catch (_error) {
       setMessage({ type: 'error', text: 'Network error. Please try again.' })
     } finally {
       setIsLoading(false)

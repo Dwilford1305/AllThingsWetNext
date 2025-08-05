@@ -1,8 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/Card';
-import { Shield, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 
 interface AdminAuthProps {
   children: React.ReactNode;
@@ -34,9 +35,9 @@ export const AdminAuth = ({ children }: AdminAuthProps) => {
             {!user ? (
               <p className="text-sm text-gray-500">
                 Please{' '}
-                <a href="/" className="text-blue-600 hover:underline">
+                <Link href="/" className="text-blue-600 hover:underline">
                   sign in
-                </a>{' '}
+                </Link>{' '}
                 with a super admin account.
               </p>
             ) : (

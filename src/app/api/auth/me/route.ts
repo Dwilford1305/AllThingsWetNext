@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     let decoded
     try {
       decoded = AuthService.verifyAccessToken(token)
-    } catch (error) {
+    } catch (_error) {
       return NextResponse.json(
         { success: false, error: 'Invalid or expired token' },
         { status: 401 }
