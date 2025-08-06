@@ -131,7 +131,13 @@ export async function POST(request: NextRequest) {
 
     // Send email notifications
     try {
-      // Send notification to admin
+      // Send confirmation to user
+      await EmailService.sendBusinessRequestConfirmation(
+        user.email,
+        businessName
+      )
+
+      // Send admin notification email
       await EmailService.sendBusinessRequestNotification({
         requestId: businessRequest.id,
         businessName,
@@ -145,12 +151,6 @@ export async function POST(request: NextRequest) {
         requestMessage: requestMessage || '',
         submittedAt: new Date()
       })
-
-      // Send confirmation to user
-      await EmailService.sendBusinessRequestConfirmation(
-        user.email,
-        businessName
-      )
 
       // Send push notification to admin
       await sendPushNotification(
