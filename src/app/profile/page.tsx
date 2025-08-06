@@ -235,7 +235,7 @@ export default function ProfilePage() {
   return (
     <FoldableLayout>
       <Navigation />
-      <div className={`min-h-screen bg-gray-50 ${getTopPadding()}`}>
+      <div className={`min-h-screen bg-gray-50 profile-page ${getTopPadding()}`}>
         <div className="max-w-6xl mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8">
@@ -288,10 +288,10 @@ export default function ProfilePage() {
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors profile-tab-button ${
                           activeTab === tab.id
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'text-gray-800 hover:bg-gray-100'
+                            ? 'bg-blue-100 profile-tab-active'
+                            : 'hover:bg-gray-100 profile-tab-inactive'
                         }`}
                       >
                         <Icon size={16} />
