@@ -10,6 +10,7 @@ interface User {
   lastName: string;
   role: 'user' | 'business_owner' | 'admin' | 'super_admin';
   permissions?: string[];
+  profileImage?: string;
 }
 
 interface AuthContextType {

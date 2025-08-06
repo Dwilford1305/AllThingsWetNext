@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { AuthModal } from '@/components/AuthModal';
@@ -179,15 +180,29 @@ const Navigation = () => {
           <div className="mt-2 pt-3 border-t border-gray-300 flex flex-col space-y-2 flex-shrink-0">
             {user ? (
               <>
-                {/* User Profile */}
-                <div className="p-2 rounded-lg bg-gray-100 flex flex-col items-center text-center flex-shrink-0">
+                {/* User Profile - Clickable */}
+                <Link
+                  href="/profile"
+                  className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 flex flex-col items-center text-center flex-shrink-0 transition-colors"
+                  title="Profile Settings"
+                >
                   <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center mb-1">
-                    <User size={14} className="text-white" />
+                    {user.profileImage ? (
+                      <Image
+                        src={user.profileImage}
+                        alt={`${user.firstName} ${user.lastName}`}
+                        width={24}
+                        height={24}
+                        className="w-6 h-6 rounded-full object-cover"
+                      />
+                    ) : (
+                      <User size={14} className="text-white" />
+                    )}
                   </div>
                   <span className="text-xs font-medium text-gray-700 leading-tight text-center">
                     {user.firstName}
                   </span>
-                </div>
+                </Link>
                 
                 {/* Logout Button */}
                 <button
@@ -270,19 +285,32 @@ const Navigation = () => {
               <div className="flex items-center space-x-2 ml-4">
                 {user ? (
                   <div className="flex items-center space-x-2">
-                    <div className={`flex items-center space-x-2 px-3 py-2 rounded-md ${
-                      !isHomePage || (hasMounted && isScrolled)
-                        ? 'text-gray-700' 
-                        : 'text-white/90'
-                    }`}>
-                      <User size={16} />
+                    <Link
+                      href="/profile"
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-colors hover:bg-gray-100 ${
+                        !isHomePage || (hasMounted && isScrolled)
+                          ? 'text-gray-700 hover:text-blue-600' 
+                          : 'text-white/90 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      {user.profileImage ? (
+                        <Image
+                          src={user.profileImage}
+                          alt={`${user.firstName} ${user.lastName}`}
+                          width={24}
+                          height={24}
+                          className="w-6 h-6 rounded-full object-cover"
+                        />
+                      ) : (
+                        <User size={16} />
+                      )}
                       <span className="hidden lg:inline text-sm">
                         {user.firstName} {user.lastName}
                       </span>
                       <span className="lg:hidden text-sm">
                         {user.firstName}
                       </span>
-                    </div>
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
@@ -363,12 +391,26 @@ const Navigation = () => {
               <div className="border-t pt-3 mt-3">
                 {user ? (
                   <>
-                    <div className="px-3 py-2 text-gray-700 flex items-center gap-2">
-                      <User size={20} />
+                    <Link
+                      href="/profile"
+                      className="w-full text-left text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {user.profileImage ? (
+                        <Image
+                          src={user.profileImage}
+                          alt={`${user.firstName} ${user.lastName}`}
+                          width={20}
+                          height={20}
+                          className="w-5 h-5 rounded-full object-cover"
+                        />
+                      ) : (
+                        <User size={20} />
+                      )}
                       <span className="font-medium">
                         {user.firstName} {user.lastName}
                       </span>
-                    </div>
+                    </Link>
                     <button
                       onClick={() => {
                         handleLogout();
