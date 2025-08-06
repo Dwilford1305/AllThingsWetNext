@@ -624,10 +624,27 @@ function PreferencesTab({
   );
 }
 
+interface ClaimedBusiness {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  address: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  verified: boolean;
+  isClaimed: boolean;
+  claimedBy: string;
+  claimedAt: string;
+  subscriptionTier: string;
+  subscriptionStatus: string;
+}
+
 // Business Tab Component
 function BusinessTab({ userId: _userId }: { userId: string }) {
   const [showRequestForm, setShowRequestForm] = useState(false);
-  const [claimedBusinesses, setClaimedBusinesses] = useState<any[]>([]);
+  const [claimedBusinesses, setClaimedBusinesses] = useState<ClaimedBusiness[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
