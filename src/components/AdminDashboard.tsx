@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
+import BusinessRequestManager from './BusinessRequestManager';
 import { 
   Building, 
   Calendar, 
@@ -47,7 +48,7 @@ interface ScraperConfig {
 }
 
 export const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'content' | 'users' | 'scrapers' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'business-requests' | 'content' | 'users' | 'scrapers' | 'settings'>('overview');
   const [data, setData] = useState<ContentStats | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -511,6 +512,7 @@ export const AdminDashboard = () => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'businesses', label: 'Businesses', icon: Building },
+    { id: 'business-requests', label: 'Business Requests', icon: UserCheck },
     { id: 'content', label: 'Content', icon: Newspaper },
     { id: 'users', label: 'Users', icon: Users },
     { id: 'scrapers', label: 'Scrapers', icon: Activity },
@@ -519,26 +521,60 @@ export const AdminDashboard = () => {
 
   return (
     <div className="space-y-6 admin-dashboard">
-      {/* Tab Navigation */}
-      <Card className="p-4">
-        <div className="flex space-x-1 overflow-x-auto">
+      {/* Tab Navigation - Mobile Friendly */}
+      <Card className="p-2 md:p-4">
+        {/* Mobile Dropdown for small screens */}
+        <div className="block md:hidden">
+          <select
+            value={activeTab}
+            onChange={(e) => setActiveTab(e.target.value as typeof activeTab)}
+            className="w-full px-3 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            title="Select admin dashboard tab"
+          >
+            {tabs.map((tab) => (
+              <option key={tab.id} value={tab.id}>
+                {tab.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Desktop Tab Navigation */}
+        <div className="hidden md:flex md:space-x-1 md:overflow-x-auto">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                className={`flex items-center px-3 lg:px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors min-w-0 ${
                   activeTab === tab.id
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-800 hover:text-gray-900 hover:bg-gray-100'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-transparent hover:border-gray-200'
                 }`}
               >
-                <Icon className="h-4 w-4 mr-2" />
-                {tab.label}
+                <Icon className="h-4 w-4 mr-1 lg:mr-2 flex-shrink-0" />
+                <span className="hidden lg:inline">{tab.label}</span>
+                <span className="lg:hidden text-xs">{tab.label.split(' ')[0]}</span>
               </button>
             );
           })}
+        </div>
+
+        {/* Mobile Tab Indicator */}
+        <div className="block md:hidden mt-2">
+          <div className="flex items-center justify-center">
+            {(() => {
+              const currentTab = tabs.find(t => t.id === activeTab);
+              const Icon = currentTab?.icon;
+              return (
+                <div className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg">
+                  {Icon && <Icon className="h-4 w-4 mr-2" />}
+                  <span className="text-sm font-medium">{currentTab?.label}</span>
+                </div>
+              );
+            })()}
+          </div>
         </div>
       </Card>
 
@@ -663,6 +699,10 @@ export const AdminDashboard = () => {
             </div>
           </Card>
         </div>
+      )}
+
+      {activeTab === 'business-requests' && (
+        <BusinessRequestManager />
       )}
 
       {activeTab === 'content' && data && (

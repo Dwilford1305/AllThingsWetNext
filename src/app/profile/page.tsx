@@ -28,6 +28,7 @@ import {
   Loader2
 } from 'lucide-react';
 import type { User as UserType, UserPreferences } from '@/types';
+import BusinessRequestForm from '@/components/BusinessRequestForm';
 
 interface ProfileData extends UserType {
   preferences: UserPreferences;
@@ -625,6 +626,52 @@ function PreferencesTab({
 
 // Business Tab Component
 function BusinessTab({ userId: _userId }: { userId: string }) {
+  const [showRequestForm, setShowRequestForm] = useState(false);
+  const [claimedBusinesses, setClaimedBusinesses] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    loadClaimedBusinesses();
+  }, []);
+
+  const loadClaimedBusinesses = async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('/api/user/businesses', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setClaimedBusinesses(data.businesses || []);
+      }
+    } catch (error) {
+      console.error('Failed to load claimed businesses:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (showRequestForm) {
+    return (
+      <div>
+        <div className="mb-6">
+          <Button 
+            onClick={() => setShowRequestForm(false)}
+            variant="outline"
+            className="mb-4"
+          >
+            ← Back to Business Management
+          </Button>
+        </div>
+        <BusinessRequestForm />
+      </div>
+    );
+  }
+
   return (
     <div>
       <h2 className="text-xl font-semibold text-gray-900 mb-6">Business Management</h2>
@@ -634,16 +681,61 @@ function BusinessTab({ userId: _userId }: { userId: string }) {
           <p className="text-blue-800 mb-4">
             Get your business listed in our directory to reach more customers in Wetaskiwin.
           </p>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button 
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={() => setShowRequestForm(true)}
+          >
             <Building className="h-4 w-4 mr-2" />
             Request Business Listing
           </Button>
         </div>
         
-        {/* This would show claimed businesses */}
+        {/* Claimed businesses */}
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">My Businesses</h3>
-          <p className="text-gray-600">No businesses claimed yet.</p>
+          {isLoading ? (
+            <div className="flex items-center space-x-2 text-gray-600">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Loading your businesses...</span>
+            </div>
+          ) : claimedBusinesses.length > 0 ? (
+            <div className="space-y-4">
+              {claimedBusinesses.map((business) => (
+                <Card key={business.id} className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-lg text-gray-900">{business.name}</h4>
+                      <p className="text-gray-600 text-sm mb-2">{business.category}</p>
+                      <p className="text-gray-700 text-sm mb-2">{business.description}</p>
+                      <div className="flex items-center text-sm text-gray-500 space-x-4">
+                        <span>📍 {business.address}</span>
+                        {business.phone && <span>📞 {business.phone}</span>}
+                        {business.verified && (
+                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">
+                            ✓ Verified
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="ml-4">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          // Navigate to business management page
+                          window.open(`/businesses?search=${encodeURIComponent(business.name)}`, '_blank');
+                        }}
+                      >
+                        View Listing
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-600">No businesses claimed yet.</p>
+          )}
         </div>
       </div>
     </div>

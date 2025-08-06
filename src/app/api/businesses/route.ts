@@ -53,6 +53,7 @@ export async function GET(request: NextRequest) {
 
     const [businesses, totalCount] = await Promise.all([
       Business.find(query)
+        .collation({ locale: 'en', strength: 2 }) // Case-insensitive sorting
         .sort(sortObj)
         .skip(skip)
         .limit(limit)
