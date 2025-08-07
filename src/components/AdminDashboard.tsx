@@ -5,6 +5,7 @@ import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 import BusinessRequestManager from './BusinessRequestManager';
+import OfferCodeManager from './OfferCodeManager';
 import { 
   Building, 
   Calendar, 
@@ -17,7 +18,8 @@ import {
   Trash2,
   UserCheck,
   RefreshCw,
-  Activity
+  Activity,
+  Ticket
 } from 'lucide-react';
 import type { Business, Event, NewsArticle } from '@/types';
 import ScraperLogs from './ScraperLogs';
@@ -48,7 +50,7 @@ interface ScraperConfig {
 }
 
 export const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'business-requests' | 'content' | 'users' | 'scrapers' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'business-requests' | 'content' | 'users' | 'offer-codes' | 'scrapers' | 'settings'>('overview');
   const [data, setData] = useState<ContentStats | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -515,6 +517,7 @@ export const AdminDashboard = () => {
     { id: 'business-requests', label: 'Business Requests', icon: UserCheck },
     { id: 'content', label: 'Content', icon: Newspaper },
     { id: 'users', label: 'Users', icon: Users },
+    { id: 'offer-codes', label: 'Offer Codes', icon: Ticket },
     { id: 'scrapers', label: 'Scrapers', icon: Activity },
     { id: 'settings', label: 'Settings', icon: Settings },
   ] as const;
@@ -774,6 +777,10 @@ export const AdminDashboard = () => {
             <p className="text-sm mt-2">This will include business owner accounts, admin users, and user permissions.</p>
           </div>
         </Card>
+      )}
+
+      {activeTab === 'offer-codes' && (
+        <OfferCodeManager />
       )}
 
       {activeTab === 'settings' && (

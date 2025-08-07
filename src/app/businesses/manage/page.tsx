@@ -27,12 +27,15 @@ const BusinessManageContent = () => {
       }
 
       try {
-        const response = await fetch(`/api/businesses?id=${businessId}`);
+        const response = await fetch(`/api/businesses/${businessId}`);
         const data = await response.json();
         
-        if (data.success && data.data.length > 0) {
-          const foundBusiness = data.data.find((b: Business) => b.id === businessId);
-          if (foundBusiness) {
+        console.log('API Response:', data); // Debug log
+        
+        if (data.success && data.data) {
+          const foundBusiness = data.data;
+          console.log('Found business:', foundBusiness); // Debug log
+          if (foundBusiness.id === businessId) {
             if (!foundBusiness.isClaimed) {
               setError('This business has not been claimed yet. Please claim it first.');
             } else {
@@ -42,7 +45,8 @@ const BusinessManageContent = () => {
             setError('Business not found');
           }
         } else {
-          setError('Failed to load business data');
+          console.error('API Error:', data); // Debug log
+          setError(data.error || 'Failed to load business data');
         }
       } catch (error) {
         console.error('Error fetching business:', error);

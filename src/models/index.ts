@@ -230,6 +230,58 @@ const ScraperConfigSchema = new Schema({
   updatedAt: { type: Date, default: Date.now }
 })
 
+// Offer Code Schema
+const OfferCodeSchema = new Schema({
+  id: { type: String, required: true, unique: true },
+  code: { type: String, required: true, unique: true, uppercase: true },
+  name: { type: String, required: true }, // Display name for the offer
+  description: { type: String, required: true },
+  
+  // Offer type and benefits
+  offerType: {
+    type: String,
+    enum: ['discount_percentage', 'discount_fixed', 'free_upgrade', 'free_months'],
+    required: true
+  },
+  
+  // Discount values (used based on offerType)
+  discountPercentage: { type: Number, min: 0, max: 100 }, // for discount_percentage
+  discountAmount: { type: Number, min: 0 }, // for discount_fixed
+  freeMonths: { type: Number, min: 0 }, // for free_months
+  upgradeToTier: { 
+    type: String,
+    enum: ['silver', 'gold', 'platinum']
+  }, // for free_upgrade
+  
+  // Usage restrictions
+  maxUses: { type: Number, default: null }, // null = unlimited
+  usedCount: { type: Number, default: 0 },
+  validFrom: { type: Date, required: true },
+  validUntil: { type: Date, required: true },
+  
+  // Tier restrictions
+  applicableTiers: [{
+    type: String,
+    enum: ['free', 'silver', 'gold', 'platinum']
+  }], // Which tiers can use this code
+  
+  // Status and metadata
+  isActive: { type: Boolean, default: true },
+  createdBy: { type: String, required: true }, // Admin user ID
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+  
+  // Usage tracking
+  usageHistory: [{
+    businessId: { type: String, required: true },
+    userId: { type: String, required: true },
+    usedAt: { type: Date, default: Date.now },
+    oldTier: { type: String },
+    newTier: { type: String },
+    discountApplied: { type: Number }
+  }]
+})
+
 // Export models
 export const Event = models.Event || model('Event', EventSchema)
 export const NewsArticle = models.NewsArticle || model('NewsArticle', NewsSchema)
@@ -238,6 +290,7 @@ export const JobPosting = models.JobPosting || model('JobPosting', JobSchema)
 export const Classified = models.Classified || model('Classified', ClassifiedSchema)
 export const ScraperLog = models.ScraperLog || model('ScraperLog', ScraperLogSchema)
 export const ScraperConfig = models.ScraperConfig || model('ScraperConfig', ScraperConfigSchema)
+export const OfferCode = models.OfferCode || model('OfferCode', OfferCodeSchema)
 
 // Re-export auth models for convenience
 export * from './auth'

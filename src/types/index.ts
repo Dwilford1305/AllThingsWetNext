@@ -132,6 +132,10 @@ export type BusinessCategory =
   | 'non-profit'
   | 'other'
 
+export type SubscriptionTier = 'free' | 'silver' | 'gold' | 'platinum'
+
+export type OfferType = 'discount_percentage' | 'discount_fixed' | 'free_upgrade' | 'free_months'
+
 export interface BusinessHours {
   monday?: string
   tuesday?: string
@@ -245,6 +249,61 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
     total: number
     pages: number
   }
+}
+
+// Offer Code Types
+export interface OfferCode {
+  id: string
+  code: string
+  name: string
+  description: string
+  
+  // Offer type and benefits
+  offerType: 'discount_percentage' | 'discount_fixed' | 'free_upgrade' | 'free_months'
+  
+  // Discount values (used based on offerType)
+  discountPercentage?: number // for discount_percentage (0-100)
+  discountAmount?: number // for discount_fixed
+  freeMonths?: number // for free_months
+  upgradeToTier?: SubscriptionTier // for free_upgrade
+  
+  // Usage restrictions
+  maxUses?: number // null = unlimited
+  usedCount: number
+  validFrom: Date
+  validUntil: Date
+  
+  // Tier restrictions
+  applicableTiers: ('free' | 'silver' | 'gold' | 'platinum')[]
+  
+  // Status and metadata
+  isActive: boolean
+  createdBy: string // Admin user ID
+  createdAt: Date
+  updatedAt: Date
+  
+  // Usage tracking
+  usageHistory: OfferCodeUsage[]
+}
+
+export interface OfferCodeUsage {
+  businessId: string
+  userId: string
+  usedAt: Date
+  oldTier?: string
+  newTier?: string
+  discountApplied?: number
+}
+
+export interface OfferCodeValidationResult {
+  isValid: boolean
+  error?: string
+  discountAmount?: number
+  discountPercentage?: number
+  freeMonths?: number
+  upgradeToTier?: string
+  finalPrice?: number
+  description?: string
 }
 
 // Re-export auth types for convenience

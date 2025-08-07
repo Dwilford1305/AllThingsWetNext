@@ -734,7 +734,7 @@ function BusinessTab({ userId: _userId }: { userId: string }) {
                         )}
                       </div>
                     </div>
-                    <div className="ml-4">
+                    <div className="ml-4 space-y-2">
                       <Button 
                         variant="outline" 
                         size="sm"
@@ -742,8 +742,20 @@ function BusinessTab({ userId: _userId }: { userId: string }) {
                           // Navigate to business management page
                           window.open(`/businesses?search=${encodeURIComponent(business.name)}`, '_blank');
                         }}
+                        className="w-full"
                       >
                         View Listing
+                      </Button>
+                      <Button 
+                        variant="primary" 
+                        size="sm"
+                        onClick={() => {
+                          // Navigate to business management page
+                          window.location.href = `/businesses/manage?id=${business.id}`;
+                        }}
+                        className="w-full"
+                      >
+                        Manage Listing
                       </Button>
                     </div>
                   </div>
