@@ -6,6 +6,7 @@ import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 import BusinessRequestManager from './BusinessRequestManager';
 import OfferCodeManager from './OfferCodeManager';
+import { UserManagement } from './UserManagement';
 import { 
   Building, 
   Calendar, 
@@ -1145,14 +1146,7 @@ export const AdminDashboard = () => {
       )}
 
       {activeTab === 'users' && (
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">User Management</h3>
-          <div className="text-center py-8 text-gray-700">
-            <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>User management features coming soon...</p>
-            <p className="text-sm mt-2">This will include business owner accounts, admin users, and user permissions.</p>
-          </div>
-        </Card>
+        <UserManagement />
       )}
 
       {activeTab === 'offer-codes' && (

@@ -5,6 +5,7 @@ export interface User {
   email: string
   firstName: string
   lastName: string
+  fullName?: string // Virtual field
   role: UserRole
   isEmailVerified: boolean
   profileImage?: string
@@ -18,9 +19,20 @@ export interface User {
   // Account status
   isActive: boolean
   isSuspended: boolean
+  suspensionReason?: string
   
   // Security
   twoFactorEnabled: boolean
+  loginAttempts: number
+  
+  // Business relationships
+  businessIds: string[] // Can own multiple businesses
+  verificationStatus: 'pending' | 'verified' | 'rejected'
+  verificationDocuments?: string[]
+  
+  // Admin relationships
+  permissions?: AdminPermission[]
+  departmentAccess?: string[]
   
   // Preferences
   preferences: UserPreferences
@@ -65,6 +77,64 @@ export type AdminPermission =
   | 'manage_payments'
   | 'system_settings'
   | 'super_admin'
+
+// User Management specific types
+export interface UserWithBusinesses extends User {
+  businesses?: BusinessWithOwner[]
+  totalBusinesses: number
+  claimedBusinesses: number
+  premiumBusinesses: number
+}
+
+export interface UserActivityLog {
+  id: string
+  userId: string
+  action: UserActivityAction
+  details?: Record<string, string | number | boolean | Date>
+  ip?: string
+  userAgent?: string
+  success: boolean
+  errorMessage?: string
+  createdAt: Date
+}
+
+export type UserActivityAction = 
+  | 'login'
+  | 'logout'
+  | 'password_change'
+  | 'profile_update'
+  | 'business_claim'
+  | 'business_update'
+  | 'subscription_change'
+  | 'payment_made'
+  | 'admin_action'
+  | 'account_suspended'
+  | 'account_reactivated'
+  | 'role_changed'
+  | 'permissions_updated'
+
+export interface UserManagementStats {
+  totalUsers: number
+  activeUsers: number
+  suspendedUsers: number
+  businessOwners: number
+  premiumBusinessOwners: number
+  recentSignups: number
+  usersByRole: Record<UserRole, number>
+}
+
+export interface UserBulkAction {
+  userIds: string[]
+  action: 'suspend' | 'activate' | 'reactivate' | 'delete' | 'change_role' | 'send_email' | 'export'
+  data?: {
+    role?: UserRole
+    subject?: string
+    message?: string
+    [key: string]: string | number | boolean | undefined
+  }
+  params?: Record<string, string | number | boolean>
+  reason?: string
+}
 
 // Authentication related types
 export interface AuthSession {
@@ -111,6 +181,7 @@ export interface ChangePasswordRequest {
 
 // Business ownership and claiming
 export interface BusinessClaimRequest {
+  id: string
   businessId: string
   userId: string
   claimerName: string
@@ -118,6 +189,16 @@ export interface BusinessClaimRequest {
   phone?: string
   message?: string
   verificationDocuments?: string[] // Business license, etc.
+  status: 'pending' | 'approved' | 'rejected'
+  adminNotes?: string
+  submittedAt: Date
+  reviewedAt?: Date
+  reviewedBy?: string
+  autoApprovalChecks?: {
+    emailMatch: boolean
+    phoneMatch: boolean
+    websiteMatch: boolean
+  }
 }
 
 export interface BusinessClaimResponse {
@@ -146,6 +227,9 @@ export interface BusinessWithOwner {
   ownerId?: string // User ID of the owner
   owner?: User // Populated user data
   claimRequests?: BusinessClaimRequest[]
+  isClaimed: boolean
+  claimedBy?: string
+  claimedAt?: Date
   
   // Subscription
   subscriptionTier: 'free' | 'silver' | 'gold' | 'platinum'
@@ -174,7 +258,7 @@ export interface BusinessWithOwner {
   
   // Status
   isActive: boolean
-  isVerified: boolean
+  verified: boolean
   featured: boolean
   
   createdAt: Date

@@ -8,12 +8,12 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { User, Building, Settings, LogOut, Shield } from 'lucide-react'
-import type { User as UserType } from '@/types'
+import type { User as UserType, AdminPermission } from '@/types'
 
 interface ExtendedUser extends Partial<UserType> {
-  verificationStatus?: string
+  verificationStatus?: 'pending' | 'rejected' | 'verified'
   businessIds?: string[]
-  permissions?: string[]
+  permissions?: AdminPermission[]
 }
 
 export default function AuthTestPage() {

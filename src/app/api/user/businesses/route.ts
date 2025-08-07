@@ -29,10 +29,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Find businesses claimed by this user's email
+    // Find businesses claimed by this user (by email or in businessIds array)
     const claimedBusinesses = await Business.find({ 
-      claimedBy: user.email,
-      isClaimed: true 
+      $or: [
+        { claimedBy: user.email, isClaimed: true },
+        { id: { $in: user.businessIds || [] } }
+      ]
     }).sort({ claimedAt: -1 }).lean()
 
     return NextResponse.json({

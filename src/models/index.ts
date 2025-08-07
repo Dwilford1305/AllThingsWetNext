@@ -85,6 +85,7 @@ const BusinessSchema = new Schema({
   subscriptionEnd: { type: Date },
   isClaimed: { type: Boolean, default: false }, // Has business owner claimed this listing
   claimedBy: { type: String }, // Email of person who claimed it
+  claimedByUserId: { type: String }, // ID of user who claimed it
   claimedAt: { type: Date },
   
   // Premium features (only available with subscription)
