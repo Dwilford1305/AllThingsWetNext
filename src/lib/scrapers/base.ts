@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios'
 import * as cheerio from 'cheerio'
+import { generateEventId } from '../utils/idGenerator'
 
 export interface ScraperConfig {
   url: string
@@ -61,9 +62,7 @@ export abstract class BaseScraper {
   }
 
   protected generateEventId(title: string, date: Date): string {
-    const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '')
-    const dateStr = date.toISOString().split('T')[0]
-    return `${cleanTitle}-${dateStr}`
+    return generateEventId(title, date)
   }
 
   protected categorizeEvent(title: string, description: string): string {

@@ -107,7 +107,6 @@ export class ComprehensiveScraperService {
       // Always clean up old events (events past their scheduled date)
       console.log('🗑️ Cleaning up past events...')
       const now = new Date()
-      now.setHours(23, 59, 59, 999) // End of today
       
       const pastEventsResult = await Event.deleteMany({
         $or: [
@@ -178,15 +177,15 @@ export class ComprehensiveScraperService {
     try {
       console.log('📰 Starting news scraping...')
       
-      // Always clean up old news articles (older than 15 days)
+      // Always clean up old news articles (older than 14 days)
       console.log('🗑️ Cleaning up old news articles...')
-      const fifteenDaysAgo = new Date()
-      fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15)
+      const fourteenDaysAgo = new Date()
+      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
       
       const oldNewsResult = await NewsArticle.deleteMany({
         $or: [
-          { publishedAt: { $lt: fifteenDaysAgo } },
-          { createdAt: { $lt: fifteenDaysAgo } }
+          { publishedAt: { $lt: fourteenDaysAgo } },
+          { createdAt: { $lt: fourteenDaysAgo } }
         ]
       })
       deletedCount += oldNewsResult.deletedCount || 0

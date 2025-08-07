@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from 'axios'
 import * as cheerio from 'cheerio'
 import { Element } from 'domhandler'
+import { generateArticleId } from '../utils/idGenerator'
 
 export interface NewsScraperConfig {
   url: string
@@ -56,9 +57,7 @@ export abstract class BaseNewsScraper {
   }
 
   protected generateArticleId(title: string, publishedAt: Date): string {
-    const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '')
-    const dateStr = publishedAt.toISOString().split('T')[0]
-    return `${cleanTitle}-${dateStr}`
+    return generateArticleId(title, publishedAt)
   }
 
   protected categorizeNews(title: string, content: string): string {

@@ -1,6 +1,7 @@
 import { connectDB } from '@/lib/mongodb'
 import { Event, NewsArticle } from '@/models'
 import { ConnectWetaskiwinScraper, WetaskiwinCaScraper } from './scrapers'
+import { generateEventId } from './utils/idGenerator'
 import type { ScrapedEvent } from './scrapers'
 
 export class ScraperService {
@@ -15,17 +16,15 @@ export class ScraperService {
     try {
       await connectDB()
       
-      // Clean up events that should be deleted (events that have passed - delete day after)
+      // Clean up events that are past their date (past events should be deleted)
       console.log('🗑️ Cleaning up past events...')
-      const yesterday = new Date()
-      yesterday.setDate(yesterday.getDate() - 1)
-      yesterday.setHours(23, 59, 59, 999) // End of yesterday
+      const now = new Date()
       
       const pastEventsResult = await Event.deleteMany({
         $or: [
-          { startDate: { $lte: yesterday } }, // Events that started yesterday or earlier
-          { date: { $lte: yesterday } },      // Events scheduled for yesterday or earlier  
-          { endDate: { $lte: yesterday } }    // Events that ended yesterday or earlier
+          { startDate: { $lt: now } }, // Events that have already started
+          { date: { $lt: now } },      // Events scheduled for past dates
+          { endDate: { $lt: now } }    // Events that have already ended
         ]
       })
       console.log(`Deleted ${pastEventsResult.deletedCount || 0} past events`)
@@ -51,7 +50,7 @@ export class ScraperService {
       // Process and save events to database
       for (const scrapedEvent of allScrapedEvents) {
         try {
-          const eventId = this.generateEventId(scrapedEvent.title, scrapedEvent.date)
+          const eventId = generateEventId(scrapedEvent.title, scrapedEvent.date)
           
           // Check if event already exists
           const existingEvent = await Event.findOne({ id: eventId })
@@ -145,9 +144,4 @@ export class ScraperService {
     }
   }
 
-  private generateEventId(title: string, date: Date): string {
-    const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '')
-    const dateStr = date.toISOString().split('T')[0]
-    return `${cleanTitle}-${dateStr}`
-  }
 }

@@ -3,6 +3,7 @@ import { NewsArticle } from '@/models'
 import { WetaskiwinTimesScraper } from './scrapers/wetaskiwinTimes'
 import { PipestoneFlyerScraper } from './scrapers/pipestoneFlyer'
 import { CentralAlbertaOnlineScraper } from './scrapers/centralAlbertaOnline'
+import { generateArticleId } from './utils/idGenerator'
 import type { ScrapedNewsArticle } from './scrapers/newsBase'
 
 export interface NewsScrapingResult {
@@ -55,6 +56,15 @@ export class NewsScraperService {
           
           for (const articleData of articles) {
             try {
+              // Skip articles that are older than our retention period (14 days)
+              const fourteenDaysAgo = new Date()
+              fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
+              
+              if (articleData.publishedAt < fourteenDaysAgo) {
+                console.log(`Skipping old article: "${articleData.title}" (published ${articleData.publishedAt.toISOString()})`)
+                continue
+              }
+              
               const articleResult = await this.saveArticle(articleData)
               result.total++
               
@@ -88,7 +98,7 @@ export class NewsScraperService {
   }
 
   private async saveArticle(articleData: ScrapedNewsArticle): Promise<{ isNew: boolean, wasUpdated: boolean }> {
-    const articleId = this.generateArticleId(articleData.title, articleData.publishedAt)
+    const articleId = generateArticleId(articleData.title, articleData.publishedAt)
     
     // Check if article already exists
     const existingArticle = await NewsArticle.findOne({ id: articleId })
@@ -139,12 +149,6 @@ export class NewsScraperService {
       console.log(`Created new article: ${articleData.title}`)
       return { isNew: true, wasUpdated: false }
     }
-  }
-
-  private generateArticleId(title: string, publishedAt: Date): string {
-    const cleanTitle = title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '')
-    const dateStr = publishedAt.toISOString().split('T')[0]
-    return `${cleanTitle}-${dateStr}`
   }
 
   async getScrapingStatus() {
