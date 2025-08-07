@@ -21,7 +21,7 @@ import {
   Activity,
   Ticket
 } from 'lucide-react';
-import type { Business, Event, NewsArticle } from '@/types';
+import type { Business, Event, NewsArticle, BusinessCategory, SubscriptionTier } from '@/types';
 import ScraperLogs from './ScraperLogs';
 
 interface ContentStats {
@@ -69,6 +69,12 @@ export const AdminDashboard = () => {
     businesses: { status: 'idle' }
   });
 
+  // Business management state
+  const [businessFilter, setBusinessFilter] = useState<'all' | 'claimed' | 'premium' | 'unclaimed'>('all');
+  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
+  const [showBusinessModal, setShowBusinessModal] = useState(false);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+
   // Logs modal state
   const [logsModal, setLogsModal] = useState<{
     isOpen: boolean;
@@ -115,9 +121,13 @@ export const AdminDashboard = () => {
     try {
       setLoading(true);
       
-      // Fetch businesses with analytics
-      const businessResponse = await fetch('/api/businesses/analytics');
+      // Fetch ALL businesses for admin dashboard
+      const businessResponse = await fetch('/api/businesses?limit=1000'); // Get all businesses
       const businessData = await businessResponse.json();
+
+      // Fetch analytics data
+      const analyticsResponse = await fetch('/api/businesses/analytics');
+      const analyticsData = await analyticsResponse.json();
 
       // Fetch recent content
       const eventsResponse = await fetch('/api/events?limit=10');
@@ -126,13 +136,15 @@ export const AdminDashboard = () => {
       const newsResponse = await fetch('/api/news?limit=10');
       const newsData = await newsResponse.json();
 
-      if (businessData.success && eventsData.success && newsData.success) {
+      if (businessData.success && analyticsData.success && eventsData.success && newsData.success) {
+        const businesses = Array.isArray(businessData.data?.businesses) ? businessData.data.businesses : [];
+        
         setData({
-          businesses: businessData.data.recentUpdates || [],
+          businesses,
           events: eventsData.data || [],
           news: newsData.data || [],
-          recentClaims: businessData.data.recentClaims || [],
-          categoryStats: businessData.data.categoryStats || []
+          recentClaims: analyticsData.data?.recentActivity?.claims || [],
+          categoryStats: analyticsData.data?.categories || []
         });
       }
 
@@ -228,7 +240,7 @@ export const AdminDashboard = () => {
     }
   };
 
-  const handleBusinessAction = async (businessId: string, action: 'approve' | 'reject' | 'feature') => {
+  const _handleBusinessAction = async (businessId: string, action: 'approve' | 'reject' | 'feature') => {
     try {
       const response = await fetch('/api/admin/businesses', {
         method: 'POST',
@@ -247,6 +259,154 @@ export const AdminDashboard = () => {
     } catch (_error) {
       alert(`Error performing ${action} on business`);
     }
+  };
+
+  // Business management functions
+  const getFilteredBusinesses = () => {
+    if (!data || !Array.isArray(data.businesses)) return [];
+    
+    switch (businessFilter) {
+      case 'claimed':
+        return data.businesses.filter(b => b.isClaimed);
+      case 'premium':
+        return data.businesses.filter(b => b.subscriptionTier && b.subscriptionTier !== 'free');
+      case 'unclaimed':
+        return data.businesses.filter(b => !b.isClaimed);
+      default:
+        return data.businesses;
+    }
+  };
+
+  const refreshBusinessData = async () => {
+    setLoading(true);
+    try {
+      // Fetch ALL businesses for admin dashboard
+      const businessResponse = await fetch('/api/businesses?limit=1000');
+      const businessData = await businessResponse.json();
+
+      if (businessData.success && data) {
+        setData({
+          ...data,
+          businesses: Array.isArray(businessData.data?.businesses) ? businessData.data.businesses : []
+        });
+      }
+    } catch (error) {
+      console.error('Error refreshing business data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const exportBusinessData = () => {
+    if (!data || !Array.isArray(data.businesses)) return;
+    
+    const businessData = data.businesses.map(business => ({
+      id: business.id,
+      name: business.name,
+      category: business.category,
+      address: business.address,
+      phone: business.phone,
+      email: business.email,
+      website: business.website,
+      isClaimed: business.isClaimed,
+      claimedBy: business.claimedBy,
+      subscriptionTier: business.subscriptionTier,
+      subscriptionStatus: business.subscriptionStatus,
+      revenue: business.subscriptionTier === 'platinum' ? 79.99 :
+               business.subscriptionTier === 'gold' ? 39.99 :
+               business.subscriptionTier === 'silver' ? 19.99 : 0,
+      featured: business.featured,
+      verified: business.verified,
+      views: business.analytics?.views || 0,
+      clicks: business.analytics?.clicks || 0
+    }));
+
+    const csv = [
+      Object.keys(businessData[0]).join(','),
+      ...businessData.map(row => Object.values(row).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `businesses-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const viewBusinessDetails = (business: Business) => {
+    setSelectedBusiness(business);
+    setShowBusinessModal(true);
+  };
+
+  const editBusinessSubscription = (business: Business) => {
+    setSelectedBusiness(business);
+    setShowSubscriptionModal(true);
+  };
+
+  const toggleBusinessFeature = async (businessId: string, feature: 'featured' | 'verified') => {
+    try {
+      const response = await fetch(`/api/admin/businesses/${businessId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: `toggle_${feature}` })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // Update local state
+        setData(prev => prev && Array.isArray(prev.businesses) ? {
+          ...prev,
+          businesses: prev.businesses.map(b => 
+            b.id === businessId 
+              ? { ...b, [feature]: !b[feature] }
+              : b
+          )
+        } : prev);
+      } else {
+        alert(`Failed to toggle ${feature}: ${result.error}`);
+      }
+    } catch (error) {
+      console.error(`Error toggling ${feature}:`, error);
+      alert(`Error toggling ${feature}`);
+    }
+  };
+
+  const deleteUnclaimed = async (businessId: string) => {
+    if (!confirm('Are you sure you want to delete this unclaimed business? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/businesses/${businessId}`, {
+        method: 'DELETE'
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // Remove from local state
+        setData(prev => prev ? {
+          ...prev,
+          businesses: prev.businesses.filter(b => b.id !== businessId)
+        } : null);
+        alert('Business deleted successfully');
+      } else {
+        alert(`Failed to delete business: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error deleting business:', error);
+      alert('Error deleting business');
+    }
+  };
+
+  const handleBusinessUpdate = (updatedBusiness: Business) => {
+    setData(prev => prev && Array.isArray(prev.businesses) ? {
+      ...prev,
+      businesses: prev.businesses.map(b => 
+        b.id === updatedBusiness.id ? updatedBusiness : b
+      )
+    } : prev);
   };
 
   const handleContentAction = async (type: 'event' | 'news', id: string, action: 'approve' | 'reject' | 'delete') => {
@@ -588,7 +748,7 @@ export const AdminDashboard = () => {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Business Categories</h3>
             <div className="space-y-3">
-              {data.categoryStats.slice(0, 8).map((category) => (
+              {Array.isArray(data.categoryStats) ? data.categoryStats.slice(0, 8).map((category) => (
                 <div key={category._id} className="flex items-center justify-between">
                   <div>
                     <span className="font-medium text-gray-900">{category._id}</span>
@@ -598,7 +758,7 @@ export const AdminDashboard = () => {
                   </div>
                   <Badge variant="secondary">{category.total}</Badge>
                 </div>
-              ))}
+              )) : null}
             </div>
           </Card>
 
@@ -606,7 +766,7 @@ export const AdminDashboard = () => {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Business Claims</h3>
             <div className="space-y-3">
-              {data.recentClaims.slice(0, 5).map((business) => (
+              {Array.isArray(data.recentClaims) ? data.recentClaims.slice(0, 5).map((business) => (
                 <div key={business.id} className="flex items-center justify-between">
                   <div>
                     <span className="font-medium text-gray-900">{business.name}</span>
@@ -623,84 +783,300 @@ export const AdminDashboard = () => {
                     {business.subscriptionTier || 'free'}
                   </Badge>
                 </div>
-              ))}
+              )) : null}
             </div>
           </Card>
         </div>
       )}
 
-      {activeTab === 'businesses' && data && (
+      {activeTab === 'businesses' && !loading && data && (
         <div className="space-y-6">
+          {/* Business Management Header */}
           <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Business Management</h3>
-              <Button size="sm" variant="outline">
-                Export Data
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Business Management</h3>
+                <p className="text-sm text-gray-600">Manage all businesses, subscriptions, and premium features</p>
+              </div>
+              <div className="flex space-x-3">
+                <Button size="sm" variant="outline" onClick={refreshBusinessData}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
+                <Button size="sm" variant="outline" onClick={exportBusinessData}>
+                  Export Data
+                </Button>
+              </div>
+            </div>
+            
+            {/* Business Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">
+                  {Array.isArray(data.businesses) ? data.businesses.filter(b => b.isClaimed).length : 0}
+                </div>
+                <div className="text-sm text-blue-800">Claimed Businesses</div>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">
+                  {Array.isArray(data.businesses) ? data.businesses.filter(b => b.subscriptionTier && b.subscriptionTier !== 'free').length : 0}
+                </div>
+                <div className="text-sm text-green-800">Premium Subscribers</div>
+              </div>
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">
+                  $
+                  {Array.isArray(data.businesses) ? data.businesses
+                    .filter(b => b.subscriptionTier && b.subscriptionTier !== 'free')
+                    .reduce((total, b) => {
+                      const prices = { silver: 19.99, gold: 39.99, platinum: 79.99 };
+                      return total + (prices[b.subscriptionTier as keyof typeof prices] || 0);
+                    }, 0)
+                    .toFixed(2) : '0.00'}
+                </div>
+                <div className="text-sm text-purple-800">Monthly Revenue</div>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-lg">
+                <div className="text-2xl font-bold text-yellow-600">
+                  {Array.isArray(data.businesses) ? data.businesses.filter(b => !b.isClaimed).length : 0}
+                </div>
+                <div className="text-sm text-yellow-800">Unclaimed Listings</div>
+              </div>
+            </div>
+
+            {/* Business Filters */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Button 
+                size="sm" 
+                variant={businessFilter === 'all' ? 'primary' : 'outline'}
+                onClick={() => setBusinessFilter('all')}
+              >
+                All ({Array.isArray(data.businesses) ? data.businesses.length : 0})
+              </Button>
+              <Button 
+                size="sm" 
+                variant={businessFilter === 'claimed' ? 'primary' : 'outline'}
+                onClick={() => setBusinessFilter('claimed')}
+              >
+                Claimed ({Array.isArray(data.businesses) ? data.businesses.filter(b => b.isClaimed).length : 0})
+              </Button>
+              <Button 
+                size="sm" 
+                variant={businessFilter === 'premium' ? 'primary' : 'outline'}
+                onClick={() => setBusinessFilter('premium')}
+              >
+                Premium ({Array.isArray(data.businesses) ? data.businesses.filter(b => b.subscriptionTier && b.subscriptionTier !== 'free').length : 0})
+              </Button>
+              <Button 
+                size="sm" 
+                variant={businessFilter === 'unclaimed' ? 'primary' : 'outline'}
+                onClick={() => setBusinessFilter('unclaimed')}
+              >
+                Unclaimed ({Array.isArray(data.businesses) ? data.businesses.filter(b => !b.isClaimed).length : 0})
               </Button>
             </div>
             
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Business
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Tier
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Revenue
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {data.businesses.slice(0, 10).map((business) => (
-                    <tr key={business.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{business.name}</div>
-                        <div className="text-sm text-gray-800">{business.category}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Badge className={business.isClaimed ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'}>
-                          {business.isClaimed ? 'Claimed' : 'Unclaimed'}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+            {/* Business Cards Grid */}
+            <div className="space-y-4">
+              {getFilteredBusinesses().slice(0, 20).map((business) => (
+                <Card key={business.id} className="p-6 hover:shadow-md transition-shadow">
+                  <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    
+                    {/* Business Details */}
+                    <div className="lg:col-span-1">
+                      <div className="flex items-start space-x-3">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900 text-lg mb-1">{business.name}</h4>
+                          <p className="text-sm text-gray-600 mb-2">{business.category}</p>
+                          <p className="text-xs text-gray-500 mb-3">{business.address}</p>
+                          <div className="flex flex-wrap gap-1">
+                            {business.verified && (
+                              <Badge className="bg-blue-100 text-blue-800 text-xs">✓ Verified</Badge>
+                            )}
+                            {business.featured && (
+                              <Badge className="bg-yellow-100 text-yellow-800 text-xs">⭐ Featured</Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Owner & Status */}
+                    <div className="lg:col-span-1">
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Badge className={business.isClaimed ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'}>
+                            {business.isClaimed ? 'Claimed' : 'Unclaimed'}
+                          </Badge>
+                        </div>
+                        {business.claimedBy && (
+                          <div>
+                            <p className="text-xs text-gray-500">Owner:</p>
+                            <p className="text-sm text-gray-700 font-medium">{business.claimedBy}</p>
+                          </div>
+                        )}
+                        {business.claimedAt && (
+                          <div>
+                            <p className="text-xs text-gray-500">Claimed:</p>
+                            <p className="text-sm text-gray-700">{new Date(business.claimedAt).toLocaleDateString()}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Subscription */}
+                    <div className="lg:col-span-1">
+                      <div className="space-y-2">
                         <Badge className={`${
                           business.subscriptionTier === 'platinum' ? 'bg-purple-600 text-white' :
                           business.subscriptionTier === 'gold' ? 'bg-yellow-500 text-black' :
                           business.subscriptionTier === 'silver' ? 'bg-gray-400 text-white' :
                           'bg-blue-500 text-white'
                         }`}>
-                          {business.subscriptionTier || 'free'}
+                          {business.subscriptionTier === 'platinum' ? 'PLATINUM' :
+                           business.subscriptionTier === 'gold' ? 'GOLD' :
+                           business.subscriptionTier === 'silver' ? 'SILVER' :
+                           'FREE'}
                         </Badge>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${business.subscriptionTier === 'platinum' ? '79.99' :
-                          business.subscriptionTier === 'gold' ? '39.99' :
-                          business.subscriptionTier === 'silver' ? '19.99' : '0.00'}/mo
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <Button size="sm" variant="outline" onClick={() => window.open(`/businesses?id=${business.id}`, '_blank')}>
-                          <Eye className="h-3 w-3" />
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => handleBusinessAction(business.id, 'feature')}>
-                          <UserCheck className="h-3 w-3" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        {business.subscriptionEnd && business.subscriptionTier !== 'free' && (
+                          <div>
+                            <p className="text-xs text-gray-500">Expires:</p>
+                            <p className="text-sm text-gray-700">{new Date(business.subscriptionEnd).toLocaleDateString()}</p>
+                          </div>
+                        )}
+                        {business.subscriptionTier && business.subscriptionTier !== 'free' && (
+                          <div>
+                            <p className="text-xs text-gray-500">Revenue:</p>
+                            <p className="text-sm font-semibold text-green-600">
+                              ${business.subscriptionTier === 'platinum' ? '79.99' :
+                                business.subscriptionTier === 'gold' ? '39.99' :
+                                business.subscriptionTier === 'silver' ? '19.99' : '0.00'}/mo
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Actions & Analytics */}
+                    <div className="lg:col-span-1">
+                      <div className="space-y-3">
+                        {/* Action Buttons */}
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => viewBusinessDetails(business)}
+                            className="text-xs"
+                          >
+                            Edit
+                          </Button>
+                          
+                          {business.isClaimed && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => editBusinessSubscription(business)}
+                              className="text-xs"
+                            >
+                              Subscription
+                            </Button>
+                          )}
+                          
+                          <Button
+                            size="sm"
+                            variant={business.featured ? "default" : "outline"}
+                            onClick={() => toggleBusinessFeature(business.id, 'featured')}
+                            className="text-xs"
+                          >
+                            {business.featured ? 'Unfeature' : 'Feature'}
+                          </Button>
+                          
+                          {business.isClaimed && (
+                            <Button
+                              size="sm"
+                              variant={business.verified ? "default" : "outline"}
+                              onClick={() => toggleBusinessFeature(business.id, 'verified')}
+                              className="text-xs"
+                            >
+                              {business.verified ? 'Unverify' : 'Verify'}
+                            </Button>
+                          )}
+                          
+                          {!business.isClaimed && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                if (confirm(`Are you sure you want to delete "${business.name}"? This action cannot be undone.`)) {
+                                  deleteUnclaimed(business.id);
+                                }
+                              }}
+                              className="text-xs text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400"
+                            >
+                              Delete
+                            </Button>
+                          )}
+                        </div>
+                        
+                        {/* Analytics - Compact */}
+                        <div className="p-3 bg-gray-50 rounded-lg">
+                          <p className="text-xs font-semibold text-gray-700 mb-2">Analytics</p>
+                          <div className="space-y-1 text-xs">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Views:</span>
+                              <span className="font-medium">{business.analytics?.views || 0}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Clicks:</span>
+                              <span className="font-medium">{business.analytics?.clicks || 0}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Calls:</span>
+                              <span className="font-medium">{business.analytics?.callClicks || 0}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
+
+            {/* Pagination */}
+            {getFilteredBusinesses().length > 20 && (
+              <div className="mt-4 flex justify-center">
+                <Button variant="outline" size="sm">
+                  Load More Businesses
+                </Button>
+              </div>
+            )}
           </Card>
+
+          {/* Business Management Modals */}
+          {selectedBusiness && (
+            <BusinessManagementModal 
+              business={selectedBusiness}
+              isOpen={showBusinessModal}
+              onClose={() => {
+                setShowBusinessModal(false);
+                setSelectedBusiness(null);
+              }}
+              onUpdate={handleBusinessUpdate}
+            />
+          )}
+
+          {selectedBusiness && (
+            <SubscriptionManagementModal
+              business={selectedBusiness}
+              isOpen={showSubscriptionModal}
+              onClose={() => {
+                setShowSubscriptionModal(false);
+                setSelectedBusiness(null);
+              }}
+              onUpdate={handleBusinessUpdate}
+            />
+          )}
         </div>
       )}
 
@@ -717,7 +1093,7 @@ export const AdminDashboard = () => {
               Recent Events
             </h3>
             <div className="space-y-3">
-              {data.events.slice(0, 5).map((event) => (
+              {Array.isArray(data.events) ? data.events.slice(0, 5).map((event) => (
                 <div key={event.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
                     <span className="font-medium text-gray-900">{event.title}</span>
@@ -734,7 +1110,7 @@ export const AdminDashboard = () => {
                     </Button>
                   </div>
                 </div>
-              ))}
+              )) : null}
             </div>
           </Card>
 
@@ -745,7 +1121,7 @@ export const AdminDashboard = () => {
               Recent News
             </h3>
             <div className="space-y-3">
-              {data.news.slice(0, 5).map((article) => (
+              {Array.isArray(data.news) ? data.news.slice(0, 5).map((article) => (
                 <div key={article.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
                     <span className="font-medium text-gray-900">{article.title}</span>
@@ -762,7 +1138,7 @@ export const AdminDashboard = () => {
                     </Button>
                   </div>
                 </div>
-              ))}
+              )) : null}
             </div>
           </Card>
         </div>
@@ -1311,6 +1687,300 @@ export const AdminDashboard = () => {
           onClose={() => setLogsModal({ isOpen: false, type: null })}
         />
       )}
+    </div>
+  );
+};
+
+// Business Management Modal Component
+interface BusinessManagementModalProps {
+  business: Business;
+  isOpen: boolean;
+  onClose: () => void;
+  onUpdate: (business: Business) => void;
+}
+
+const BusinessManagementModal: React.FC<BusinessManagementModalProps> = ({
+  business,
+  isOpen,
+  onClose,
+  onUpdate
+}) => {
+  const [formData, setFormData] = useState({
+    name: business.name,
+    description: business.description,
+    category: business.category,
+    address: business.address,
+    phone: business.phone || '',
+    email: business.email || '',
+    website: business.website || ''
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+
+    try {
+      const response = await fetch(`/api/businesses/${business.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        onUpdate(result.data);
+        onClose();
+        alert('Business updated successfully');
+      } else {
+        alert(`Failed to update business: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error updating business:', error);
+      alert('Error updating business');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Edit Business Details</h3>
+          <Button variant="ghost" size="sm" onClick={onClose}>×</Button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Business Name
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+              placeholder="Enter business name"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Description
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows={3}
+              placeholder="Enter business description"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Category
+              </label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value as BusinessCategory })}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Business Category"
+              >
+                <option value="restaurant">Restaurant</option>
+                <option value="retail">Retail</option>
+                <option value="automotive">Automotive</option>
+                <option value="health">Health</option>
+                <option value="professional">Professional</option>
+                <option value="home-services">Home Services</option>
+                <option value="beauty">Beauty</option>
+                <option value="recreation">Recreation</option>
+                <option value="education">Education</option>
+                <option value="non-profit">Non-Profit</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phone
+              </label>
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter phone number"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Address
+            </label>
+            <input
+              type="text"
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter business address"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter email address"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Website
+              </label>
+              <input
+                type="url"
+                value={formData.website}
+                onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter website URL"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Subscription Management Modal Component
+interface SubscriptionManagementModalProps {
+  business: Business;
+  isOpen: boolean;
+  onClose: () => void;
+  onUpdate: (business: Business) => void;
+}
+
+const SubscriptionManagementModal: React.FC<SubscriptionManagementModalProps> = ({
+  business,
+  isOpen,
+  onClose,
+  onUpdate
+}) => {
+  const [newTier, setNewTier] = useState(business.subscriptionTier || 'free');
+  const [duration, setDuration] = useState(1);
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+
+    try {
+      const response = await fetch(`/api/admin/businesses/${business.id}/subscription`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          tier: newTier,
+          duration: duration
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        onUpdate(result.data);
+        onClose();
+        alert('Subscription updated successfully');
+      } else {
+        alert(`Failed to update subscription: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      alert('Error updating subscription');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-lg">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Manage Subscription</h3>
+          <Button variant="ghost" size="sm" onClick={onClose}>×</Button>
+        </div>
+
+        <div className="mb-4">
+          <p className="text-sm text-gray-600">Business: {business.name}</p>
+          <p className="text-sm text-gray-600">Current Tier: {business.subscriptionTier || 'free'}</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              New Subscription Tier
+            </label>
+            <select
+              value={newTier}
+              onChange={(e) => setNewTier(e.target.value as SubscriptionTier)}
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="Subscription Tier"
+            >
+              <option value="free">Free ($0/month)</option>
+              <option value="silver">Silver ($19.99/month)</option>
+              <option value="gold">Gold ($39.99/month)</option>
+              <option value="platinum">Platinum ($79.99/month)</option>
+            </select>
+          </div>
+
+          {newTier !== 'free' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Duration (months)
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="24"
+                value={duration}
+                onChange={(e) => setDuration(parseInt(e.target.value))}
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter duration in months"
+              />
+            </div>
+          )}
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? 'Updating...' : 'Update Subscription'}
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
