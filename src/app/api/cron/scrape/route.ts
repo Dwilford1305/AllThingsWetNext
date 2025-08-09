@@ -148,6 +148,12 @@ export async function POST(request: NextRequest) {
     const results: ScraperResults = {}
 
     if (type === 'news' || type === 'both') {
+      // Respect configuration (skip if disabled)
+      const newsCfg = await ScraperConfig.findOne({ type: 'news' })
+      if (newsCfg && newsCfg.isEnabled === false) {
+        console.log('⏭️ News scraper skipped (disabled by config)')
+        await logScraperActivity('news', 'completed', 'News scraper skipped (disabled)', 0, 0, [])
+      } else {
       console.log('📰 Running news scraper...')
       
       // Log news scraper start
@@ -177,9 +183,15 @@ export async function POST(request: NextRequest) {
         await logScraperActivity('news', 'error', errorMessage, newsDuration, 0, [errorMessage])
         throw error
       }
+      }
     }
 
     if (type === 'events' || type === 'both') {
+      const eventsCfg = await ScraperConfig.findOne({ type: 'events' })
+      if (eventsCfg && eventsCfg.isEnabled === false) {
+        console.log('⏭️ Events scraper skipped (disabled by config)')
+        await logScraperActivity('events', 'completed', 'Events scraper skipped (disabled)', 0, 0, [])
+      } else {
       console.log('📅 Running events scraper...')
       
       // Log events scraper start
@@ -209,9 +221,15 @@ export async function POST(request: NextRequest) {
         await logScraperActivity('events', 'error', errorMessage, eventsDuration, 0, [errorMessage])
         throw error
       }
+      }
     }
 
     if (type === 'businesses' || type === 'all') {
+      const bizCfg = await ScraperConfig.findOne({ type: 'businesses' })
+      if (bizCfg && bizCfg.isEnabled === false) {
+        console.log('⏭️ Business scraper skipped (disabled by config)')
+        await logScraperActivity('businesses', 'completed', 'Business scraper skipped (disabled)', 0, 0, [])
+      } else {
       console.log('🏢 Running business scraper...')
       
       // Log business scraper start
@@ -240,6 +258,7 @@ export async function POST(request: NextRequest) {
         const errorMessage = error instanceof Error ? error.message : 'Business scraper failed'
         await logScraperActivity('businesses', 'error', errorMessage, businessDuration, 0, [errorMessage])
         throw error
+      }
       }
     }
 

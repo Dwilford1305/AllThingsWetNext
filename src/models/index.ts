@@ -195,10 +195,12 @@ const ClassifiedSchema = new Schema({
 })
 
 // Scraper Log Schema
+// NOTE: Added 'comprehensive' to enum to align with ComprehensiveScraperService.saveScrapingSession
+// which was previously writing a log with type 'comprehensive' causing a validation error & lost logs.
 const ScraperLogSchema = new Schema({
   type: { 
     type: String, 
-    enum: ['news', 'events', 'businesses'], 
+    enum: ['news', 'events', 'businesses', 'comprehensive'], 
     required: true 
   },
   status: { 

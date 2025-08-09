@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { computeNextScheduledRun, formatCountdown } from '@/lib/scheduling';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
@@ -102,6 +103,11 @@ export const AdminDashboard = () => {
   useEffect(() => {
     fetchData();
     fetchScraperConfigs();
+    // Poll scraper configs every 60s to show near real-time status & next run countdown
+    const interval = setInterval(() => {
+      fetchScraperConfigs();
+    }, 60000);
+    return () => clearInterval(interval);
     // Intentionally omitting fetchData and fetchScraperConfigs from dependencies to avoid re-running effect on every render.
     // These functions are defined after useEffect and are stable in this context.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -285,26 +291,17 @@ export const AdminDashboard = () => {
     }
   };
 
-  const formatTimeUntil = (dateString?: string) => {
-    if (!dateString) return 'Not scheduled';
-    
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = date.getTime() - now.getTime();
-    
-    if (diffMs <= 0) return 'Overdue';
-    
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-    
-    if (diffDays > 0) {
-      return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
-    } else if (diffHours > 0) {
-      return `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
-    } else {
-      const diffMinutes = Math.floor(diffMs / (1000 * 60));
-      return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''}`;
-    }
+  // Compute next run using fixed policy (6 AM MT daily for news/events, weekly Monday for businesses).
+  const computePolicyNextRun = (type: 'news' | 'events' | 'businesses') => {
+    const config = getScraperConfig(type);
+    const enabled = config?.isEnabled ?? true;
+    return computeNextScheduledRun(type, new Date(), enabled, config?.nextRun);
+  };
+
+  const formatPolicyCountdown = (type: 'news' | 'events' | 'businesses') => {
+    const next = computePolicyNextRun(type);
+    if (!next) return 'Disabled';
+    return formatCountdown(next);
   };
 
   // Scraper management functions
@@ -353,7 +350,7 @@ export const AdminDashboard = () => {
         method: 'POST'
       });
       
-      const result = await response.json();
+  const result = await response.json();
       const duration = Date.now() - startTime;
       
       if (result.success) {
@@ -367,7 +364,18 @@ export const AdminDashboard = () => {
         // Update database with completion status
         await updateScraperStatus(type, false, lastRun);
 
-        const itemsProcessed = result.data?.length || result.count || 0;
+        // Determine items processed across different scraper response shapes
+        let itemsProcessed = 0;
+        if (type === 'news' && result.data) {
+          itemsProcessed = typeof result.data.total === 'number' ? result.data.total : ((result.data.new || 0) + (result.data.updated || 0));
+        } else if (type === 'events' && result.data) {
+          itemsProcessed = typeof result.data.total === 'number' ? result.data.total : ((result.data.new || 0) + (result.data.updated || 0));
+        } else if (type === 'businesses' && result.data) {
+          itemsProcessed = typeof result.data.total === 'number' ? result.data.total : ((result.data.new || 0) + (result.data.updated || 0));
+        } else if (result.data?.summary?.totalItems) {
+          // Comprehensive fallback (shouldn't hit here for individual scrapers)
+          itemsProcessed = result.data.summary.totalItems;
+        }
         const message = `Successfully scraped ${itemsProcessed} ${type} items`;
         
         await logScraperActivity(type, 'completed', message, duration, itemsProcessed);
@@ -860,7 +868,7 @@ export const AdminDashboard = () => {
                       <p className={`text-sm ${
                         isActive ? 'text-green-700' : isEnabled ? 'text-blue-700' : 'text-gray-700'
                       }`}>
-                        Next run: {formatTimeUntil(config?.nextRun)}
+                        Next run: {formatPolicyCountdown('news')}
                       </p>
                     </div>
                   );
@@ -912,7 +920,7 @@ export const AdminDashboard = () => {
                       <p className={`text-sm ${
                         isActive ? 'text-green-700' : isEnabled ? 'text-blue-700' : 'text-gray-700'
                       }`}>
-                        Next run: {formatTimeUntil(config?.nextRun)}
+                        Next run: {formatPolicyCountdown('events')}
                       </p>
                     </div>
                   );
@@ -964,7 +972,7 @@ export const AdminDashboard = () => {
                       <p className={`text-sm ${
                         isActive ? 'text-green-700' : isEnabled ? 'text-orange-700' : 'text-gray-700'
                       }`}>
-                        Next run: {formatTimeUntil(config?.nextRun)}
+                        Next run: {formatPolicyCountdown('businesses')}
                       </p>
                     </div>
                   );

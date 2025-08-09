@@ -1,16 +1,7 @@
 {
   "crons": [
-    {
-      "path": "/api/cron/scrape?type=news",
-      "schedule": "0 13 * * *"
-    },
-    {
-      "path": "/api/cron/scrape?type=events", 
-      "schedule": "0 13 * * *"
-    },
-    {
-      "path": "/api/cron/scrape?type=businesses",
-      "schedule": "0 13 * * 1"
-    }
+    { "path": "/api/cron/scrape?type=news", "schedule": "0 13 * * *" },
+    { "path": "/api/cron/scrape?type=events", "schedule": "0 13 * * *" },
+    { "path": "/api/cron/scrape?type=businesses", "schedule": "0 13 * * 1" }
   ]
 }

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "scrape:events": "node scripts/scrape-events.js"
+    "scrape:events": "node scripts/scrape-events.js",
+    "test": "jest"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
@@ -32,12 +33,15 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/jest": "^29.5.14",
     "@types/node": "^20.19.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
+    "jest": "^29.7.0",
     "tailwindcss": "^4",
+    "ts-jest": "^29.4.1",
     "typescript": "^5"
   }
 }
