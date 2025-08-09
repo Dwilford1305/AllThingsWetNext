@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { csrfFetch } from '@/lib/csrf';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { X, Mail, Lock, User, Building } from 'lucide-react';
+import { DevCaptcha } from '@/components/DevCaptcha';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -24,6 +26,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
     accountType: 'user' as 'user' | 'business_owner',
     agreeToTerms: false,
   });
+  const [captchaToken, setCaptchaToken] = useState<string>('');
 
   const { login } = useAuth();
 
@@ -36,7 +39,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
 
     try {
       if (mode === 'login') {
-        const result = await login(formData.email, formData.password);
+  const result = await login(formData.email, formData.password, captchaToken || (process.env.NEXT_PUBLIC_DEV_CAPTCHA ? undefined : 'dev_bypass'));
         if (result.success) {
           onClose();
           // Reset form
@@ -53,7 +56,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
         }
       } else {
         // Register
-        const response = await fetch('/api/auth/signup', {
+  const response = await csrfFetch('/api/auth/signup', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -64,7 +67,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
             firstName: formData.firstName,
             lastName: formData.lastName,
             accountType: formData.accountType,
-            agreeToTerms: formData.agreeToTerms,
+      agreeToTerms: formData.agreeToTerms,
+      captchaToken: captchaToken || (process.env.NEXT_PUBLIC_DEV_CAPTCHA ? undefined : 'dev_bypass')
           }),
         });
 
@@ -84,6 +88,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               accountType: 'user',
               agreeToTerms: false,
             });
+            setCaptchaToken('');
           }
         } else {
           setError(data.error || 'Registration failed');
@@ -257,10 +262,14 @@ export function AuthModal({ isOpen, onClose, initialMode = 'login' }: AuthModalP
               </div>
             )}
 
+            {process.env.NEXT_PUBLIC_DEV_CAPTCHA === 'true' && (
+              <DevCaptcha onSolved={(t) => setCaptchaToken(t)} className="pt-2" />
+            )}
+
             <Button
               type="submit"
               className="w-full"
-              disabled={isLoading}
+              disabled={isLoading || (process.env.NEXT_PUBLIC_DEV_CAPTCHA === 'true' && !captchaToken)}
             >
               {isLoading
                 ? (mode === 'login' ? 'Signing In...' : 'Creating Account...')

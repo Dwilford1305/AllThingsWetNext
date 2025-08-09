@@ -48,9 +48,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!AuthService.validatePassword(newPassword)) {
+    const pwValidation = AuthService.validatePassword(newPassword)
+    if (!pwValidation.isValid) {
       return NextResponse.json(
-        { success: false, error: 'New password must be at least 8 characters long and contain uppercase, lowercase, number, and special character' },
+        { success: false, error: 'New password does not meet complexity requirements', details: pwValidation.errors },
         { status: 400 }
       )
     }

@@ -4,6 +4,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 
 import Script from "next/script";
 import DevelopmentBanner from "@/components/DevelopmentBanner";
+import CookieConsent from "@/components/CookieConsent";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -90,6 +91,7 @@ export default function RootLayout({
         <AuthProvider>
           <DevelopmentBanner />
           {children}
+          <CookieConsent />
         </AuthProvider>
       </body>
     </html>

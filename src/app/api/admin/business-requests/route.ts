@@ -1,35 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { BusinessRequest } from '@/models/businessRequest'
-import { User } from '@/models/auth'
 import { Business } from '@/models'
-import { AuthService } from '@/lib/auth'
 import { EmailService } from '@/lib/emailService'
+import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware'
 
-export async function GET(request: NextRequest) {
+async function getBusinessRequests(request: AuthenticatedRequest) {
   try {
     await connectDB()
-
-    // Get the authorization header
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Verify the JWT token
-    const token = authHeader.substring(7)
-    let decoded
-    try {
-      decoded = AuthService.verifyAccessToken(token)
-    } catch (_error) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
-
-    // Check if user is admin
-    const user = await User.findOne({ id: decoded.userId })
-    if (!user || (user.role !== 'admin' && user.role !== 'super_admin')) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
 
     // Get query parameters
     const url = new URL(request.url)
@@ -69,7 +47,9 @@ export async function GET(request: NextRequest) {
       return acc
     }, { pending: 0, approved: 0, rejected: 0 })
 
-    return NextResponse.json({
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown'
+  console.log(`📥 BUSINESS REQUESTS VIEW by ${actor}`)
+  return NextResponse.json({
       success: true,
       requests,
       pagination: {
@@ -89,30 +69,9 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function PUT(request: NextRequest) {
+async function updateBusinessRequest(request: AuthenticatedRequest) {
   try {
     await connectDB()
-
-    // Get the authorization header
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Verify the JWT token
-    const token = authHeader.substring(7)
-    let decoded
-    try {
-      decoded = AuthService.verifyAccessToken(token)
-    } catch (_error) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
-
-    // Check if user is admin
-    const admin = await User.findOne({ id: decoded.userId })
-    if (!admin || (admin.role !== 'admin' && admin.role !== 'super_admin')) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
 
     const body = await request.json()
     const { requestId, status, adminNotes } = body
@@ -138,7 +97,7 @@ export async function PUT(request: NextRequest) {
     // Update the request
     businessRequest.status = status
     businessRequest.adminNotes = adminNotes || ''
-    businessRequest.reviewedBy = decoded.userId
+  businessRequest.reviewedBy = request.user?.id
     businessRequest.reviewedAt = new Date()
     businessRequest.updatedAt = new Date()
 
@@ -182,7 +141,8 @@ export async function PUT(request: NextRequest) {
         })
 
         await newBusiness.save()
-        console.log(`Created business listing ${businessId} for approved request ${requestId}`)
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown'
+  console.log(`Created business listing ${businessId} for approved request ${requestId} by ${actor}`)
         
         // Send business approval notification email
         try {
@@ -205,7 +165,9 @@ export async function PUT(request: NextRequest) {
     // Don't send the generic confirmation email for status updates
     // The approval notification is sent above, rejection emails can be added separately if needed
 
-    return NextResponse.json({
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown'
+  console.log(`📥 BUSINESS REQUEST ${status.toUpperCase()} by ${actor}: ${requestId}`)
+  return NextResponse.json({
       success: true,
       message: `Business request ${status} successfully`,
       request: businessRequest
@@ -218,6 +180,9 @@ export async function PUT(request: NextRequest) {
     }, { status: 500 })
   }
 }
+
+export const GET = withRole(['admin','super_admin'], getBusinessRequests)
+export const PUT = withRole(['admin','super_admin'], updateBusinessRequest)
 
 // Helper function to map business request types to business categories
 function mapBusinessTypeToCategory(businessType: string): string {

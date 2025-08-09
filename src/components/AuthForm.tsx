@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { DevCaptcha } from '@/components/DevCaptcha'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { User, Mail, Lock, Phone, Building } from 'lucide-react'
@@ -26,6 +27,7 @@ export const AuthForm = ({ onLogin }: AuthFormProps) => {
     agreeToTerms: false,
     rememberMe: false
   })
+  const [captchaToken, setCaptchaToken] = useState<string>('')
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
@@ -42,12 +44,13 @@ export const AuthForm = ({ onLogin }: AuthFormProps) => {
     setSuccess('')
 
     try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup'
+  const endpoint = isLogin ? '/api/auth/login' : '/api/auth/signup'
       const payload = isLogin 
         ? { 
             email: formData.email, 
             password: formData.password, 
-            rememberMe: formData.rememberMe 
+            rememberMe: formData.rememberMe,
+            captchaToken: captchaToken || (process.env.NEXT_PUBLIC_DEV_CAPTCHA ? undefined : 'dev_bypass')
           }
         : {
             email: formData.email,
@@ -56,7 +59,8 @@ export const AuthForm = ({ onLogin }: AuthFormProps) => {
             lastName: formData.lastName,
             phone: formData.phone || undefined,
             accountType: formData.accountType,
-            agreeToTerms: formData.agreeToTerms
+            agreeToTerms: formData.agreeToTerms,
+            captchaToken: captchaToken || (process.env.NEXT_PUBLIC_DEV_CAPTCHA ? undefined : 'dev_bypass')
           }
 
       const response = await fetch(endpoint, {
@@ -70,10 +74,7 @@ export const AuthForm = ({ onLogin }: AuthFormProps) => {
       if (result.success) {
         if (isLogin) {
           setSuccess('Login successful!')
-          // Store tokens in localStorage for demo purposes
-          localStorage.setItem('accessToken', result.data.accessToken)
-          localStorage.setItem('refreshToken', result.data.refreshToken)
-          localStorage.setItem('user', JSON.stringify(result.data.user))
+          // Tokens now stored in httpOnly cookies; only user object optionally in memory
           onLogin?.(result.data)
         } else {
           setSuccess('Account created successfully! Please check your email to verify your account.')
@@ -263,10 +264,14 @@ export const AuthForm = ({ onLogin }: AuthFormProps) => {
         )}
 
         {/* Submit button */}
+        {process.env.NEXT_PUBLIC_DEV_CAPTCHA === 'true' && (
+          <DevCaptcha onSolved={(t) => setCaptchaToken(t)} className="pt-2" />
+        )}
+
         <Button
           type="submit"
           className="w-full"
-          disabled={loading || (!isLogin && !formData.agreeToTerms)}
+          disabled={loading || (!isLogin && !formData.agreeToTerms) || (process.env.NEXT_PUBLIC_DEV_CAPTCHA === 'true' && !captchaToken)}
         >
           {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account')}
         </Button>

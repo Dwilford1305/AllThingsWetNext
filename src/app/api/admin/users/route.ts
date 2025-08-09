@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { User, UserActivityLog } from '@/models'
-import type { ApiResponse, UserWithBusinesses, UserManagementStats } from '@/types'
+import type { ApiResponse, UserWithBusinesses, UserManagementStats, UserRole } from '@/types'
+import { withRole } from '@/lib/auth-middleware'
+import { AuthService } from '@/lib/auth'
 
 // GET /api/admin/users - Get all users with filtering and pagination
-export async function GET(request: NextRequest) {
+async function getUsers(request: NextRequest) {
   try {
     await connectDB()
 
@@ -240,12 +242,29 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/admin/users - Create new user (admin only)
-export async function POST(request: NextRequest) {
+// Requires X-CSRF-Token header matching csrfToken cookie
+async function createUser(request: NextRequest & { user?: { role?: string } }) {
   try {
     await connectDB()
 
     const body = await request.json()
-    const { email, firstName, lastName, role, phone, permissions } = body
+    const { email, firstName, lastName, role, phone, permissions } = body as { email: string; firstName: string; lastName: string; role: UserRole; phone?: string; permissions?: string[] }
+
+    const requesterRole = request.user?.role
+    if ((role === 'admin' || role === 'super_admin') && requesterRole !== 'super_admin') {
+      return NextResponse.json(
+        { success: false, error: 'Only super admin may create admin accounts' },
+        { status: 403 }
+      )
+    }
+    if (role === 'super_admin' && requesterRole !== 'super_admin') {
+      return NextResponse.json(
+        { success: false, error: 'Insufficient privileges to create super admin' },
+        { status: 403 }
+      )
+    }
+
+    const sanitizedPermissions = (role === 'admin' || role === 'super_admin') ? permissions : undefined
 
     // Check if user already exists
     const existingUser = await User.findOne({ email: email.toLowerCase() })
@@ -258,8 +277,7 @@ export async function POST(request: NextRequest) {
 
     // Generate temporary password (user will need to reset it)
     const tempPassword = Math.random().toString(36).slice(-12)
-    const bcrypt = await import('bcryptjs')
-    const passwordHash = await bcrypt.hash(tempPassword, 12)
+  const passwordHash = await AuthService.hashPassword(tempPassword)
 
     const newUser = new User({
       id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -269,7 +287,7 @@ export async function POST(request: NextRequest) {
       lastName,
       role,
       phone,
-      permissions: role === 'admin' || role === 'super_admin' ? permissions : undefined,
+  permissions: sanitizedPermissions,
       isEmailVerified: true, // Admin-created accounts are pre-verified
       preferences: {
         notifications: {
@@ -289,15 +307,16 @@ export async function POST(request: NextRequest) {
 
     await newUser.save()
 
-    // Log the creation
-    await UserActivityLog.create({
+  // Log the creation with actor context
+  await UserActivityLog.create({
       id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       userId: newUser.id,
       action: 'admin_action',
       details: {
         action: 'user_created_by_admin',
         createdRole: role,
-        tempPassword // In production, send this via secure email
+    tempPassword,
+    actorRole: requesterRole
       },
       success: true
     })
@@ -326,3 +345,6 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export const GET = withRole(['admin','super_admin'], getUsers)
+export const POST = withRole(['admin','super_admin'], createUser)

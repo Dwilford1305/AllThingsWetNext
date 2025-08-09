@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { rateLimit, rateLimitResponse } from '@/lib/rateLimit'
 import { connectDB } from '@/lib/mongodb'
 import { AuthService } from '@/lib/auth'
 import { User, UserActivityLog } from '@/models/auth'
 import type { SignupRequest, ApiResponse, User as UserType } from '@/types'
+import { verifyCaptcha, CAPTCHA_REQUIRED } from '@/lib/captcha'
 
 export async function POST(request: NextRequest) {
   try {
     await connectDB()
 
-    const body: SignupRequest = await request.json()
+      const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+      const rl = rateLimit(`signup:${clientIp}`, 10, 60 * 60 * 1000)
+      if (!rl.allowed) {
+        return NextResponse.json({ success: false, error: 'Too many signups from this IP. Try later.' }, { status: 429, headers: rateLimitResponse(rl.remaining, rl.resetAt) })
+      }
+      const body: SignupRequest = await request.json()
     const { 
       email, 
       password, 
@@ -17,7 +24,8 @@ export async function POST(request: NextRequest) {
       phone, 
       accountType, 
       agreeToTerms, 
-      businessName 
+      businessName,
+      captchaToken
     } = body
 
     // Validate required fields
@@ -26,6 +34,16 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Missing required fields' },
         { status: 400 }
       )
+    }
+
+    if (CAPTCHA_REQUIRED) {
+      const captcha = await verifyCaptcha(captchaToken, request.headers.get('x-forwarded-for') || undefined)
+      if (!captcha.success) {
+        return NextResponse.json(
+          { success: false, error: 'CAPTCHA validation failed' },
+          { status: 400 }
+        )
+      }
     }
 
     if (!AuthService.validateEmail(email)) {
@@ -71,10 +89,11 @@ export async function POST(request: NextRequest) {
     const userId = AuthService.generateUserId()
     const emailVerificationToken = AuthService.generateRandomToken()
 
-    // Set default permissions (business owners get basic permissions)
+    const allowedAccountTypes = ['user', 'business_owner'] as const
+    const normalizedAccountType = allowedAccountTypes.includes(accountType as typeof allowedAccountTypes[number])
+      ? accountType
+      : 'user'
     const permissions: string[] = []
-    // Note: Admin accounts should be created through a separate admin process
-    // Regular signup only allows 'user' and 'business_owner' roles
 
     // Create user
     const userData = {
@@ -83,22 +102,23 @@ export async function POST(request: NextRequest) {
       passwordHash,
       firstName: firstName.trim(),
       lastName: lastName.trim(),
-      role: accountType || 'user',
+  role: normalizedAccountType || 'user',
       phone: phone?.trim(),
       emailVerificationToken,
       emailVerificationTokenExpires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
       isEmailVerified: false,
       isActive: true,
       isSuspended: false,
-      twoFactorEnabled: false,
+    twoFactorEnabled: false,
       businessIds: [],
       permissions,
+    verificationStatus: normalizedAccountType === 'business_owner' ? 'pending' : 'verified',
       preferences: {
         notifications: {
           email: true,
           events: true,
           news: true,
-          businessUpdates: accountType === 'business_owner',
+      businessUpdates: normalizedAccountType === 'business_owner',
           marketing: false
         },
         privacy: {

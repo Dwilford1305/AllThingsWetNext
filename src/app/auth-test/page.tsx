@@ -21,13 +21,19 @@ export default function AuthTestPage() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    // Check if user is already logged in
-    const savedUser = localStorage.getItem('user')
-    const accessToken = localStorage.getItem('accessToken')
-    
-    if (savedUser && accessToken) {
-      setUser(JSON.parse(savedUser) as ExtendedUser)
+    // Attempt to fetch current session user via cookies
+    const loadSession = async () => {
+      try {
+        const resp = await fetch('/api/auth/me', { credentials: 'include' })
+        if (resp.ok) {
+          const data = await resp.json()
+          if (data.success) setUser(data.data)
+        }
+  } catch (_e) {
+        // silent
+      }
     }
+    loadSession()
   }, [])
 
   const handleLogin = (authData: Record<string, unknown>) => {
@@ -38,23 +44,8 @@ export default function AuthTestPage() {
   const handleLogout = async () => {
     setLoading(true)
     try {
-      const accessToken = localStorage.getItem('accessToken')
-      
-      if (accessToken) {
-        await fetch('/api/auth/logout', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          }
-        })
-      }
-      
-      // Clear local storage
-      localStorage.removeItem('user')
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
-      
+      const csrf = document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1];
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': csrf || '' } })
       setUser(null)
     } catch (error) {
       console.error('Logout error:', error)
@@ -64,19 +55,8 @@ export default function AuthTestPage() {
   }
 
   const testApiCall = async () => {
-    const accessToken = localStorage.getItem('accessToken')
-    
-    if (!accessToken) {
-      alert('No access token found')
-      return
-    }
-
     try {
-      const response = await fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
-        }
-      })
+  const response = await fetch('/api/auth/me', { credentials: 'include' })
 
       const result = await response.json()
       

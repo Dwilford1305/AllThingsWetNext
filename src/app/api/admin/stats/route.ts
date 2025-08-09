@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import { Business } from '@/models';
 import { Event } from '@/models';
 import { NewsArticle } from '@/models';
+import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware';
 
 interface AdminStatsResponse {
   businesses: {
@@ -29,7 +30,7 @@ interface AdminStatsResponse {
   };
 }
 
-export async function GET(_request: NextRequest) {
+async function getStats(request: AuthenticatedRequest) {
   try {
     await connectDB();
 
@@ -103,7 +104,9 @@ export async function GET(_request: NextRequest) {
       }
     };
 
-    return NextResponse.json({
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown';
+  console.log(`📊 ADMIN STATS VIEW by ${actor}`);
+  return NextResponse.json({
       success: true,
       data: stats
     });
@@ -119,3 +122,5 @@ export async function GET(_request: NextRequest) {
     );
   }
 }
+
+export const GET = withRole(['admin','super_admin'], getStats);

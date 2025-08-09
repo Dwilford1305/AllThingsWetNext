@@ -1,10 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { User, UserActivityLog, Business } from '@/models'
 import type { ApiResponse, UserBulkAction } from '@/types'
+import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware'
 
 // POST /api/admin/users/bulk - Bulk operations on users
-export async function POST(request: NextRequest) {
+async function bulkUserAction(request: AuthenticatedRequest) {
   try {
     await connectDB()
 
@@ -268,7 +269,9 @@ export async function POST(request: NextRequest) {
       message
     }
 
-    return NextResponse.json(response)
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown'
+  console.log(`🧺 ADMIN BULK USER ACTION by ${actor}: ${action} on ${userIds.length} users`)
+  return NextResponse.json(response)
   } catch (error) {
     console.error('Bulk operation error:', error)
     return NextResponse.json(
@@ -280,3 +283,5 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export const POST = withRole(['admin','super_admin'], bulkUserAction)

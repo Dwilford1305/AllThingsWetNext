@@ -2,6 +2,8 @@ import { hash, compare } from 'bcryptjs'
 import { sign, verify, SignOptions } from 'jsonwebtoken'
 import { v4 as uuidv4 } from 'uuid'
 import type { User } from '@/types/auth'
+import { RefreshTokenJti } from '@/models/security'
+import { UserSession, UserActivityLog } from '@/models/auth'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-change-in-production'
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'fallback-refresh-secret-change-in-production'  
@@ -14,6 +16,14 @@ if (!JWT_SECRET || typeof JWT_SECRET !== 'string') {
 }
 if (!JWT_REFRESH_SECRET || typeof JWT_REFRESH_SECRET !== 'string') {
   throw new Error('JWT_REFRESH_SECRET must be defined as a string')
+}
+if (process.env.NODE_ENV === 'production') {
+  if (JWT_SECRET.includes('fallback-secret')) {
+    throw new Error('Insecure fallback JWT_SECRET detected in production')
+  }
+  if (JWT_REFRESH_SECRET.includes('fallback-refresh-secret')) {
+    throw new Error('Insecure fallback JWT_REFRESH_SECRET detected in production')
+  }
 }
 
 export class AuthService {
@@ -41,8 +51,9 @@ export class AuthService {
       audience: 'allthingswet-users'
     } as SignOptions)
 
+    const refreshJti = uuidv4()
     const refreshToken = sign(
-      { ...payload, tokenType: 'refresh' }, 
+      { ...payload, tokenType: 'refresh', jti: refreshJti }, 
       JWT_REFRESH_SECRET as string, 
       {
         expiresIn: JWT_REFRESH_EXPIRES_IN,
@@ -57,8 +68,26 @@ export class AuthService {
 
     return {
       accessToken,
-      refreshToken,
+  refreshToken,
+  refreshJti,
       expiresAt
+    }
+  }
+
+  // Generic signing for auxiliary tokens (e.g., 2FA pending)
+  static signToken(payload: Record<string, unknown>, expiresIn: string) {
+    return sign(payload, JWT_SECRET as string, {
+      expiresIn,
+      issuer: 'allthingswet',
+      audience: 'allthingswet-users'
+    } as SignOptions)
+  }
+
+  static verifyToken(token: string): Record<string, unknown> | null {
+    try {
+  return verify(token, JWT_SECRET, { issuer: 'allthingswet', audience: 'allthingswet-users' }) as Record<string, unknown>
+    } catch {
+      return null
     }
   }
 
@@ -84,6 +113,42 @@ export class AuthService {
     } catch (_error) {
       throw new Error('Invalid or expired refresh token')
     }
+  }
+
+  // Placeholder for refresh token reuse detection (to be backed by persistence)
+  static async detectRefreshReuse(jti: string): Promise<boolean> {
+    if (!jti) return false
+    const existing = await RefreshTokenJti.findOne({ jti })
+    // If found and marked reuse_detected already handled previously
+    return !!existing
+  }
+
+  static async markRefreshUsed(params: { jti: string; userId: string; ip?: string | null; userAgent?: string | null; reason?: 'rotated'|'revoked'|'reuse_detected' }): Promise<void> {
+    const { jti, userId, ip, userAgent, reason = 'rotated' } = params
+    if (!jti || !userId) return
+    try {
+      await RefreshTokenJti.create({ jti, userId, ip, userAgent, reason })
+    } catch (_e) {
+      // Ignore duplicate key errors
+    }
+  }
+
+  static async handleReuseDetected(userId: string, reusedJti: string) {
+    // Revoke all active sessions for user as precaution
+    await UserSession.updateMany({ userId, isActive: true }, { isActive: false, revokedAt: new Date() })
+    // Mark the reused JTI explicitly if not already
+    await RefreshTokenJti.updateOne({ jti: reusedJti }, { reason: 'reuse_detected' })
+    try {
+      await UserActivityLog.create({
+        id: this.generateUserId(),
+        userId,
+        action: 'refresh_token_reuse_detected',
+        details: { reusedJti },
+        success: false,
+        ip: 'unknown',
+        userAgent: 'unknown'
+      })
+    } catch { /* swallow logging errors */ }
   }
 
   // Generate random token for email verification, password reset, etc.

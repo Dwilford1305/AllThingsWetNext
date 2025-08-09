@@ -28,6 +28,9 @@ const UserSchema = new Schema({
   // Security
   twoFactorEnabled: { type: Boolean, default: false },
   twoFactorSecret: { type: String },
+  twoFactorTempSecret: { type: String }, // secret awaiting confirmation
+  twoFactorBackupCodes: [{ type: String }], // hashed codes
+  twoFactorPendingUntil: { type: Date }, // time window for confirming enrollment
   passwordResetToken: { type: String },
   passwordResetTokenExpires: { type: Date },
   

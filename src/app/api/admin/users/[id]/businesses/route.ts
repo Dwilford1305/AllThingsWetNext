@@ -1,17 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { User, Business, UserActivityLog } from '@/models'
 import type { ApiResponse } from '@/types'
+import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware'
 
 // POST /api/admin/users/[id]/businesses - Link/unlink businesses to user
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+async function manageUserBusinesses(
+  request: AuthenticatedRequest,
+  context?: Record<string, unknown>
 ) {
   try {
     await connectDB()
-
-    const userId = params.id
+    const userId = (context?.params as { id?: string } | undefined)?.id
+    if (!userId) {
+      return NextResponse.json({ success: false, error: 'User ID missing' }, { status: 400 })
+    }
     const body = await request.json()
     const { action, businessIds } = body
 
@@ -187,14 +190,16 @@ export async function POST(
       message
     }
 
-    return NextResponse.json(response)
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown'
+  console.log(`🏢 ADMIN USER BUSINESSES ACTION by ${actor}: ${action} for user ${userId}`)
+  return NextResponse.json(response)
   } catch (error) {
     console.error('Business relationship error:', error)
     
     // Log failed operation
     await UserActivityLog.create({
       id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      userId: params.id,
+  userId: (context?.params as { id?: string } | undefined)?.id,
       action: 'admin_action',
       details: {
         action: 'business_relationship_operation_failed',
@@ -213,3 +218,5 @@ export async function POST(
     )
   }
 }
+
+export const POST = withRole(['admin','super_admin'], manageUserBusinesses)

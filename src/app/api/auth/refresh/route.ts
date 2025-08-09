@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Find the session
+  // Find the session
     const session = await UserSession.findOne({
       refreshToken: token,
       isActive: true,
@@ -60,8 +60,39 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Reuse detection: if previous refresh JTI already recorded => token reuse attack
+    const jti = decoded.jti as string | undefined
+    if (jti && await AuthService.detectRefreshReuse(jti)) {
+      await AuthService.handleReuseDetected(user.id, jti)
+      return NextResponse.json(
+        { success: false, error: 'Refresh token reuse detected. All sessions revoked. Please log in again.' },
+        { status: 401 }
+      )
+    }
+
     // Generate new tokens
     const newTokens = AuthService.generateTokens(user.toObject())
+    // Record the old token's JTI as used (rotated) for future reuse detection
+    if (jti) {
+      await AuthService.markRefreshUsed({
+        jti,
+        userId: user.id,
+        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+        userAgent: request.headers.get('user-agent') || undefined,
+        reason: 'rotated'
+      })
+    }
+
+    // Record the new refresh token's JTI immediately so that its future reuse after rotation can be flagged
+    if (newTokens.refreshJti) {
+      await AuthService.markRefreshUsed({
+        jti: newTokens.refreshJti,
+        userId: user.id,
+        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+        userAgent: request.headers.get('user-agent') || undefined,
+        reason: 'rotated'
+      })
+    }
 
     // Update session with new tokens
     await UserSession.updateOne(
@@ -77,29 +108,40 @@ export async function POST(request: NextRequest) {
     // Prepare response
     const sanitizedUser = AuthService.sanitizeUser(user.toObject())
     
-    const response: ApiResponse<AuthSession> = {
+    const response: ApiResponse<Partial<AuthSession>> = {
       success: true,
       data: {
         user: sanitizedUser as UserType,
         accessToken: newTokens.accessToken,
-        refreshToken: newTokens.refreshToken,
         expiresAt: newTokens.expiresAt
       },
       message: 'Tokens refreshed successfully'
     }
 
-    // Update HTTP-only cookie if it was set before
     const nextResponse = NextResponse.json(response)
-    
+    nextResponse.cookies.set('accessToken', newTokens.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60
+    })
     if (request.cookies.get('refreshToken')) {
       nextResponse.cookies.set('refreshToken', newTokens.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 // 7 days
+        maxAge: 7 * 24 * 60 * 60
       })
     }
-
+    // Rotate CSRF token as well on refresh
+    const csrfToken = AuthService.generateSessionId()
+    nextResponse.cookies.set('csrfToken', csrfToken, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60
+    })
     return nextResponse
 
   } catch (error) {

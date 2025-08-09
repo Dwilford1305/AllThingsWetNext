@@ -1,17 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Business as BusinessModel } from '@/models'
 import type { ApiResponse } from '@/types'
+import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware'
 
 // POST /api/admin/businesses/[id]/subscription - Admin subscription management
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+async function updateSubscription(
+  request: AuthenticatedRequest,
+  context?: Record<string, unknown>
 ) {
   try {
     await connectDB()
 
-    const { id: businessId } = await params
+    const params = (context?.params as { id?: string } | undefined)
+    const businessId = params?.id
+    if (!businessId) {
+      return NextResponse.json({ success: false, error: 'Business ID missing' }, { status: 400 })
+    }
     const body = await request.json()
     const { tier, duration } = body
 
@@ -66,7 +71,8 @@ export async function POST(
       { new: true }
     )
 
-    console.log(`💳 ADMIN SUBSCRIPTION UPDATE: ${business.name} -> ${tier} for ${duration || 0} months`)
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown'
+  console.log(`💳 ADMIN SUBSCRIPTION UPDATE (${actor}): ${business.name} -> ${tier} for ${duration || 0} months`)
 
     const response: ApiResponse<typeof updatedBusiness> = {
       success: true,
@@ -87,3 +93,5 @@ export async function POST(
     )
   }
 }
+
+export const POST = withRole(['admin','super_admin'], updateSubscription)

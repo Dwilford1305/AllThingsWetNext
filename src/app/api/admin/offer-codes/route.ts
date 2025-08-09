@@ -1,12 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { OfferCode } from '@/models'
-import { v4 as uuidv4 } from 'uuid'
+import { randomUUID } from 'crypto'
 import type { ApiResponse, OfferCode as OfferCodeType, OfferType, SubscriptionTier, OfferCodeUsage } from '@/types'
+import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware'
+import { rateLimit, rateLimitResponse } from '@/lib/rateLimit'
 
 // GET /api/admin/offer-codes - Get all offer codes
-export async function GET(request: NextRequest) {
+async function getOfferCodes(request: AuthenticatedRequest) {
   try {
+    const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const rl = rateLimit(`admin:offer-codes:list:${clientIp}`, 60, 60 * 1000)
+    if (!rl.allowed) {
+      return NextResponse.json({ success: false, error: 'Rate limit exceeded' }, { status: 429, headers: rateLimitResponse(rl.remaining, rl.resetAt) })
+    }
     await connectDB()
 
     const url = new URL(request.url)
@@ -50,7 +57,7 @@ export async function GET(request: NextRequest) {
       message: 'Offer codes retrieved successfully'
     }
 
-    return NextResponse.json(response)
+  return NextResponse.json(response)
 
   } catch (error) {
     console.error('Get offer codes error:', error)
@@ -65,8 +72,13 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/admin/offer-codes - Create or update offer code
-export async function POST(request: NextRequest) {
+async function createOrUpdateOfferCode(request: AuthenticatedRequest) {
   try {
+    const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const rl = rateLimit(`admin:offer-codes:write:${clientIp}`, 20, 60 * 1000)
+    if (!rl.allowed) {
+      return NextResponse.json({ success: false, error: 'Rate limit exceeded' }, { status: 429, headers: rateLimitResponse(rl.remaining, rl.resetAt) })
+    }
     await connectDB()
 
     const body = await request.json()
@@ -83,17 +95,16 @@ export async function POST(request: NextRequest) {
       maxUses, 
       validFrom, 
       validUntil,
-      applicableTiers,
-      isActive,
-      createdBy
+  applicableTiers,
+  isActive,
     } = body
 
     // Validate required fields
-    if (!code || !name || !description || !offerType || !validFrom || !validUntil || !createdBy) {
+  if (!code || !name || !description || !offerType || !validFrom || !validUntil) {
       return NextResponse.json(
         { 
           success: false, 
-          error: 'Missing required fields: code, name, description, offerType, validFrom, validUntil, and createdBy are required' 
+      error: 'Missing required fields: code, name, description, offerType, validFrom, validUntil are required' 
         },
         { status: 400 }
       )
@@ -161,7 +172,7 @@ export async function POST(request: NextRequest) {
       validUntil: untilDate,
       applicableTiers: applicableTiers || ['free', 'silver', 'gold'],
       isActive: isActive !== undefined ? isActive : true,
-      createdBy,
+  createdBy: request.user?.id || 'unknown',
       updatedAt: new Date()
     }
 
@@ -192,13 +203,14 @@ export async function POST(request: NextRequest) {
       }
 
       offerCode = await OfferCode.create({
-        id: `offer_${uuidv4()}`,
+  id: `offer_${randomUUID()}`,
         ...offerCodeData,
         createdAt: new Date()
       })
     }
 
-    console.log(`📋 ${id ? 'UPDATED' : 'CREATED'} OFFER CODE: ${offerCode.code} (${offerCode.name})`)
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown'
+  console.log(`📋 ${id ? 'UPDATED' : 'CREATED'} OFFER CODE by ${actor}: ${offerCode.code} (${offerCode.name})`)
 
     const response: ApiResponse<OfferCodeType> = {
       success: true,
@@ -233,7 +245,7 @@ export async function POST(request: NextRequest) {
       message: `Offer code ${id ? 'updated' : 'created'} successfully`
     }
 
-    return NextResponse.json(response, { status: id ? 200 : 201 })
+  return NextResponse.json(response, { status: id ? 200 : 201 })
 
   } catch (error) {
     console.error('Create/update offer code error:', error)
@@ -248,8 +260,13 @@ export async function POST(request: NextRequest) {
 }
 
 // DELETE /api/admin/offer-codes - Delete offer code
-export async function DELETE(request: NextRequest) {
+async function deleteOfferCode(request: AuthenticatedRequest) {
   try {
+    const clientIp = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const rl = rateLimit(`admin:offer-codes:delete:${clientIp}`, 30, 60 * 1000)
+    if (!rl.allowed) {
+      return NextResponse.json({ success: false, error: 'Rate limit exceeded' }, { status: 429, headers: rateLimitResponse(rl.remaining, rl.resetAt) })
+    }
     await connectDB()
 
     const url = new URL(request.url)
@@ -271,7 +288,8 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    console.log(`🗑️ DELETED OFFER CODE: ${offerCode.code} (${offerCode.name})`)
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown'
+  console.log(`🗑️ DELETED OFFER CODE by ${actor}: ${offerCode.code} (${offerCode.name})`)
 
     const response: ApiResponse<null> = {
       success: true,
@@ -292,3 +310,7 @@ export async function DELETE(request: NextRequest) {
     )
   }
 }
+
+export const GET = withRole(['admin','super_admin'], getOfferCodes)
+export const POST = withRole(['admin','super_admin'], createOrUpdateOfferCode)
+export const DELETE = withRole(['admin','super_admin'], deleteOfferCode)

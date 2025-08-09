@@ -73,16 +73,8 @@ export default function BusinessRequestForm() {
 
   const loadUserRequests = async () => {
     try {
-      const token = localStorage.getItem('accessToken')
-      if (!token) {
-        setLoadingRequests(false)
-        return
-      }
-
       const response = await fetch('/api/business/request', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       })
 
       if (response.ok) {
@@ -102,17 +94,13 @@ export default function BusinessRequestForm() {
     setError('')
 
     try {
-      const token = localStorage.getItem('accessToken')
-      if (!token) {
-        throw new Error('Please log in to submit a business request')
-      }
-
       const response = await fetch('/api/business/request', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'X-CSRF-Token': (typeof document !== 'undefined' ? document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1] : '') || ''
         },
+        credentials: 'include',
         body: JSON.stringify(formData)
       })
 

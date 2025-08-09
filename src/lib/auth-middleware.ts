@@ -25,11 +25,17 @@ export async function authenticate(request: NextRequest) {
     await connectDB()
     
     const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return { error: 'No authorization header found', status: 401 }
+    let token: string | undefined
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7)
+    } else {
+      // Fallback to cookie-based access token
+      token = request.cookies.get('accessToken')?.value
+    }
+    if (!token) {
+      return { error: 'Not authenticated', status: 401 }
     }
 
-    const token = authHeader.substring(7)
     const decoded = AuthService.verifyAccessToken(token)
     
     // Check if session exists and is active
@@ -136,6 +142,10 @@ export function handleAuthError(error: { error?: string; status?: number }) {
 // Wrapper for API routes that require authentication
 export function withAuth(handler: (request: AuthenticatedRequest, context?: Record<string, unknown>) => Promise<Response>) {
   return async (request: NextRequest, context?: Record<string, unknown>) => {
+    if (['POST','PUT','PATCH','DELETE'].includes(request.method.toUpperCase())) {
+      const csrfError = _checkCsrf(request)
+      if (csrfError) return handleAuthError(csrfError)
+    }
     const authResult = await authenticate(request)
     
     if (authResult.error) {
@@ -150,9 +160,25 @@ export function withAuth(handler: (request: AuthenticatedRequest, context?: Reco
   }
 }
 
+// Basic CSRF check placeholder (double-submit cookie pattern to be enforced later)
+function _checkCsrf(request: NextRequest) {
+  const method = request.method.toUpperCase()
+  if (!['POST','PUT','PATCH','DELETE'].includes(method)) return null
+  const headerToken = request.headers.get('x-csrf-token')
+  const cookieToken = request.cookies.get('csrfToken')?.value
+  if (!headerToken || !cookieToken || headerToken !== cookieToken) {
+    return { error: 'Invalid or missing CSRF token', status: 403 }
+  }
+  return null
+}
+
 // Wrapper for API routes that require specific roles
 export function withRole(allowedRoles: string[], handler: (request: AuthenticatedRequest, context?: Record<string, unknown>) => Promise<Response>) {
   return async (request: NextRequest, context?: Record<string, unknown>) => {
+    if (['POST','PUT','PATCH','DELETE'].includes(request.method.toUpperCase())) {
+      const csrfError = _checkCsrf(request)
+      if (csrfError) return handleAuthError(csrfError)
+    }
     const authResult = await authorizeRole(request, allowedRoles)
     
     if (authResult.error) {
@@ -169,6 +195,10 @@ export function withRole(allowedRoles: string[], handler: (request: Authenticate
 // Wrapper for API routes that require specific permissions
 export function withPermission(requiredPermission: string, handler: (request: AuthenticatedRequest, context?: Record<string, unknown>) => Promise<Response>) {
   return async (request: NextRequest, context?: Record<string, unknown>) => {
+    if (['POST','PUT','PATCH','DELETE'].includes(request.method.toUpperCase())) {
+      const csrfError = _checkCsrf(request)
+      if (csrfError) return handleAuthError(csrfError)
+    }
     const authResult = await authorizePermission(request, requiredPermission)
     
     if (authResult.error) {

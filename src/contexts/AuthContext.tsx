@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { csrfFetch } from '@/lib/csrf';
 
 interface User {
   id: string;
@@ -16,7 +17,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string, captchaToken?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   hasRole: (role: string) => boolean;
@@ -38,56 +39,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuthStatus = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-
-      const response = await fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
+      const response = await fetch('/api/auth/me', { credentials: 'include' });
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.data) {
           setUser(result.data);
+        } else {
+          setUser(null);
         }
       } else {
-        // Token is invalid, remove it
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        setUser(null);
       }
     } catch (error) {
       console.error('Auth check failed:', error);
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const login = async (email: string, password: string, captchaToken?: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const response = await fetch('/api/auth/login', {
+  const response = await csrfFetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, captchaToken }),
       });
 
       const result = await response.json();
 
       if (response.ok && result.success) {
         // Extract data from the API response structure
-        const { user, accessToken, refreshToken } = result.data;
-        
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
-        setUser(user);
+  const { user } = result.data;
+  setUser(user);
         return { success: true };
       } else {
         return { success: false, error: result.error || 'Login failed' };
@@ -100,20 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      if (token) {
-        await fetch('/api/auth/logout', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-      }
+  await csrfFetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
       setUser(null);
       // Redirect to home page after logout
       router.push('/');

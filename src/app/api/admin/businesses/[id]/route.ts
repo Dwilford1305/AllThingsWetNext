@@ -1,17 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Business as BusinessModel } from '@/models'
 import type { ApiResponse, Business } from '@/types'
+import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware'
 
 // PATCH /api/admin/businesses/[id] - Admin actions on businesses
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+async function patchBusiness(
+  request: AuthenticatedRequest,
+  context?: Record<string, unknown>
 ) {
   try {
     await connectDB()
 
-    const { id: businessId } = await params
+  const params = (context?.params as { id?: string } | undefined)
+  const businessId: string | undefined = params?.id
+    if (!businessId) {
+      return NextResponse.json({ success: false, error: 'Business ID missing' }, { status: 400 })
+    }
     const body = await request.json()
     const { action } = body
 
@@ -47,7 +52,8 @@ export async function PATCH(
       { new: true }
     )
 
-    console.log(`🔧 ADMIN ACTION: ${action} on business ${business.name} (${businessId})`)
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown'
+  console.log(`🔧 ADMIN ACTION (${actor}): ${action} on business ${business.name} (${businessId})`)
 
     const response: ApiResponse<typeof updatedBusiness> = {
       success: true,
@@ -70,14 +76,18 @@ export async function PATCH(
 }
 
 // DELETE /api/admin/businesses/[id] - Delete unclaimed business
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+async function deleteBusiness(
+  request: AuthenticatedRequest,
+  context?: Record<string, unknown>
 ) {
   try {
     await connectDB()
 
-    const { id: businessId } = await params
+  const params = (context?.params as { id?: string } | undefined)
+  const businessId: string | undefined = params?.id
+    if (!businessId) {
+      return NextResponse.json({ success: false, error: 'Business ID missing' }, { status: 400 })
+    }
 
     // Find the business
     const business = await BusinessModel.findOne({ id: businessId })
@@ -99,7 +109,8 @@ export async function DELETE(
     // Delete the business
     await BusinessModel.deleteOne({ id: businessId })
 
-    console.log(`🗑️ ADMIN DELETE: Unclaimed business ${business.name} (${businessId}) deleted`)
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown'
+  console.log(`🗑️ ADMIN DELETE (${actor}): Unclaimed business ${business.name} (${businessId}) deleted`)
 
     const response: ApiResponse<null> = {
       success: true,
@@ -119,3 +130,6 @@ export async function DELETE(
     )
   }
 }
+
+export const PATCH = withRole(['admin','super_admin'], patchBusiness)
+export const DELETE = withRole(['admin','super_admin'], deleteBusiness)

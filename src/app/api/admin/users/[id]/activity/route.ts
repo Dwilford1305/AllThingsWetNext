@@ -1,17 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { UserActivityLog } from '@/models'
 import type { ApiResponse } from '@/types'
+import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware'
 
 // GET /api/admin/users/[id]/activity - Get user activity logs
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+async function getUserActivity(
+  request: AuthenticatedRequest,
+  context?: Record<string, unknown>
 ) {
   try {
     await connectDB()
-
-    const userId = params.id
+    const userId = (context?.params as { id?: string } | undefined)?.id
+    if (!userId) {
+      return NextResponse.json({ success: false, error: 'User ID missing' }, { status: 400 })
+    }
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '50')
@@ -113,7 +116,9 @@ export async function GET(
       }
     }
 
-    return NextResponse.json(response)
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown'
+  console.log(`📄 ADMIN USER ACTIVITY VIEW by ${actor}: ${userId}`)
+  return NextResponse.json(response)
   } catch (error) {
     console.error('Get user activity error:', error)
     return NextResponse.json(
@@ -127,14 +132,16 @@ export async function GET(
 }
 
 // POST /api/admin/users/[id]/activity - Add manual activity log entry (admin action)
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+async function createUserActivity(
+  request: AuthenticatedRequest,
+  context?: Record<string, unknown>
 ) {
   try {
     await connectDB()
-
-    const userId = params.id
+    const userId = (context?.params as { id?: string } | undefined)?.id
+    if (!userId) {
+      return NextResponse.json({ success: false, error: 'User ID missing' }, { status: 400 })
+    }
     const body = await request.json()
     const { action, details, note } = body
 
@@ -157,7 +164,9 @@ export async function POST(
       message: 'Activity log entry created'
     }
 
-    return NextResponse.json(response)
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown'
+  console.log(`📝 ADMIN USER ACTIVITY CREATE by ${actor} for user ${userId}`)
+  return NextResponse.json(response)
   } catch (error) {
     console.error('Create activity log error:', error)
     return NextResponse.json(
@@ -169,3 +178,6 @@ export async function POST(
     )
   }
 }
+
+export const GET = withRole(['admin','super_admin'], getUserActivity)
+export const POST = withRole(['admin','super_admin'], createUserActivity)

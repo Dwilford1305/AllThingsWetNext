@@ -73,11 +73,8 @@ export default function BusinessRequestManager() {
   const loadRequests = async () => {
     setIsLoading(true)
     try {
-      const token = localStorage.getItem('accessToken')
       const response = await fetch(`/api/admin/business-requests?status=${selectedStatus}&page=${pagination.page}&limit=${pagination.limit}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        credentials: 'include'
       })
       
       if (response.ok) {
@@ -99,13 +96,13 @@ export default function BusinessRequestManager() {
   const handleStatusUpdate = async (requestId: string, status: 'approved' | 'rejected') => {
     setIsSubmitting(true)
     try {
-      const token = localStorage.getItem('accessToken')
       const response = await fetch('/api/admin/business-requests', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'X-CSRF-Token': (typeof document !== 'undefined' ? document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1] : '') || ''
         },
+        credentials: 'include',
         body: JSON.stringify({
           requestId,
           status,

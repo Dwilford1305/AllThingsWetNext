@@ -1,17 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { User, UserActivityLog, Business } from '@/models'
 import type { ApiResponse, UserWithBusinesses } from '@/types'
+import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware'
 
 // GET /api/admin/users/[id] - Get specific user with full details
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+async function getUser(
+  request: AuthenticatedRequest,
+  context?: Record<string, unknown>
 ) {
   try {
     await connectDB()
-
-    const userId = params.id
+    const userId = (context?.params as { id?: string } | undefined)?.id
+    if (!userId) {
+      return NextResponse.json({ success: false, error: 'User ID missing' }, { status: 400 })
+    }
 
     const user = await User.aggregate([
       { $match: { id: userId } },
@@ -57,7 +60,9 @@ export async function GET(
       data: user[0] as UserWithBusinesses
     }
 
-    return NextResponse.json(response)
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown'
+  console.log(`👤 ADMIN USER VIEW by ${actor}: ${userId}`)
+  return NextResponse.json(response)
   } catch (error) {
     console.error('Get user error:', error)
     return NextResponse.json(
@@ -71,14 +76,16 @@ export async function GET(
 }
 
 // PATCH /api/admin/users/[id] - Update user details
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+async function patchUser(
+  request: AuthenticatedRequest,
+  context?: Record<string, unknown>
 ) {
   try {
     await connectDB()
-
-    const userId = params.id
+    const userId = (context?.params as { id?: string } | undefined)?.id
+    if (!userId) {
+      return NextResponse.json({ success: false, error: 'User ID missing' }, { status: 400 })
+    }
     const body = await request.json()
     const { 
       firstName, 
@@ -151,14 +158,16 @@ export async function PATCH(
       message: 'User updated successfully'
     }
 
-    return NextResponse.json(response)
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown'
+  console.log(`✏️ ADMIN USER PATCH by ${actor}: ${userId}`)
+  return NextResponse.json(response)
   } catch (error) {
     console.error('Update user error:', error)
     
     // Log failed update attempt
     await UserActivityLog.create({
       id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      userId: params.id,
+  userId: (context?.params as { id?: string } | undefined)?.id,
       action: 'admin_action',
       details: {
         action: 'user_update_failed',
@@ -179,14 +188,16 @@ export async function PATCH(
 }
 
 // DELETE /api/admin/users/[id] - Delete user (soft delete)
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+async function deleteUser(
+  request: AuthenticatedRequest,
+  context?: Record<string, unknown>
 ) {
   try {
     await connectDB()
-
-    const userId = params.id
+    const userId = (context?.params as { id?: string } | undefined)?.id
+    if (!userId) {
+      return NextResponse.json({ success: false, error: 'User ID missing' }, { status: 400 })
+    }
 
     const user = await User.findOne({ id: userId })
     if (!user) {
@@ -256,14 +267,16 @@ export async function DELETE(
       message: 'User deleted successfully'
     }
 
-    return NextResponse.json(response)
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown'
+  console.log(`🗑️ ADMIN USER DELETE by ${actor}: ${userId}`)
+  return NextResponse.json(response)
   } catch (error) {
     console.error('Delete user error:', error)
     
     // Log failed deletion attempt
     await UserActivityLog.create({
       id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      userId: params.id,
+  userId: (context?.params as { id?: string } | undefined)?.id,
       action: 'admin_action',
       details: {
         action: 'user_deletion_failed',
@@ -282,3 +295,7 @@ export async function DELETE(
     )
   }
 }
+
+export const GET = withRole(['admin','super_admin'], getUser)
+export const PATCH = withRole(['admin','super_admin'], patchUser)
+export const DELETE = withRole(['admin','super_admin'], deleteUser)

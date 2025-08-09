@@ -9,16 +9,17 @@ export async function GET(request: NextRequest) {
   try {
     await connectDB()
 
-    // Get token from Authorization header
+    // Get token from Authorization header or httpOnly cookie
     const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { success: false, error: 'No valid authorization token provided' },
-        { status: 401 }
-      )
+    let token: string | undefined
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7)
+    } else {
+      token = request.cookies.get('accessToken')?.value
     }
-
-    const token = authHeader.substring(7) // Remove 'Bearer ' prefix
+    if (!token) {
+      return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 })
+    }
 
     // Verify token
     let decoded
@@ -87,16 +88,17 @@ export async function PUT(request: NextRequest) {
   try {
     await connectDB()
 
-    // Get token from Authorization header
+    // Get token from header or cookie
     const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { success: false, error: 'No valid authorization token provided' },
-        { status: 401 }
-      )
+    let token: string | undefined
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7)
+    } else {
+      token = request.cookies.get('accessToken')?.value
     }
-
-    const token = authHeader.substring(7) // Remove 'Bearer ' prefix
+    if (!token) {
+      return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 })
+    }
 
     // Verify token
     let decoded

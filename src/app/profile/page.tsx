@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { csrfFetch } from '@/lib/csrf';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -104,11 +105,7 @@ export default function ProfilePage() {
     
     setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      });
+  const response = await fetch('/api/auth/me', { credentials: 'include' });
       
       if (response.ok) {
         const result = await response.json();
@@ -137,12 +134,12 @@ export default function ProfilePage() {
     setMessage(null);
     
     try {
-      const response = await fetch('/api/auth/me', {
+    const response = await csrfFetch('/api/auth/me', {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+      'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(updates),
       });
       
@@ -171,12 +168,12 @@ export default function ProfilePage() {
     setMessage(null);
     
     try {
-      const response = await fetch('/api/auth/change-password', {
+    const response = await csrfFetch('/api/auth/change-password', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+      'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({
           currentPassword: passwordForm.currentPassword,
           newPassword: passwordForm.newPassword,
@@ -654,12 +651,7 @@ function BusinessTab({ userId: _userId }: { userId: string }) {
   const loadClaimedBusinesses = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('/api/user/businesses', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+  const response = await fetch('/api/user/businesses', { credentials: 'include' });
       
       if (response.ok) {
         const data = await response.json();
@@ -934,7 +926,20 @@ function SecurityTab({
             </Button>
           </div>
         </div>
+
+        {/* Session Management */}
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Session Management</h3>
+          <p className="text-sm text-gray-600 mb-3">Review and revoke active login sessions on your account.</p>
+          {/* Lazy load to avoid SSR issues */}
+          <SessionManagerWrapper />
+        </div>
       </div>
     </div>
   );
 }
+
+// Dynamic import wrapper kept simple (no next/dynamic to minimize code changes)
+import dynamic from 'next/dynamic'
+const SessionManager = dynamic(() => import('@/components/SessionManager'), { ssr: false })
+function SessionManagerWrapper() { return <SessionManager /> }

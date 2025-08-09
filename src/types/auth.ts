@@ -148,6 +148,29 @@ export interface LoginRequest {
   email: string
   password: string
   rememberMe?: boolean
+  captchaToken?: string
+}
+
+// Two-factor (TOTP) challenge after primary credential login
+export interface TwoFactorChallengeRequest {
+  pendingToken: string // temporary token representing pre-2FA auth
+  code: string // TOTP or backup code
+}
+
+export interface TwoFactorEnrollInitResponse {
+  secret: string
+  otpauthUrl: string
+  qrDataUrl?: string
+  expiresAt: string
+}
+
+export interface TwoFactorEnableRequest {
+  secret: string
+  code: string
+}
+
+export interface TwoFactorDisableRequest {
+  code: string
 }
 
 export interface SignupRequest {
@@ -159,6 +182,7 @@ export interface SignupRequest {
   accountType: 'user' | 'business_owner'
   agreeToTerms: boolean
   businessName?: string // If registering as business owner
+  captchaToken?: string
 }
 
 export interface PasswordResetRequest {
