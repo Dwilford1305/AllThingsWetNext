@@ -5,8 +5,11 @@ import type { User } from '@/types/auth'
 import { RefreshTokenJti } from '@/models/security'
 import { UserSession, UserActivityLog } from '@/models/auth'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-change-in-production'
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'fallback-refresh-secret-change-in-production'  
+// Pull raw secrets; allow distinguishing preview vs production using VERCEL_ENV
+const RAW_JWT_SECRET = process.env.JWT_SECRET
+const RAW_JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET
+const JWT_SECRET = RAW_JWT_SECRET || 'fallback-secret-change-in-production'
+const JWT_REFRESH_SECRET = RAW_JWT_REFRESH_SECRET || 'fallback-refresh-secret-change-in-production'  
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h'
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d'
 
@@ -17,12 +20,20 @@ if (!JWT_SECRET || typeof JWT_SECRET !== 'string') {
 if (!JWT_REFRESH_SECRET || typeof JWT_REFRESH_SECRET !== 'string') {
   throw new Error('JWT_REFRESH_SECRET must be defined as a string')
 }
-if (process.env.NODE_ENV === 'production') {
+// Treat true production differently from Vercel preview builds.
+// Vercel sets NODE_ENV=production for preview & prod, but exposes VERCEL_ENV ("preview" | "production" | "development").
+const isRealProduction = process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV !== 'preview'
+if (isRealProduction) {
   if (JWT_SECRET.includes('fallback-secret')) {
     throw new Error('Insecure fallback JWT_SECRET detected in production')
   }
   if (JWT_REFRESH_SECRET.includes('fallback-refresh-secret')) {
     throw new Error('Insecure fallback JWT_REFRESH_SECRET detected in production')
+  }
+} else if (process.env.VERCEL_ENV === 'preview') {
+  if (JWT_SECRET.includes('fallback-secret') || JWT_REFRESH_SECRET.includes('fallback-refresh-secret')) {
+    // Soft warning to encourage setting preview secrets without blocking build
+    console.warn('[auth] Using fallback JWT secrets on preview build. Set JWT_SECRET & JWT_REFRESH_SECRET in Vercel for stronger security.')
   }
 }
 

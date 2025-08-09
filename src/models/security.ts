@@ -4,7 +4,8 @@ import { Schema, model, models } from 'mongoose'
 const RefreshTokenJtiSchema = new Schema({
   jti: { type: String, required: true, unique: true },
   userId: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now, index: true },
+  // createdAt indexed explicitly below (TTL + compound); avoid duplicate implicit index
+  createdAt: { type: Date, default: Date.now },
   reason: { type: String, enum: ['rotated','revoked','reuse_detected'], default: 'rotated' },
   ip: { type: String },
   userAgent: { type: String }
