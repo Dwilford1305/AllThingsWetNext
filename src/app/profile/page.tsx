@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { csrfFetch } from '@/lib/csrf';
 import Image from 'next/image';
-import { useAuth } from '@/contexts/AuthContext';
+import { useUser } from '@auth0/nextjs-auth0/client';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -36,7 +36,7 @@ interface ProfileData extends UserType {
 }
 
 export default function ProfilePage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading } = useUser();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('profile');
   const [isLoading, setIsLoading] = useState(false);

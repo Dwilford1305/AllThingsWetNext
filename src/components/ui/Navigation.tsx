@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { AuthModal } from '@/components/AuthModal';
+import { useUser } from '@auth0/nextjs-auth0/client';
 import { Menu, X, Home, Calendar, Newspaper, Building, Briefcase, ShoppingBag, Shield, LogIn, UserPlus, LogOut, User } from 'lucide-react';
 
 const Navigation = () => {
@@ -13,11 +12,11 @@ const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [viewportWidth, setViewportWidth] = useState(0);
   const [hasMounted, setHasMounted] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const pathname = usePathname();
   const isHomePage = pathname === '/';
-  const { user, logout, isSuperAdmin } = useAuth();
+  const { user } = useUser();
+  // For demo, treat all users as not super admin. You can extend this with user roles from Auth0 profile if needed.
+  const isSuperAdmin = false;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,14 +65,10 @@ const Navigation = () => {
     ...(isSuperAdmin ? [{ href: '/admin', label: 'Admin', icon: Shield }] : []),
   ];
 
-  const handleLogin = (mode: 'login' | 'register') => {
-    setAuthMode(mode);
-    setShowAuthModal(true);
-  };
-
-  const handleLogout = async () => {
-    await logout();
-  };
+  // Prefer anchor navigation for reliability over programmatic redirects
+  const loginHref = '/api/auth/login';
+  const signupHref = '/api/auth/login?screen_hint=signup';
+  const logoutHref = '/api/auth/logout';
 
   // Detect if device is likely a foldable in unfolded state
   const isFoldableUnfolded = () => {
@@ -205,8 +200,8 @@ const Navigation = () => {
                 </Link>
                 
                 {/* Logout Button */}
-                <button
-                  onClick={handleLogout}
+                <a
+                  href={logoutHref}
                   className="p-2 rounded-lg transition-colors group relative flex flex-col items-center flex-shrink-0 text-gray-600 hover:bg-red-50 hover:text-red-600"
                   title="Logout"
                 >
@@ -214,13 +209,13 @@ const Navigation = () => {
                   <span className="text-xs font-medium leading-tight text-center text-gray-700">
                     Logout
                   </span>
-                </button>
+                </a>
               </>
             ) : (
               <>
                 {/* Login Button */}
-                <button
-                  onClick={() => handleLogin('login')}
+                <a
+                  href={loginHref}
                   className="p-2 rounded-lg transition-colors group relative flex flex-col items-center flex-shrink-0 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
                   title="Login"
                 >
@@ -228,11 +223,11 @@ const Navigation = () => {
                   <span className="text-xs font-medium leading-tight text-center text-gray-700">
                     Login
                   </span>
-                </button>
+                </a>
                 
                 {/* Register Button */}
-                <button
-                  onClick={() => handleLogin('register')}
+                <a
+                  href={signupHref}
                   className="p-2 rounded-lg transition-colors group relative flex flex-col items-center flex-shrink-0 text-gray-600 hover:bg-blue-50 hover:text-blue-600"
                   title="Register"
                 >
@@ -240,7 +235,7 @@ const Navigation = () => {
                   <span className="text-xs font-medium leading-tight text-center text-gray-700">
                     Register
                   </span>
-                </button>
+                </a>
               </>
             )}
           </div>
@@ -311,8 +306,8 @@ const Navigation = () => {
                         {user.firstName}
                       </span>
                     </Link>
-                    <button
-                      onClick={handleLogout}
+                    <a
+                      href={logoutHref}
                       className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
                         !isHomePage || (hasMounted && isScrolled)
                           ? 'text-gray-600 hover:text-red-600' 
@@ -321,12 +316,12 @@ const Navigation = () => {
                     >
                       <LogOut size={16} />
                       <span className="hidden lg:inline">Logout</span>
-                    </button>
+                    </a>
                   </div>
                 ) : (
                   <>
-                    <button
-                      onClick={() => handleLogin('login')}
+                    <a
+                      href={loginHref}
                       className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
                         !isHomePage || (hasMounted && isScrolled)
                           ? 'text-gray-600 hover:text-blue-600' 
@@ -335,9 +330,9 @@ const Navigation = () => {
                     >
                       <LogIn size={16} />
                       <span className="hidden lg:inline">Login</span>
-                    </button>
+                    </a>
                     <button
-                      onClick={() => handleLogin('register')}
+                      onClick={(e) => { e.preventDefault(); window.location.href = signupHref; }}
                       className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 border ${
                         !isHomePage || (hasMounted && isScrolled)
                           ? 'border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white' 
@@ -411,39 +406,33 @@ const Navigation = () => {
                         {user.firstName} {user.lastName}
                       </span>
                     </Link>
-                    <button
-                      onClick={() => {
-                        handleLogout();
-                        setIsOpen(false);
-                      }}
+                    <a
+                      href={logoutHref}
+                      onClick={() => setIsOpen(false)}
                       className="w-full text-left text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2"
                     >
                       <LogOut size={20} />
                       Logout
-                    </button>
+                    </a>
                   </>
                 ) : (
                   <>
-                    <button
-                      onClick={() => {
-                        handleLogin('login');
-                        setIsOpen(false);
-                      }}
+                    <a
+                      href={loginHref}
+                      onClick={() => setIsOpen(false)}
                       className="w-full text-left text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2"
                     >
                       <LogIn size={20} />
                       Login
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleLogin('register');
-                        setIsOpen(false);
-                      }}
+                    </a>
+                    <a
+                      href={signupHref}
+                      onClick={() => setIsOpen(false)}
                       className="w-full text-left text-blue-600 hover:text-blue-700 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2 border border-blue-600 mt-2"
                     >
                       <UserPlus size={20} />
                       Register
-                    </button>
+                    </a>
                   </>
                 )}
               </div>
@@ -452,12 +441,7 @@ const Navigation = () => {
         )}
       </nav>
 
-      {/* Authentication Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        initialMode={authMode}
-      />
+  {/* Auth0 handles authentication modals and redirects */}
     </>
   );
 };

@@ -1,16 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext';
+import { useUser } from '@auth0/nextjs-auth0/client';
 import { Card } from '@/components/ui/Card';
 import { Lock } from 'lucide-react';
+
 
 interface AdminAuthProps {
   children: React.ReactNode;
 }
 
 export const AdminAuth = ({ children }: AdminAuthProps) => {
-  const { user, isLoading, isSuperAdmin } = useAuth();
+  const { user, isLoading } = useUser();
+  const isSuperAdmin = user?.role === 'super_admin';
 
   if (isLoading) {
     return (
@@ -52,4 +54,5 @@ export const AdminAuth = ({ children }: AdminAuthProps) => {
   }
 
   return <>{children}</>;
+// ...file ends here
 };

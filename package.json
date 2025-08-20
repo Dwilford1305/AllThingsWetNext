@@ -10,6 +10,7 @@
     "scrape:events": "node scripts/scrape-events.js"
   },
   "dependencies": {
+  "@auth0/nextjs-auth0": "^2.6.0",
     "@radix-ui/react-slot": "^1.2.3",
     "axios": "^1.10.0",
     "bcryptjs": "^3.0.2",
