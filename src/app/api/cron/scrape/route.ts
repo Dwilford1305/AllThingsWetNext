@@ -226,11 +226,12 @@ async function executeCron(request: NextRequest) {
 export async function GET(request: NextRequest) {
   // If request is from Vercel Cron (or authorized with CRON_SECRET), execute; otherwise return status
   const h = await headers()
-  const isVercelCron = h.get('vercel-cron') !== null
+  const isVercelCron = (h.get('vercel-cron') !== null) || (h.get('x-vercel-cron') !== null)
   const auth = h.get('authorization')
   const hasBearer = process.env.CRON_SECRET ? auth === `Bearer ${process.env.CRON_SECRET}` : false
 
   if (isVercelCron || hasBearer) {
+    if (isVercelCron) console.log('⏰ Detected Vercel Cron (GET)')
     return executeCron(request)
   }
 
@@ -260,7 +261,7 @@ export async function POST(request: NextRequest) {
   // Allow manual POST if either Bearer token matches CRON_SECRET or request comes from Vercel Cron
   const h = await headers()
   const auth = h.get('authorization')
-  const isVercelCron = h.get('vercel-cron') !== null
+  const isVercelCron = (h.get('vercel-cron') !== null) || (h.get('x-vercel-cron') !== null)
 
   if (process.env.CRON_SECRET) {
     const ok = auth === `Bearer ${process.env.CRON_SECRET}` || isVercelCron
