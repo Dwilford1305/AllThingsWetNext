@@ -5,7 +5,10 @@ export class WetaskiwinTimesScraper extends BaseNewsScraper {
     const config: NewsScraperConfig = {
       url: 'https://www.wetaskiwintimes.com',
       sourceName: 'Wetaskiwin Times',
-      timeout: 30000
+  timeout: 30000,
+  retryAttempts: 5,
+  delayMinMs: 500,
+  delayMaxMs: 1500
     }
     super(config)
   }

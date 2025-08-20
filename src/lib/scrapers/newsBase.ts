@@ -1,4 +1,6 @@
 import axios, { AxiosInstance } from 'axios'
+import http from 'node:http'
+import https from 'node:https'
 import * as cheerio from 'cheerio'
 import { Element } from 'domhandler'
 import { generateArticleId } from '../utils/idGenerator'
@@ -9,6 +11,9 @@ export interface NewsScraperConfig {
   userAgent?: string
   timeout?: number
   headers?: Record<string, string>
+  retryAttempts?: number
+  delayMinMs?: number
+  delayMaxMs?: number
 }
 
 export interface ScrapedNewsArticle {
@@ -27,11 +32,18 @@ export interface ScrapedNewsArticle {
 export abstract class BaseNewsScraper {
   protected config: NewsScraperConfig
   protected axiosInstance: AxiosInstance
+  private delayMin: number
+  private delayMax: number
 
   constructor(config: NewsScraperConfig) {
     this.config = config
+    this.delayMin = typeof config.delayMinMs === 'number' ? config.delayMinMs : 200
+    this.delayMax = typeof config.delayMaxMs === 'number' ? config.delayMaxMs : 600
     this.axiosInstance = axios.create({
       timeout: config.timeout || 30000,
+      httpAgent: new http.Agent({ keepAlive: true, maxSockets: 4 }),
+      httpsAgent: new https.Agent({ keepAlive: true, maxSockets: 4 }),
+      decompress: true,
       headers: {
         'User-Agent': config.userAgent || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -48,9 +60,9 @@ export abstract class BaseNewsScraper {
 
   protected async fetchPage(url: string): Promise<cheerio.CheerioAPI> {
     // Small polite delay to reduce likelihood of triggering rate limits/WAF
-    await this.sleep(200 + Math.floor(Math.random() * 400))
+    await this.sleep(this.delayMin + Math.floor(Math.random() * (this.delayMax - this.delayMin + 1)))
 
-    const maxAttempts = 4
+    const maxAttempts = this.config.retryAttempts && this.config.retryAttempts > 0 ? this.config.retryAttempts : 4
     let attempt = 0
     let lastError: unknown
 
