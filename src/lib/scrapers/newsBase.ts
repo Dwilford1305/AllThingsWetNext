@@ -36,24 +36,96 @@ export abstract class BaseNewsScraper {
         'User-Agent': config.userAgent || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.5',
-        'Accept-Encoding': 'gzip, deflate',
+        'Accept-Encoding': 'gzip, deflate, br',
         'DNT': '1',
         'Connection': 'keep-alive',
         'Upgrade-Insecure-Requests': '1',
+        'Referer': config.url,
         ...config.headers
       }
     })
   }
 
   protected async fetchPage(url: string): Promise<cheerio.CheerioAPI> {
-    try {
-      console.log(`Fetching: ${url}`)
-      const response = await this.axiosInstance.get(url)
-      return cheerio.load(response.data)
-    } catch (error) {
-      console.error(`Error fetching ${url}:`, error)
-      throw new Error(`Failed to fetch page: ${url}`)
+    // Small polite delay to reduce likelihood of triggering rate limits/WAF
+    await this.sleep(200 + Math.floor(Math.random() * 400))
+
+    const maxAttempts = 4
+    let attempt = 0
+    let lastError: unknown
+
+    while (attempt < maxAttempts) {
+      attempt++
+      try {
+        console.log(`Fetching: ${url}`)
+        const response = await this.axiosInstance.get(url, { validateStatus: () => true })
+
+        // Successful response
+        if (response.status >= 200 && response.status < 300) {
+          return cheerio.load(response.data)
+        }
+
+        // Retry on transient statuses
+        if (this.isRetryableStatus(response.status) && attempt < maxAttempts) {
+          const backoff = this.computeBackoff(attempt)
+          console.warn(`Transient HTTP ${response.status} for ${url}. Retrying in ${backoff}ms (attempt ${attempt}/${maxAttempts})`)
+          await this.sleep(backoff)
+          continue
+        }
+
+        // Non-retryable HTTP status
+        lastError = new Error(`HTTP ${response.status} for ${url}`)
+        break
+    } catch (error: unknown) {
+        lastError = error
+        // Retry on network errors
+        if (this.isRetryableNetworkError(error) && attempt < maxAttempts) {
+          const backoff = this.computeBackoff(attempt)
+      const code = (error as { code?: string; message?: string })?.code
+      const message = (error as { message?: string })?.message
+      console.warn(`Network error for ${url}: ${code || message}. Retrying in ${backoff}ms (attempt ${attempt}/${maxAttempts})`)
+          await this.sleep(backoff)
+          continue
+        }
+        break
+      }
     }
+
+    console.error(`Error fetching ${url}:`, lastError)
+    throw new Error(`Failed to fetch page: ${url}`)
+  }
+
+  private isRetryableStatus(status: number): boolean {
+    if (status === 429) return true
+    if (status >= 500 && status < 600) return true // 5xx
+    // Some sites return 403 intermittently under WAF; treat as retryable once or twice
+    if (status === 403) return true
+    return false
+  }
+
+  private isRetryableNetworkError(error: unknown): boolean {
+    const codes = new Set(['ECONNRESET', 'ETIMEDOUT', 'EAI_AGAIN'])
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+      const code = (error as { code?: string }).code
+      if (code && codes.has(code)) return true
+    }
+    // Axios v1 error.code may be 'ERR_NETWORK' or 'ERR_BAD_RESPONSE'
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+      const code = (error as { code?: string }).code
+      if (code === 'ERR_NETWORK') return true
+    }
+    return false
+  }
+
+  private computeBackoff(attempt: number): number {
+    // Exponential backoff with jitter: base 500ms * 2^(attempt-1) +/- up to 300ms
+    const base = 500 * Math.pow(2, attempt - 1)
+    const jitter = Math.floor(Math.random() * 300)
+    return base + jitter
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
 
   protected generateArticleId(title: string, publishedAt: Date): string {
