@@ -102,7 +102,138 @@ async function updateScraperConfig(type: 'news' | 'events' | 'businesses') {
   }
 }
 
-export async function GET() {
+// Shared executor used by both GET (Vercel Cron) and POST (manual/admin)
+async function executeCron(request: NextRequest) {
+  const startTime = Date.now()
+
+  const { searchParams } = new URL(request.url)
+  const type = searchParams.get('type') || 'both'
+  const force = searchParams.get('force') === 'true'
+
+  console.log(`🔄 Cron job triggered: type=${type}, force=${force}`)
+
+  const results: ScraperResults = {}
+
+  if (type === 'news' || type === 'both') {
+    // Respect configuration (skip if disabled)
+    const newsCfg = await ScraperConfig.findOne({ type: 'news' })
+    if (newsCfg && newsCfg.isEnabled === false) {
+      console.log('⏭️ News scraper skipped (disabled by config)')
+      await logScraperActivity('news', 'completed', 'News scraper skipped (disabled)', 0, 0, [])
+    } else {
+      console.log('📰 Running news scraper...')
+      await logScraperActivity('news', 'started', 'News scraper initiated by cron job')
+      const newsStartTime = Date.now()
+      try {
+        const newsService = new NewsScraperService()
+        const newsResults = await newsService.scrapeNews(['all'])
+        results.news = newsResults
+        const newsDuration = Date.now() - newsStartTime
+        await logScraperActivity(
+          'news',
+          'completed',
+          `News scraping completed: ${newsResults.new} new, ${newsResults.updated} updated, ${newsResults.errors.length} errors`,
+          newsDuration,
+          newsResults.total,
+          newsResults.errors
+        )
+        await updateScraperConfig('news')
+      } catch (error) {
+        const newsDuration = Date.now() - newsStartTime
+        const errorMessage = error instanceof Error ? error.message : 'News scraper failed'
+        await logScraperActivity('news', 'error', errorMessage, newsDuration, 0, [errorMessage])
+        throw error
+      }
+    }
+  }
+
+  if (type === 'events' || type === 'both') {
+    const eventsCfg = await ScraperConfig.findOne({ type: 'events' })
+    if (eventsCfg && eventsCfg.isEnabled === false) {
+      console.log('⏭️ Events scraper skipped (disabled by config)')
+      await logScraperActivity('events', 'completed', 'Events scraper skipped (disabled)', 0, 0, [])
+    } else {
+      console.log('📅 Running events scraper...')
+      await logScraperActivity('events', 'started', 'Events scraper initiated by cron job')
+      const eventsStartTime = Date.now()
+      try {
+        const eventsService = new ScraperService()
+        const eventsResults = await eventsService.scrapeAllEvents()
+        results.events = eventsResults
+        const eventsDuration = Date.now() - eventsStartTime
+        await logScraperActivity(
+          'events',
+          'completed',
+          `Events scraping completed: ${eventsResults.new} new, ${eventsResults.updated} updated, ${eventsResults.errors.length} errors`,
+          eventsDuration,
+          eventsResults.total,
+          eventsResults.errors
+        )
+        await updateScraperConfig('events')
+      } catch (error) {
+        const eventsDuration = Date.now() - eventsStartTime
+        const errorMessage = error instanceof Error ? error.message : 'Events scraper failed'
+        await logScraperActivity('events', 'error', errorMessage, eventsDuration, 0, [errorMessage])
+        throw error
+      }
+    }
+  }
+
+  if (type === 'businesses' || type === 'all') {
+    const bizCfg = await ScraperConfig.findOne({ type: 'businesses' })
+    if (bizCfg && bizCfg.isEnabled === false) {
+      console.log('⏭️ Business scraper skipped (disabled by config)')
+      await logScraperActivity('businesses', 'completed', 'Business scraper skipped (disabled)', 0, 0, [])
+    } else {
+      console.log('🏢 Running business scraper...')
+      await logScraperActivity('businesses', 'started', 'Business scraper initiated by cron job')
+      const businessStartTime = Date.now()
+      try {
+        const businessService = new BusinessScraperService()
+        const businessResults = await businessService.scrapeBusinesses()
+        results.businesses = businessResults
+        const businessDuration = Date.now() - businessStartTime
+        await logScraperActivity(
+          'businesses',
+          'completed',
+          `Business scraping completed: ${businessResults.new} new, ${businessResults.updated} updated, ${businessResults.errors.length} errors`,
+          businessDuration,
+          businessResults.total,
+          businessResults.errors
+        )
+        await updateScraperConfig('businesses')
+      } catch (error) {
+        const businessDuration = Date.now() - businessStartTime
+        const errorMessage = error instanceof Error ? error.message : 'Business scraper failed'
+        await logScraperActivity('businesses', 'error', errorMessage, businessDuration, 0, [errorMessage])
+        throw error
+      }
+    }
+  }
+
+  const totalDuration = Date.now() - startTime
+  console.log(`✅ Cron job completed successfully in ${totalDuration}ms`)
+
+  return NextResponse.json({
+    success: true,
+    data: results,
+    timestamp: new Date().toISOString(),
+    message: `Scheduled scraping completed for ${type}`,
+    duration: totalDuration
+  })
+}
+
+export async function GET(request: NextRequest) {
+  // If request is from Vercel Cron (or authorized with CRON_SECRET), execute; otherwise return status
+  const h = await headers()
+  const isVercelCron = h.get('vercel-cron') !== null
+  const auth = h.get('authorization')
+  const hasBearer = process.env.CRON_SECRET ? auth === `Bearer ${process.env.CRON_SECRET}` : false
+
+  if (isVercelCron || hasBearer) {
+    return executeCron(request)
+  }
+
   try {
     // Status endpoint - check when scrapers last ran
     const scraperService = new ComprehensiveScraperService()
@@ -126,164 +257,25 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const startTime = Date.now()
-  
-  try {
-    // Verify this is actually from Vercel Cron
-    const headersList = await headers()
-    const cronSecret = headersList.get('authorization')
-    const _vercelCron = headersList.get('vercel-cron')
-    
-    // Basic security check
-    if (process.env.CRON_SECRET && cronSecret !== `Bearer ${process.env.CRON_SECRET}`) {
+  // Allow manual POST if either Bearer token matches CRON_SECRET or request comes from Vercel Cron
+  const h = await headers()
+  const auth = h.get('authorization')
+  const isVercelCron = h.get('vercel-cron') !== null
+
+  if (process.env.CRON_SECRET) {
+    const ok = auth === `Bearer ${process.env.CRON_SECRET}` || isVercelCron
+    if (!ok) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
+  }
 
-    const { searchParams } = new URL(request.url)
-    const type = searchParams.get('type') || 'both'
-    const force = searchParams.get('force') === 'true'
-
-    console.log(`🔄 Cron job triggered: type=${type}, force=${force}`)
-
-    const results: ScraperResults = {}
-
-    if (type === 'news' || type === 'both') {
-      // Respect configuration (skip if disabled)
-      const newsCfg = await ScraperConfig.findOne({ type: 'news' })
-      if (newsCfg && newsCfg.isEnabled === false) {
-        console.log('⏭️ News scraper skipped (disabled by config)')
-        await logScraperActivity('news', 'completed', 'News scraper skipped (disabled)', 0, 0, [])
-      } else {
-      console.log('📰 Running news scraper...')
-      
-      // Log news scraper start
-      await logScraperActivity('news', 'started', 'News scraper initiated by cron job')
-      
-      const newsStartTime = Date.now()
-      try {
-        const newsService = new NewsScraperService()
-        const newsResults = await newsService.scrapeNews(['all'])
-        results.news = newsResults
-        
-        const newsDuration = Date.now() - newsStartTime
-        await logScraperActivity(
-          'news', 
-          'completed', 
-          `News scraping completed: ${newsResults.new} new, ${newsResults.updated} updated, ${newsResults.errors.length} errors`,
-          newsDuration,
-          newsResults.total,
-          newsResults.errors
-        )
-        
-        // Update scraper configuration with last run time
-        await updateScraperConfig('news')
-      } catch (error) {
-        const newsDuration = Date.now() - newsStartTime
-        const errorMessage = error instanceof Error ? error.message : 'News scraper failed'
-        await logScraperActivity('news', 'error', errorMessage, newsDuration, 0, [errorMessage])
-        throw error
-      }
-      }
-    }
-
-    if (type === 'events' || type === 'both') {
-      const eventsCfg = await ScraperConfig.findOne({ type: 'events' })
-      if (eventsCfg && eventsCfg.isEnabled === false) {
-        console.log('⏭️ Events scraper skipped (disabled by config)')
-        await logScraperActivity('events', 'completed', 'Events scraper skipped (disabled)', 0, 0, [])
-      } else {
-      console.log('📅 Running events scraper...')
-      
-      // Log events scraper start
-      await logScraperActivity('events', 'started', 'Events scraper initiated by cron job')
-      
-      const eventsStartTime = Date.now()
-      try {
-        const eventsService = new ScraperService()
-        const eventsResults = await eventsService.scrapeAllEvents()
-        results.events = eventsResults
-        
-        const eventsDuration = Date.now() - eventsStartTime
-        await logScraperActivity(
-          'events', 
-          'completed', 
-          `Events scraping completed: ${eventsResults.new} new, ${eventsResults.updated} updated, ${eventsResults.errors.length} errors`,
-          eventsDuration,
-          eventsResults.total,
-          eventsResults.errors
-        )
-        
-        // Update scraper configuration with last run time
-        await updateScraperConfig('events')
-      } catch (error) {
-        const eventsDuration = Date.now() - eventsStartTime
-        const errorMessage = error instanceof Error ? error.message : 'Events scraper failed'
-        await logScraperActivity('events', 'error', errorMessage, eventsDuration, 0, [errorMessage])
-        throw error
-      }
-      }
-    }
-
-    if (type === 'businesses' || type === 'all') {
-      const bizCfg = await ScraperConfig.findOne({ type: 'businesses' })
-      if (bizCfg && bizCfg.isEnabled === false) {
-        console.log('⏭️ Business scraper skipped (disabled by config)')
-        await logScraperActivity('businesses', 'completed', 'Business scraper skipped (disabled)', 0, 0, [])
-      } else {
-      console.log('🏢 Running business scraper...')
-      
-      // Log business scraper start
-      await logScraperActivity('businesses', 'started', 'Business scraper initiated by cron job')
-      
-      const businessStartTime = Date.now()
-      try {
-        const businessService = new BusinessScraperService()
-        const businessResults = await businessService.scrapeBusinesses()
-        results.businesses = businessResults
-        
-        const businessDuration = Date.now() - businessStartTime
-        await logScraperActivity(
-          'businesses', 
-          'completed', 
-          `Business scraping completed: ${businessResults.new} new, ${businessResults.updated} updated, ${businessResults.errors.length} errors`,
-          businessDuration,
-          businessResults.total,
-          businessResults.errors
-        )
-        
-        // Update scraper configuration with last run time
-        await updateScraperConfig('businesses')
-      } catch (error) {
-        const businessDuration = Date.now() - businessStartTime
-        const errorMessage = error instanceof Error ? error.message : 'Business scraper failed'
-        await logScraperActivity('businesses', 'error', errorMessage, businessDuration, 0, [errorMessage])
-        throw error
-      }
-      }
-    }
-
-    const totalDuration = Date.now() - startTime
-    console.log(`✅ Cron job completed successfully in ${totalDuration}ms`)
-
-    return NextResponse.json({
-      success: true,
-      data: results,
-      timestamp: new Date().toISOString(),
-      message: `Scheduled scraping completed for ${type}`,
-      duration: totalDuration
-    })
-
+  try {
+    return await executeCron(request)
   } catch (error) {
-    const totalDuration = Date.now() - startTime
+    const errorMessage = error instanceof Error ? error.message : 'Scraping failed'
     console.error('❌ Cron job failed:', error)
-    
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Scraping failed',
-        timestamp: new Date().toISOString(),
-        duration: totalDuration
-      },
+      { success: false, error: errorMessage, timestamp: new Date().toISOString() },
       { status: 500 }
     )
   }

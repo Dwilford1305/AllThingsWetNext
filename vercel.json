@@ -1,7 +1,7 @@
 {
   "crons": [
-    { "path": "/api/cron/scrape?type=news", "schedule": "0 18 * * *", "method": "POST" },
-    { "path": "/api/cron/scrape?type=events", "schedule": "0 18 * * *", "method": "POST" },
-    { "path": "/api/cron/scrape?type=businesses", "schedule": "0 13 * * 1", "method": "POST" }
+    { "path": "/api/cron/scrape?type=news", "schedule": "0 18 * * *" },
+    { "path": "/api/cron/scrape?type=events", "schedule": "0 18 * * *" },
+    { "path": "/api/cron/scrape?type=businesses", "schedule": "0 13 * * 1" }
   ]
 }
