@@ -7,6 +7,11 @@ import { NewsScraperService, type NewsScrapingResult } from '@/lib/newsScraperSe
 import { ScraperService } from '@/lib/scraperService'
 import { BusinessScraperService } from '@/lib/businessScraperService'
 
+// Ensure this route is always dynamic and never cached
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
+
 interface ScraperResults {
   news?: NewsScrapingResult
   events?: {
@@ -214,13 +219,16 @@ async function executeCron(request: NextRequest) {
   const totalDuration = Date.now() - startTime
   console.log(`✅ Cron job completed successfully in ${totalDuration}ms`)
 
-  return NextResponse.json({
-    success: true,
-    data: results,
-    timestamp: new Date().toISOString(),
-    message: `Scheduled scraping completed for ${type}`,
-    duration: totalDuration
-  })
+  return NextResponse.json(
+    {
+      success: true,
+      data: results,
+      timestamp: new Date().toISOString(),
+      message: `Scheduled scraping completed for ${type}`,
+      duration: totalDuration
+    },
+    { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
+  )
 }
 
 export async function GET(request: NextRequest) {
@@ -240,19 +248,22 @@ export async function GET(request: NextRequest) {
     const scraperService = new ComprehensiveScraperService()
     const stats = await scraperService.getScrapingStats()
     
-    return NextResponse.json({
-      success: true,
-      data: {
-        lastEventsRun: stats.events.lastRun,
-        lastNewsRun: stats.news.lastRun,
-        systemHealth: stats.overall.systemHealth,
-        nextScheduled: '6:00 AM Mountain Time daily'
-      }
-    })
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          lastEventsRun: stats.events.lastRun,
+          lastNewsRun: stats.news.lastRun,
+          systemHealth: stats.overall.systemHealth,
+          nextScheduled: '6:00 AM Mountain Time daily'
+        }
+      },
+      { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
+    )
   } catch (_error) {
     return NextResponse.json(
       { success: false, error: 'Failed to get scraper status' },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     )
   }
 }
@@ -277,7 +288,7 @@ export async function POST(request: NextRequest) {
     console.error('❌ Cron job failed:', error)
     return NextResponse.json(
       { success: false, error: errorMessage, timestamp: new Date().toISOString() },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     )
   }
 }
