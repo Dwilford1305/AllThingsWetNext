@@ -49,9 +49,19 @@ async function connectDB(): Promise<typeof mongoose> {
     };
 
     console.log('Attempting to connect to MongoDB...')
-    cached!.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    cached!.promise = mongoose.connect(MONGODB_URI, opts).then(async (mongooseInstance) => {
       console.log('✅ Connected to MongoDB Atlas')
-      return mongoose
+      // Optional: ping to ensure server is ready
+      try {
+        const db = mongooseInstance.connection.db
+        if (db) {
+          await db.admin().ping()
+          console.log('✅ MongoDB ping successful')
+        }
+      } catch (e) {
+        console.warn('⚠️ MongoDB ping failed (continuing):', e)
+      }
+      return mongooseInstance
     }).catch((error) => {
       console.error('❌ MongoDB connection failed:', error)
       cached!.promise = null

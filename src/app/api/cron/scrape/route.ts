@@ -117,6 +117,17 @@ async function executeCron(request: NextRequest) {
 
   console.log(`🔄 Cron job triggered: type=${type}, force=${force}`)
 
+  // Ensure DB is connected before any model operations (prevents buffering timeouts)
+  try {
+    await connectDB()
+  } catch (e) {
+    console.error('❌ Failed to connect to MongoDB before scraping:', e)
+    return NextResponse.json(
+      { success: false, error: 'Database connection failed' },
+      { status: 500 }
+    )
+  }
+
   const results: ScraperResults = {}
 
   if (type === 'news' || type === 'both') {
@@ -245,6 +256,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Status endpoint - check when scrapers last ran
+  await connectDB()
     const scraperService = new ComprehensiveScraperService()
     const stats = await scraperService.getScrapingStats()
     
