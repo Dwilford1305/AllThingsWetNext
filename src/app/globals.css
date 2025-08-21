@@ -472,6 +472,40 @@ button, .btn, [role="button"] {
   color: inherit !important;
 }
 
+/* PROFILE PAGE SPECIFIC FIXES */
+/* Fix profile page tab navigation text colors */
+.profile-page nav button:not(.bg-blue-100) {
+  color: #111827 !important; /* gray-900 for better contrast */
+}
+
+.profile-page nav button.bg-blue-100 {
+  color: #1e40af !important; /* blue-800 for active state */
+}
+
+/* Profile page tab navigation override */
+nav button[class*="text-gray-"] {
+  color: #111827 !important; /* Force dark text for profile tabs */
+}
+
+/* Additional specific targeting for profile page buttons */
+.profile-page button[class*="text-gray-800"] {
+  color: #111827 !important; /* Force to gray-900 */
+}
+
+/* Override any conflicting button inheritance for profile tabs */
+.profile-page nav button span {
+  color: inherit !important;
+}
+
+/* Specific profile tab button styles */
+.profile-tab-button.profile-tab-inactive {
+  color: #111827 !important; /* Very dark gray for inactive tabs */
+}
+
+.profile-tab-button.profile-tab-active {
+  color: #1e40af !important; /* Blue for active tab */
+}
+
 /* Preserve colored backgrounds and their text */
 .bg-red-500, .bg-red-600, .bg-blue-500, .bg-blue-600, .bg-green-500, .bg-green-600,
 .bg-yellow-500, .bg-yellow-600, .bg-purple-500, .bg-purple-600, .bg-gray-800, .bg-gray-900 {

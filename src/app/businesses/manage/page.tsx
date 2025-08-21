@@ -16,7 +16,8 @@ const BusinessManageContent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
-  const businessId = searchParams.get('id');
+  // In some Next.js type definitions, useSearchParams can be nullable in strict mode
+  const businessId: string | null = searchParams?.get('id') ?? null;
 
   useEffect(() => {
     const fetchBusiness = async () => {
@@ -27,12 +28,15 @@ const BusinessManageContent = () => {
       }
 
       try {
-        const response = await fetch(`/api/businesses?id=${businessId}`);
+        const response = await fetch(`/api/businesses/${businessId}`);
         const data = await response.json();
         
-        if (data.success && data.data.length > 0) {
-          const foundBusiness = data.data.find((b: Business) => b.id === businessId);
-          if (foundBusiness) {
+        console.log('API Response:', data); // Debug log
+        
+        if (data.success && data.data) {
+          const foundBusiness = data.data;
+          console.log('Found business:', foundBusiness); // Debug log
+          if (foundBusiness.id === businessId) {
             if (!foundBusiness.isClaimed) {
               setError('This business has not been claimed yet. Please claim it first.');
             } else {
@@ -42,7 +46,8 @@ const BusinessManageContent = () => {
             setError('Business not found');
           }
         } else {
-          setError('Failed to load business data');
+          console.error('API Error:', data); // Debug log
+          setError(data.error || 'Failed to load business data');
         }
       } catch (error) {
         console.error('Error fetching business:', error);

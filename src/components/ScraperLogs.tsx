@@ -32,7 +32,7 @@ interface ScraperLogsProps {
   onClose: () => void;
 }
 
-export const ScraperLogs = ({ type, isOpen, onClose }: ScraperLogsProps) => {
+const ScraperLogs = ({ type, isOpen, onClose }: ScraperLogsProps) => {
   const [logs, setLogs] = useState<ScraperLog[]>([]);
   const [loading, setLoading] = useState(true);
 

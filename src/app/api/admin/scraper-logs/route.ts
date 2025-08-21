@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import { ScraperLog } from '@/models';
+import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware';
 
-export async function GET(request: NextRequest) {
+async function getScraperLogs(request: AuthenticatedRequest) {
   try {
     await connectDB();
     
@@ -16,7 +17,9 @@ export async function GET(request: NextRequest) {
         .limit(3)
         .lean();
       
-      return NextResponse.json({
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown';
+  console.log(`🪵 SCRAPER LOGS VIEW (${type}) by ${actor}`);
+  return NextResponse.json({
         success: true,
         logs
       });
@@ -38,7 +41,9 @@ export async function GET(request: NextRequest) {
     const filteredLogs = [...logsByType.news, ...logsByType.events, ...logsByType.businesses]
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     
-    return NextResponse.json({
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown';
+  console.log(`🪵 SCRAPER LOGS DASHBOARD VIEW by ${actor}`);
+  return NextResponse.json({
       success: true,
       logs: filteredLogs
     });
@@ -51,7 +56,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function createScraperLog(request: AuthenticatedRequest) {
   try {
     await connectDB();
     
@@ -81,7 +86,9 @@ export async function POST(request: NextRequest) {
       _id: { $nin: idsToKeep } 
     });
     
-    return NextResponse.json({
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown';
+  console.log(`🪵 SCRAPER LOG CREATED by ${actor}: ${type} ${status}`);
+  return NextResponse.json({
       success: true,
       log: newLog
     });
@@ -93,3 +100,6 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
+export const GET = withRole(['admin','super_admin'], getScraperLogs);
+export const POST = withRole(['admin','super_admin'], createScraperLog);

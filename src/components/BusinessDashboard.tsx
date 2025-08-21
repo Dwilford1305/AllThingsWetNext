@@ -15,9 +15,12 @@ import {
   Globe,
   TrendingUp,
   CreditCard,
-  Edit
+  Edit,
+  X,
+  Ticket,
+  Check
 } from 'lucide-react';
-import type { Business } from '@/types';
+import type { Business, OfferCodeValidationResult } from '@/types';
 
 interface BusinessDashboardProps {
   business: Business;
@@ -26,6 +29,20 @@ interface BusinessDashboardProps {
 
 export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps) => {
   const [loading, setLoading] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [selectedTier, setSelectedTier] = useState<string>('');
+  const [offerCode, setOfferCode] = useState('');
+  const [offerCodeValidation, setOfferCodeValidation] = useState<OfferCodeValidationResult | null>(null);
+  const [validatingCode, setValidatingCode] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: business.name || '',
+    description: business.description || '',
+    phone: business.phone || '',
+    email: business.email || '',
+    website: business.website || '',
+    address: business.address || ''
+  });
 
   const getTierIcon = (tier: string) => {
     switch (tier) {
@@ -46,6 +63,58 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
   };
 
   const handleUpgrade = async (newTier: string) => {
+    setSelectedTier(newTier);
+    setShowUpgradeModal(true);
+  };
+
+  const validateOfferCode = async () => {
+    if (!offerCode.trim()) {
+      setOfferCodeValidation(null);
+      return;
+    }
+
+    setValidatingCode(true);
+    try {
+      const tierPricing = {
+        silver: { monthly: 19.99, annual: 199.99 },
+        gold: { monthly: 39.99, annual: 399.99 },
+        platinum: { monthly: 79.99, annual: 799.99 }
+      };
+
+      const basePrice = tierPricing[selectedTier as keyof typeof tierPricing]?.annual || 0;
+
+      const response = await fetch('/api/businesses/validate-offer-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: offerCode,
+          currentTier: business.subscriptionTier || 'free',
+          targetTier: selectedTier,
+          basePrice
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setOfferCodeValidation(result.data);
+      } else {
+        setOfferCodeValidation({
+          isValid: false,
+          error: 'Failed to validate offer code'
+        });
+      }
+    } catch (error) {
+      console.error('Offer code validation error:', error);
+      setOfferCodeValidation({
+        isValid: false,
+        error: 'Failed to validate offer code'
+      });
+    } finally {
+      setValidatingCode(false);
+    }
+  };
+
+  const confirmUpgrade = async () => {
     setLoading(true);
     try {
       const response = await fetch('/api/businesses/subscription', {
@@ -55,21 +124,73 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
         },
         body: JSON.stringify({
           businessId: business.id,
-          subscriptionTier: newTier,
-          duration: 12
+          subscriptionTier: selectedTier,
+          duration: 12,
+          ...(offerCode.trim() && { offerCode: offerCode.trim() }),
+          userId: 'current-user' // TODO: Get from auth context
         })
       });
 
       const result = await response.json();
       if (result.success && onUpdate) {
         onUpdate(result.data.business);
-        alert(`Successfully upgraded to ${newTier} tier!`);
+        const message = result.data.pricing.offerCode 
+          ? `Successfully upgraded to ${selectedTier} tier! Offer code ${result.data.pricing.offerCode.code} applied with $${result.data.pricing.offerCode.discountApplied.toFixed(2)} discount.`
+          : `Successfully upgraded to ${selectedTier} tier!`;
+        alert(message);
+        closeUpgradeModal();
       } else {
         alert(result.error || 'Failed to upgrade subscription');
       }
     } catch (error) {
       console.error('Upgrade error:', error);
       alert('Failed to upgrade subscription');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const closeUpgradeModal = () => {
+    setShowUpgradeModal(false);
+    setSelectedTier('');
+    setOfferCode('');
+    setOfferCodeValidation(null);
+  };
+
+  const handleEditBusiness = () => {
+    setEditForm({
+      name: business.name || '',
+      description: business.description || '',
+      phone: business.phone || '',
+      email: business.email || '',
+      website: business.website || '',
+      address: business.address || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const saveBusinessInfo = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/businesses/${business.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editForm)
+      });
+
+      const result = await response.json();
+      if (result.success && onUpdate) {
+        onUpdate({ ...business, ...editForm });
+        alert('Business information updated successfully!');
+        setShowEditModal(false);
+      } else {
+        alert(result.error || 'Failed to update business information');
+      }
+    } catch (error) {
+      console.error('Update error:', error);
+      alert('Failed to update business information');
     } finally {
       setLoading(false);
     }
@@ -299,7 +420,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
             Update your business information, add photos, and manage your listing details.
           </p>
           <div className="space-x-2">
-            <Button variant="primary" size="sm">
+            <Button variant="primary" size="sm" onClick={handleEditBusiness}>
               Edit Business Info
             </Button>
             {(currentTier === 'gold' || currentTier === 'platinum') && (
@@ -315,6 +436,329 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
           </div>
         </div>
       </Card>
+
+      {/* Edit Business Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Edit Business Information
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowEditModal(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Business Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.name}
+                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                      className="w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                      aria-label="Business Name"
+                      placeholder="Enter business name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={editForm.phone}
+                      onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                      className="w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={editForm.email}
+                      onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                      className="w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter email address"
+                      aria-label="Business Email"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Website
+                    </label>
+                    <input
+                      type="url"
+                      value={editForm.website}
+                      onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
+                      className="w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="https://"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Address
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.address}
+                    onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                    className="w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter business address"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Business Description
+                  </label>
+                  <textarea
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                    className="w-full px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows={4}
+                    placeholder="Describe your business, services, and what makes you unique..."
+                  />
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <Building className="h-5 w-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="font-medium text-blue-900 mb-1">Tips for a great listing:</h4>
+                      <ul className="text-sm text-blue-800 space-y-1">
+                        <li>• Use a clear, descriptive business name</li>
+                        <li>• Include your main phone number for customer contact</li>
+                        <li>• Add a detailed description of your products/services</li>
+                        <li>• Keep your address accurate for local customers</li>
+                        <li>• Include your website to drive online traffic</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowEditModal(false)}
+                    disabled={loading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={saveBusinessInfo}
+                    disabled={loading || !editForm.name.trim()}
+                    className="flex items-center"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    {loading ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Upgrade Modal */}
+      {showUpgradeModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Upgrade to {selectedTier?.charAt(0).toUpperCase() + selectedTier?.slice(1)} Tier
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={closeUpgradeModal}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                {/* Tier Details */}
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-gray-900">Annual Subscription</span>
+                    <span className="text-2xl font-bold text-gray-900">
+                      ${selectedTier === 'silver' ? '199.99' : 
+                        selectedTier === 'gold' ? '399.99' : 
+                        selectedTier === 'platinum' ? '799.99' : '0.00'}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Save 2 months compared to monthly billing
+                  </p>
+                </div>
+
+                {/* Offer Code Section */}
+                <div className="border rounded-lg p-4">
+                  <div className="flex items-center mb-3">
+                    <Ticket className="h-5 w-5 text-blue-600 mr-2" />
+                    <span className="font-medium text-gray-900">Have an offer code?</span>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex space-x-2">
+                      <input
+                        type="text"
+                        value={offerCode}
+                        onChange={(e) => setOfferCode(e.target.value.toUpperCase())}
+                        onBlur={validateOfferCode}
+                        placeholder="Enter offer code"
+                        className="flex-1 px-3 py-2 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        aria-label="Offer Code"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={validateOfferCode}
+                        disabled={validatingCode || !offerCode.trim()}
+                      >
+                        {validatingCode ? 'Checking...' : 'Apply'}
+                      </Button>
+                    </div>
+
+                    {/* Offer Code Validation Result */}
+                    {offerCodeValidation && (
+                      <div className={`p-3 rounded ${
+                        offerCodeValidation.isValid 
+                          ? 'bg-green-50 border border-green-200' 
+                          : 'bg-red-50 border border-red-200'
+                      }`}>
+                        {offerCodeValidation.isValid ? (
+                          <div className="flex items-start">
+                            <Check className="h-5 w-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-green-800 mb-1">
+                                Offer code applied successfully!
+                              </p>
+                              <p className="text-sm text-green-700 mb-2">
+                                {offerCodeValidation.description}
+                              </p>
+                              
+                              {offerCodeValidation.discountPercentage && (
+                                <p className="text-sm text-green-800">
+                                  <strong>{offerCodeValidation.discountPercentage}% discount</strong> - 
+                                  Save ${offerCodeValidation.discountAmount?.toFixed(2)}
+                                </p>
+                              )}
+                              
+                              {offerCodeValidation.discountAmount && !offerCodeValidation.discountPercentage && (
+                                <p className="text-sm text-green-800">
+                                  <strong>${offerCodeValidation.discountAmount.toFixed(2)} discount</strong>
+                                </p>
+                              )}
+                              
+                              {offerCodeValidation.freeMonths && (
+                                <p className="text-sm text-green-800">
+                                  <strong>{offerCodeValidation.freeMonths} free months</strong> added to your subscription
+                                </p>
+                              )}
+                              
+                              {offerCodeValidation.upgradeToTier && (
+                                <p className="text-sm text-green-800">
+                                  <strong>Free upgrade</strong> to {offerCodeValidation.upgradeToTier} tier
+                                </p>
+                              )}
+                              
+                              {offerCodeValidation.finalPrice !== undefined && (
+                                <p className="text-lg font-bold text-green-800 mt-2">
+                                  Final Price: ${offerCodeValidation.finalPrice.toFixed(2)}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-start">
+                            <X className="h-5 w-5 text-red-600 mr-2 flex-shrink-0 mt-0.5" />
+                            <p className="text-sm text-red-800">
+                              {offerCodeValidation.error}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Features List */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-gray-900">What&apos;s included:</h4>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    {selectedTier === 'silver' && (
+                      <>
+                        <li>• Enhanced listing with contact forms</li>
+                        <li>• Basic analytics and insights</li>
+                        <li>• Business hours display</li>
+                        <li>• Priority customer support</li>
+                      </>
+                    )}
+                    {selectedTier === 'gold' && (
+                      <>
+                        <li>• Everything in Silver</li>
+                        <li>• Photo gallery with up to 10 images</li>
+                        <li>• Social media integration</li>
+                        <li>• Featured placement in search results</li>
+                        <li>• Special offers and promotions</li>
+                      </>
+                    )}
+                    {selectedTier === 'platinum' && (
+                      <>
+                        <li>• Everything in Gold</li>
+                        <li>• Custom logo upload</li>
+                        <li>• Advanced analytics and reporting</li>
+                        <li>• Priority support with dedicated account manager</li>
+                        <li>• Custom business description</li>
+                      </>
+                    )}
+                  </ul>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={closeUpgradeModal}
+                    disabled={loading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={confirmUpgrade}
+                    disabled={loading}
+                    className="flex items-center"
+                  >
+                    <CreditCard className="h-4 w-4 mr-2" />
+                    {loading ? 'Processing...' : 'Confirm Upgrade'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

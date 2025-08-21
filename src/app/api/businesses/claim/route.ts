@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
-import { Business } from '@/models'
+import { Business, User } from '@/models'
 import type { ApiResponse } from '@/types'
 
 export async function POST(request: NextRequest) {
@@ -38,6 +38,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Find the user by email
+    const user = await User.findOne({ email: claimerEmail })
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'User not found. Please register an account first.' },
+        { status: 404 }
+      )
+    }
+
     // For now, we'll mark it as claimed immediately
     // In a real system, you'd want to verify ownership first
     const updatedBusiness = await Business.findOneAndUpdate(
@@ -45,6 +54,7 @@ export async function POST(request: NextRequest) {
       {
         isClaimed: true,
         claimedBy: claimerEmail,
+        claimedByUserId: user._id.toString(),
         claimedAt: new Date(),
         subscriptionTier: 'free',
         subscriptionStatus: 'active',
@@ -52,6 +62,17 @@ export async function POST(request: NextRequest) {
       },
       { new: true }
     )
+
+    // Add business ID to user's businessIds array if not already there
+    if (!user.businessIds?.includes(businessId)) {
+      await User.findByIdAndUpdate(
+        user._id,
+        {
+          $addToSet: { businessIds: businessId },
+          updatedAt: new Date()
+        }
+      )
+    }
 
     // TODO: Send email notification to admin/review team
     // For now, log the claim request - in production, send email to wilfordderek@gmail.com

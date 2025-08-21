@@ -1,29 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware';
 
-export async function POST(request: NextRequest) {
-  try {
-    const { password } = await request.json();
-
-    // For demo purposes - in production, use proper authentication
-    // You could also check against an environment variable
-    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-
-    if (password === adminPassword) {
-      return NextResponse.json({
-        success: true,
-        message: 'Authentication successful'
-      });
-    } else {
-      return NextResponse.json(
-        { success: false, error: 'Invalid password' },
-        { status: 401 }
-      );
-    }
-  } catch (error) {
-    console.error('Admin auth error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Authentication failed' },
-      { status: 500 }
-    );
-  }
+async function deprecatedAdminAuth(_request: AuthenticatedRequest) {
+  // Endpoint retained for backward compatibility; real auth handled via /api/auth/login and JWT
+  return NextResponse.json({
+    success: true,
+    message: 'Already authenticated as admin; this endpoint is deprecated.'
+  });
 }
+
+export const POST = withRole(['admin','super_admin'], deprecatedAdminAuth);

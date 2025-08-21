@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import { Business } from '@/models';
+import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware';
 
-export async function POST(request: NextRequest) {
+async function postBusinessAction(request: AuthenticatedRequest) {
   try {
     await connectDB();
 
@@ -60,8 +61,9 @@ export async function POST(request: NextRequest) {
       { new: true }
     );
 
-    // Log admin action
-    console.log(`🔧 ADMIN ACTION: ${action} performed on business ${business.name} (${businessId})`);
+  // Log admin action with actor context
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown';
+  console.log(`🔧 ADMIN ACTION (${actor}): ${action} performed on business ${business.name} (${businessId})`);
 
     return NextResponse.json({
       success: true,
@@ -80,3 +82,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export const POST = withRole(['admin','super_admin'], postBusinessAction);

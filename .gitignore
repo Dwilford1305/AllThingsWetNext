@@ -65,3 +65,24 @@ next-env.d.ts
 
 # Archive of old/unused scripts and files
 /archive/
+
+# Development session management scripts and files
+dev.ps1
+quick-cleanup.ps1
+cleanup-session.ps1
+start-session.ps1
+SESSION-SCRIPTS-README.md
+CLEANUP-QUICK-GUIDE.md
+last-cleanup.json
+last-startup.json
+
+# Temporary development files
+fix-*.js
+fix-*.ts
+test-*.js
+test-*.ts
+debug-*.js
+debug-*.ts
+temp-*
+*.tmp
+*.bak

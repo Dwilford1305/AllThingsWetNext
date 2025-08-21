@@ -1,104 +1,82 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useUser } from '@auth0/nextjs-auth0/client';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Shield, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
+
 
 interface AdminAuthProps {
   children: React.ReactNode;
 }
 
 export const AdminAuth = ({ children }: AdminAuthProps) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { user, isLoading } = useUser();
+  const [role, setRole] = useState<string | null>(null);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    // Check if already authenticated in session
-    const isAuth = sessionStorage.getItem('admin_authenticated');
-    if (isAuth === 'true') {
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await fetch('/api/admin/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        setIsAuthenticated(true);
-        sessionStorage.setItem('admin_authenticated', 'true');
-      } else {
-        setError('Invalid password');
+    let cancelled = false;
+    const load = async () => {
+      try {
+        if (!user) { setRole(null); return; }
+        const res = await fetch('/api/auth/profile', { credentials: 'include' });
+        if (!res.ok) { setRole(null); return; }
+        const json = await res.json();
+        if (cancelled) return;
+        setRole(json?.data?.role ?? null);
+      } catch {
+        setRole(null);
+      } finally {
+        if (!cancelled) setChecking(false);
       }
-    } catch (_error) {
-      setError('Authentication failed');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [user]);
 
-  if (!isAuthenticated) {
+  const isSuperAdmin = role === 'super_admin';
+
+  if (isLoading || checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!user || !isSuperAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="p-8 w-full max-w-md">
-          <div className="text-center mb-6">
-            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield className="h-6 w-6 text-white" />
+          <div className="text-center">
+            <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="h-6 w-6 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Admin Access</h1>
-            <p className="text-gray-600 mt-2">Enter admin password to continue</p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-600" />
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter admin password"
-                  required
-                />
-              </div>
-            </div>
-
-            {error && (
-              <div className="text-red-600 text-sm text-center">
-                {error}
-              </div>
+            <h1 className="text-2xl font-bold text-gray-900">Access Denied</h1>
+            <p className="text-gray-600 mt-2 mb-6">
+              Super Administrator access required to view this page.
+            </p>
+      {!user ? (
+              <p className="text-sm text-gray-500">
+                Please{' '}
+                <Link href="/" className="text-blue-600 hover:underline">
+                  sign in
+                </Link>{' '}
+                with a super admin account.
+              </p>
+            ) : (
+              <p className="text-sm text-gray-500">
+        Your account {role ? `(${role})` : ''} does not have sufficient permissions.
+              </p>
             )}
-
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={loading}
-            >
-              {loading ? 'Authenticating...' : 'Access Admin Dashboard'}
-            </Button>
-          </form>
+          </div>
         </Card>
       </div>
     );
   }
 
   return <>{children}</>;
+// ...file ends here
 };

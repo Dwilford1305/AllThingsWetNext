@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import { ScraperConfig } from '@/models';
+import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware';
 
-export async function GET() {
+async function getScraperConfigs(request: AuthenticatedRequest) {
   try {
     await connectDB();
     
@@ -25,7 +26,9 @@ export async function GET() {
       }
     }
     
-    return NextResponse.json({
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown';
+  console.log(`🛠️ SCRAPER CONFIG LIST by ${actor}`);
+  return NextResponse.json({
       success: true,
       configs
     });
@@ -38,7 +41,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: NextRequest) {
+async function updateScraperConfig(request: AuthenticatedRequest) {
   try {
     await connectDB();
     
@@ -80,7 +83,9 @@ export async function POST(request: NextRequest) {
       }
     );
     
-    return NextResponse.json({
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown';
+  console.log(`🛠️ SCRAPER CONFIG UPSERT by ${actor}: ${type}`);
+  return NextResponse.json({
       success: true,
       config
     });
@@ -93,7 +98,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function PATCH(request: NextRequest) {
+async function patchScraperConfig(request: AuthenticatedRequest) {
   try {
     await connectDB();
     
@@ -137,7 +142,9 @@ export async function PATCH(request: NextRequest) {
       }, { status: 404 });
     }
     
-    return NextResponse.json({
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown';
+  console.log(`🛠️ SCRAPER CONFIG PATCH by ${actor}: ${type}`);
+  return NextResponse.json({
       success: true,
       config
     });
@@ -149,3 +156,7 @@ export async function PATCH(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
+export const GET = withRole(['admin','super_admin'], getScraperConfigs);
+export const POST = withRole(['admin','super_admin'], updateScraperConfig);
+export const PATCH = withRole(['admin','super_admin'], patchScraperConfig);

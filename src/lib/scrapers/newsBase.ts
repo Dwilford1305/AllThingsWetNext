@@ -2,7 +2,8 @@ import axios, { AxiosInstance } from 'axios'
 import http from 'node:http'
 import https from 'node:https'
 import * as cheerio from 'cheerio'
-import { Element } from 'domhandler'
+import type { CheerioAPI, Cheerio as CheerioType } from 'cheerio'
+import type { Element } from 'domhandler'
 import { generateArticleId } from '../utils/idGenerator'
 
 export interface NewsScraperConfig {
@@ -58,7 +59,7 @@ export abstract class BaseNewsScraper {
     })
   }
 
-  protected async fetchPage(url: string): Promise<cheerio.CheerioAPI> {
+  protected async fetchPage(url: string): Promise<CheerioAPI> {
     // Small polite delay to reduce likelihood of triggering rate limits/WAF
     await this.sleep(this.delayMin + Math.floor(Math.random() * (this.delayMax - this.delayMin + 1)))
 
@@ -88,7 +89,7 @@ export abstract class BaseNewsScraper {
         // Non-retryable HTTP status
         lastError = new Error(`HTTP ${response.status} for ${url}`)
         break
-    } catch (error: unknown) {
+      } catch (error: unknown) {
         lastError = error
         // Retry on network errors
         if (this.isRetryableNetworkError(error) && attempt < maxAttempts) {
@@ -269,7 +270,7 @@ export abstract class BaseNewsScraper {
     return `${baseUrl}/${url}`
   }
 
-  protected extractTextContent(element: cheerio.Cheerio<Element>): string {
+  protected extractTextContent(element: CheerioType<Element>): string {
     return element.text().replace(/\s+/g, ' ').trim()
   }
 

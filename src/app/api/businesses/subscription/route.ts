@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
-import { Business } from '@/models'
+import { Business, OfferCode } from '@/models'
 import type { ApiResponse } from '@/types'
 
 export async function POST(request: NextRequest) {
@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     await connectDB()
 
     const body = await request.json()
-    const { businessId, subscriptionTier, duration = 12 } = body
+    const { businessId, subscriptionTier, duration = 12, offerCode, userId } = body
 
     // Validate required fields
     if (!businessId || !subscriptionTier) {
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     // Calculate subscription dates
     const now = new Date()
     const subscriptionEnd = new Date(now)
-    subscriptionEnd.setMonth(subscriptionEnd.getMonth() + duration)
+    let actualDuration = duration
 
     // Pricing information (for logging/tracking)
     const pricing = {
@@ -64,7 +64,92 @@ export async function POST(request: NextRequest) {
 
     const isAnnual = duration >= 12
     const tierPricing = pricing[subscriptionTier as keyof typeof pricing]
-    const cost = tierPricing ? (isAnnual ? tierPricing.annual : tierPricing.monthly * duration) : 0
+    const originalCost = tierPricing ? (isAnnual ? tierPricing.annual : tierPricing.monthly * duration) : 0
+    let finalCost = originalCost
+    let appliedOfferCode = null
+    let discountApplied = 0
+
+    // Handle offer code if provided
+    if (offerCode) {
+      const offerCodeDoc = await OfferCode.findOne({ 
+        code: offerCode.toUpperCase(),
+        isActive: true 
+      })
+
+      if (offerCodeDoc) {
+        // Validate offer code
+        const now = new Date()
+        const isValidDate = now >= new Date(offerCodeDoc.validFrom) && now <= new Date(offerCodeDoc.validUntil)
+        const hasUsageLeft = !offerCodeDoc.maxUses || offerCodeDoc.usedCount < offerCodeDoc.maxUses
+        const isTierApplicable = offerCodeDoc.applicableTiers.includes(business.subscriptionTier || 'free')
+
+        if (isValidDate && hasUsageLeft && isTierApplicable) {
+          appliedOfferCode = offerCodeDoc
+
+          // Apply offer code benefits
+          switch (offerCodeDoc.offerType) {
+            case 'discount_percentage':
+              if (offerCodeDoc.discountPercentage) {
+                discountApplied = (originalCost * offerCodeDoc.discountPercentage) / 100
+                finalCost = Math.max(0, originalCost - discountApplied)
+              }
+              break
+
+            case 'discount_fixed':
+              if (offerCodeDoc.discountAmount) {
+                discountApplied = Math.min(offerCodeDoc.discountAmount, originalCost)
+                finalCost = Math.max(0, originalCost - discountApplied)
+              }
+              break
+
+            case 'free_months':
+              if (offerCodeDoc.freeMonths) {
+                actualDuration += offerCodeDoc.freeMonths
+                // Keep the same cost but extend duration
+              }
+              break
+
+            case 'free_upgrade':
+              if (offerCodeDoc.upgradeToTier) {
+                const tierOrder = { free: 0, silver: 1, gold: 2, platinum: 3 }
+                const currentTierLevel = tierOrder[business.subscriptionTier as keyof typeof tierOrder] || 0
+                const upgradeTierLevel = tierOrder[offerCodeDoc.upgradeToTier as keyof typeof tierOrder]
+                const targetTierLevel = tierOrder[subscriptionTier as keyof typeof tierOrder]
+
+                if (targetTierLevel <= upgradeTierLevel && targetTierLevel > currentTierLevel) {
+                  finalCost = 0 // Free upgrade
+                  discountApplied = originalCost
+                }
+              }
+              break
+          }
+
+          // Update offer code usage
+          await OfferCode.findOneAndUpdate(
+            { id: offerCodeDoc.id },
+            {
+              $inc: { usedCount: 1 },
+              $push: {
+                usageHistory: {
+                  businessId,
+                  userId: userId || 'unknown',
+                  usedAt: now,
+                  oldTier: business.subscriptionTier || 'free',
+                  newTier: subscriptionTier,
+                  discountApplied
+                }
+              },
+              updatedAt: now
+            }
+          )
+
+          console.log(`🎫 OFFER CODE APPLIED: ${offerCodeDoc.code} - $${discountApplied.toFixed(2)} discount`)
+        }
+      }
+    }
+
+    // Set final subscription end date
+    subscriptionEnd.setMonth(subscriptionEnd.getMonth() + actualDuration)
 
     // Update business subscription
     const updatedBusiness = await Business.findOneAndUpdate(
@@ -83,21 +168,47 @@ export async function POST(request: NextRequest) {
     // TODO: Integrate with payment processor (Stripe, PayPal, etc.)
     console.log(`Subscription upgrade for ${business.name}:`)
     console.log(`  Tier: ${subscriptionTier}`)
-    console.log(`  Duration: ${duration} months`)
-    console.log(`  Cost: $${cost}`)
+    console.log(`  Duration: ${actualDuration} months`)
+    console.log(`  Original Cost: $${originalCost}`)
+    if (appliedOfferCode) {
+      console.log(`  Offer Code: ${appliedOfferCode.code} (${appliedOfferCode.name})`)
+      console.log(`  Discount Applied: $${discountApplied.toFixed(2)}`)
+    }
+    console.log(`  Final Cost: $${finalCost}`)
     console.log(`  Valid until: ${subscriptionEnd.toDateString()}`)
 
-    const response: ApiResponse<{ business: typeof updatedBusiness; pricing: { tier: string; cost: number; duration: number } }> = {
+    const response: ApiResponse<{ 
+      business: typeof updatedBusiness; 
+      pricing: { 
+        tier: string; 
+        originalCost: number; 
+        finalCost: number;
+        duration: number;
+        offerCode?: {
+          code: string;
+          name: string;
+          discountApplied: number;
+        }
+      } 
+    }> = {
       success: true,
       data: { 
         business: updatedBusiness,
         pricing: {
           tier: subscriptionTier,
-          cost,
-          duration
+          originalCost,
+          finalCost,
+          duration: actualDuration,
+          ...(appliedOfferCode && {
+            offerCode: {
+              code: appliedOfferCode.code,
+              name: appliedOfferCode.name,
+              discountApplied
+            }
+          })
         }
       },
-      message: `Subscription upgraded to ${subscriptionTier} tier successfully.`
+      message: `Subscription upgraded to ${subscriptionTier} tier successfully.${appliedOfferCode ? ` Offer code ${appliedOfferCode.code} applied.` : ''}`
     }
 
     return NextResponse.json(response)

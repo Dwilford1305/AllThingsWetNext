@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import { Event } from '@/models';
+import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware';
 
-export async function POST(request: NextRequest) {
+async function postEventAction(request: AuthenticatedRequest) {
   try {
     await connectDB();
 
@@ -60,7 +61,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Log admin action
-    console.log(`🔧 ADMIN ACTION: ${action} performed on event ${event.title} (${id})`);
+  const actor = request.user ? `${request.user.role}:${request.user.id}` : 'unknown';
+  console.log(`🔧 ADMIN EVENT ACTION (${actor}): ${action} on event ${event.title} (${id})`);
 
     return NextResponse.json({
       success: true,
@@ -79,3 +81,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export const POST = withRole(['admin','super_admin'], postEventAction);
