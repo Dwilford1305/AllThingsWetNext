@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from 'axios'
 import * as cheerio from 'cheerio'
-import { Element } from 'domhandler'
+import type { CheerioAPI, Cheerio as CheerioType } from 'cheerio'
+import type { Element } from 'domhandler'
 
 export interface NewsScraperConfig {
   url: string
@@ -44,7 +45,7 @@ export abstract class BaseNewsScraper {
     })
   }
 
-  protected async fetchPage(url: string): Promise<cheerio.CheerioAPI> {
+  protected async fetchPage(url: string): Promise<CheerioAPI> {
     try {
       console.log(`Fetching: ${url}`)
       const response = await this.axiosInstance.get(url)
@@ -186,7 +187,7 @@ export abstract class BaseNewsScraper {
     return `${baseUrl}/${url}`
   }
 
-  protected extractTextContent(element: cheerio.Cheerio<Element>): string {
+  protected extractTextContent(element: CheerioType<Element>): string {
     return element.text().replace(/\s+/g, ' ').trim()
   }
 

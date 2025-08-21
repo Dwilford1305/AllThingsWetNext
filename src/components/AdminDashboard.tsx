@@ -51,7 +51,7 @@ interface ScraperConfig {
   updatedAt: string;
 }
 
-export const AdminDashboard = () => {
+const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'business-requests' | 'content' | 'users' | 'offer-codes' | 'scrapers' | 'settings'>('overview');
   const [data, setData] = useState<ContentStats | null>(null);
   const [loading, setLoading] = useState(true);
