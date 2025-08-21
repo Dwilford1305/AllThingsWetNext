@@ -1,9 +1,17 @@
 import type { NextConfig } from "next";
+import path from 'path';
 
 const nextConfig: NextConfig = {
   eslint: {
     // We omit devDependencies on Vercel, so disable lint during prod builds
     ignoreDuringBuilds: true,
+  },
+  webpack: (config) => {
+    // Ensure path alias '@/...' resolves in all environments (including Vercel)
+    config.resolve = config.resolve || {};
+    config.resolve.alias = config.resolve.alias || {};
+    config.resolve.alias['@'] = path.resolve(__dirname, 'src');
+    return config;
   },
   images: {
     remotePatterns: [
