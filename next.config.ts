@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  eslint: {
+    // We omit devDependencies on Vercel, so disable lint during prod builds
+    ignoreDuringBuilds: true,
+  },
   images: {
     remotePatterns: [
       {
