@@ -16,7 +16,8 @@ const BusinessManageContent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
-  const businessId = searchParams.get('id');
+  // In some Next.js type definitions, useSearchParams can be nullable in strict mode
+  const businessId: string | null = searchParams?.get('id') ?? null;
 
   useEffect(() => {
     const fetchBusiness = async () => {

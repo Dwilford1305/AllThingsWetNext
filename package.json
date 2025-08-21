@@ -9,6 +9,9 @@
     "lint": "next lint",
     "scrape:events": "node scripts/scrape-events.js"
   },
+  "overrides": {
+    "cookie": "^0.7.0"
+  },
   "dependencies": {
   "@auth0/nextjs-auth0": "^2.6.0",
     "@radix-ui/react-slot": "^1.2.3",
