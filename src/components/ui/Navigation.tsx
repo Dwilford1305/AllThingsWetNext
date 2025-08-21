@@ -7,6 +7,17 @@ import { usePathname } from 'next/navigation';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { Menu, X, Home, Calendar, Newspaper, Building, Briefcase, ShoppingBag, Shield, LogIn, UserPlus, LogOut, User } from 'lucide-react';
 
+type UiUser = {
+  firstName?: string
+  lastName?: string
+  profileImage?: string
+  // Auth0 fields
+  given_name?: string
+  family_name?: string
+  name?: string
+  picture?: string
+}
+
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -14,9 +25,39 @@ const Navigation = () => {
   const [hasMounted, setHasMounted] = useState(false);
   const pathname = usePathname();
   const isHomePage = pathname === '/';
-  const { user } = useUser();
-  // For demo, treat all users as not super admin. You can extend this with user roles from Auth0 profile if needed.
-  const isSuperAdmin = false;
+  const { user } = useUser() as { user: UiUser | undefined }
+  const [profFirst, setProfFirst] = useState<string>('')
+  const [profLast, setProfLast] = useState<string>('')
+  const [profPic, setProfPic] = useState<string>('')
+  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean>(false)
+
+  const fallbackFirst = user?.firstName || user?.given_name || (user?.name ? String(user.name).split(' ')[0] : '')
+  const fallbackLast = user?.lastName || user?.family_name || (user?.name ? String(user.name).split(' ').slice(1).join(' ') : '')
+  const fallbackPic = user?.profileImage || user?.picture
+  const displayFirst = profFirst || fallbackFirst
+  const displayLast = profLast || fallbackLast
+  const displayPicture = profPic || fallbackPic
+
+  useEffect(() => {
+    // Fetch enriched profile (role, names, picture) when logged in
+    let cancelled = false
+    const load = async () => {
+      try {
+        if (!user) return
+        const res = await fetch('/api/auth/profile', { credentials: 'include' })
+        if (!res.ok) return
+        const data = await res.json()
+        const d = data?.data || {}
+        if (cancelled) return
+        if (d.firstName) setProfFirst(String(d.firstName))
+        if (d.lastName) setProfLast(String(d.lastName))
+        if (d.profileImage) setProfPic(String(d.profileImage))
+        if (d.role === 'super_admin') setIsSuperAdmin(true)
+      } catch { /* noop */ }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [user])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -93,15 +134,6 @@ const Navigation = () => {
     
     const isFoldable = isDefinitelyFoldable || aspectRatioDetection();
     
-    // Debug logging for development - always show for now to help identify your device
-    console.log('Navigation detection:', { 
-      viewportWidth, 
-      aspectRatio: typeof window !== 'undefined' ? (window.innerWidth / window.innerHeight).toFixed(2) : 'N/A',
-      isDefinitelyFoldable, 
-      aspectRatioDetection: aspectRatioDetection(),
-      finalResult: isFoldable 
-    });
-    
     return isFoldable;
   };
 
@@ -173,7 +205,7 @@ const Navigation = () => {
 
           {/* Authentication Section - Fixed at bottom */}
           <div className="mt-2 pt-3 border-t border-gray-300 flex flex-col space-y-2 flex-shrink-0">
-            {user ? (
+      {user ? (
               <>
                 {/* User Profile - Clickable */}
                 <Link
@@ -182,10 +214,10 @@ const Navigation = () => {
                   title="Profile Settings"
                 >
                   <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center mb-1">
-                    {user.profileImage ? (
+          {displayPicture ? (
                       <Image
-                        src={user.profileImage}
-                        alt={`${user.firstName} ${user.lastName}`}
+            src={displayPicture}
+            alt={`${displayFirst} ${displayLast}`}
                         width={24}
                         height={24}
                         className="w-6 h-6 rounded-full object-cover"
@@ -195,7 +227,7 @@ const Navigation = () => {
                     )}
                   </div>
                   <span className="text-xs font-medium text-gray-700 leading-tight text-center">
-                    {user.firstName}
+          {displayFirst}
                   </span>
                 </Link>
                 
@@ -288,10 +320,10 @@ const Navigation = () => {
                           : 'text-white/90 hover:text-white hover:bg-white/10'
                       }`}
                     >
-                      {user.profileImage ? (
+                      {displayPicture ? (
                         <Image
-                          src={user.profileImage}
-                          alt={`${user.firstName} ${user.lastName}`}
+                          src={displayPicture}
+                          alt={`${displayFirst} ${displayLast}`}
                           width={24}
                           height={24}
                           className="w-6 h-6 rounded-full object-cover"
@@ -299,11 +331,11 @@ const Navigation = () => {
                       ) : (
                         <User size={16} />
                       )}
-                      <span className="hidden lg:inline text-sm">
-                        {user.firstName} {user.lastName}
+                        <span className="hidden lg:inline text-sm">
+                          {displayFirst} {displayLast}
                       </span>
-                      <span className="lg:hidden text-sm">
-                        {user.firstName}
+                        <span className="lg:hidden text-sm">
+                          {displayFirst}
                       </span>
                     </Link>
                     <a
@@ -391,10 +423,10 @@ const Navigation = () => {
                       className="w-full text-left text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2"
                       onClick={() => setIsOpen(false)}
                     >
-                      {user.profileImage ? (
+                      {displayPicture ? (
                         <Image
-                          src={user.profileImage}
-                          alt={`${user.firstName} ${user.lastName}`}
+                          src={displayPicture}
+                          alt={`${displayFirst} ${displayLast}`}
                           width={20}
                           height={20}
                           className="w-5 h-5 rounded-full object-cover"
@@ -403,7 +435,7 @@ const Navigation = () => {
                         <User size={20} />
                       )}
                       <span className="font-medium">
-                        {user.firstName} {user.lastName}
+                        {displayFirst} {displayLast}
                       </span>
                     </Link>
                     <a

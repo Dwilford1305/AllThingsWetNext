@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import Navigation from '@/components/ui/Navigation';
 import FoldableLayout from '@/components/FoldableLayout';
+import RequireAuth from '@/components/RequireAuth';
 import { 
   User, 
   Settings, 
@@ -105,7 +106,7 @@ export default function ProfilePage() {
     
     setIsLoading(true);
     try {
-  const response = await fetch('/api/auth/me', { credentials: 'include' });
+  const response = await fetch('/api/auth/profile', { credentials: 'include' });
       
       if (response.ok) {
         const result = await response.json();
@@ -134,7 +135,7 @@ export default function ProfilePage() {
     setMessage(null);
     
     try {
-    const response = await csrfFetch('/api/auth/me', {
+  const response = await csrfFetch('/api/auth/profile', {
         method: 'PUT',
         headers: {
       'Content-Type': 'application/json'
@@ -168,7 +169,7 @@ export default function ProfilePage() {
     setMessage(null);
     
     try {
-    const response = await csrfFetch('/api/auth/change-password', {
+  const response = await csrfFetch('/api/auth/change-password', {
         method: 'POST',
         headers: {
       'Content-Type': 'application/json'
@@ -197,28 +198,32 @@ export default function ProfilePage() {
 
   if (authLoading || isLoading) {
     return (
-      <FoldableLayout>
-        <Navigation />
-        <div className={`min-h-screen bg-gray-50 flex items-center justify-center ${getTopPadding()}`}>
-          <div className="flex items-center space-x-2">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span>Loading profile...</span>
+      <RequireAuth>
+        <FoldableLayout>
+          <Navigation />
+          <div className={`min-h-screen bg-gray-50 flex items-center justify-center ${getTopPadding()}`}>
+            <div className="flex items-center space-x-2">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span>Loading profile...</span>
+            </div>
           </div>
-        </div>
-      </FoldableLayout>
+        </FoldableLayout>
+      </RequireAuth>
     );
   }
 
   if (!user || !profileData) {
     return (
-      <FoldableLayout>
-        <Navigation />
-        <div className={`min-h-screen bg-gray-50 flex items-center justify-center ${getTopPadding()}`}>
-          <Card className="p-8">
-            <p className="text-center text-gray-600">Unable to load profile data.</p>
-          </Card>
-        </div>
-      </FoldableLayout>
+      <RequireAuth>
+        <FoldableLayout>
+          <Navigation />
+          <div className={`min-h-screen bg-gray-50 flex items-center justify-center ${getTopPadding()}`}>
+            <Card className="p-8">
+              <p className="text-center text-gray-600">Unable to load profile data.</p>
+            </Card>
+          </div>
+        </FoldableLayout>
+      </RequireAuth>
     );
   }
 
@@ -231,8 +236,9 @@ export default function ProfilePage() {
   ];
 
   return (
-    <FoldableLayout>
-      <Navigation />
+    <RequireAuth>
+      <FoldableLayout>
+        <Navigation />
       <div className={`min-h-screen bg-gray-50 profile-page ${getTopPadding()}`}>
         <div className="max-w-6xl mx-auto px-4 py-8">
           {/* Header */}
@@ -341,7 +347,8 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-    </FoldableLayout>
+      </FoldableLayout>
+    </RequireAuth>
   );
 }
 

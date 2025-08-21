@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getSession } from '@auth0/nextjs-auth0/edge'
 import { AuthService } from '@/lib/auth'
 import { connectDB } from '@/lib/mongodb'
 import { User, UserSession } from '@/models/auth'
@@ -23,47 +24,84 @@ function isValidUserForBusiness(user: Partial<UserType> | undefined): user is Us
 export async function authenticate(request: NextRequest) {
   try {
     await connectDB()
-    
+
+    // 1) Try our legacy JWT/session first (Authorization or accessToken cookie)
     const authHeader = request.headers.get('authorization')
     let token: string | undefined
     if (authHeader && authHeader.startsWith('Bearer ')) {
       token = authHeader.substring(7)
     } else {
-      // Fallback to cookie-based access token
       token = request.cookies.get('accessToken')?.value
     }
-    if (!token) {
+
+    if (token) {
+      const tokenCameFromHeader = !!(authHeader && authHeader.startsWith('Bearer '))
+      try {
+        const decoded = AuthService.verifyAccessToken(token)
+        const session = await UserSession.findOne({
+          accessToken: token,
+          isActive: true,
+          expiresAt: { $gt: new Date() }
+        })
+
+        if (!session) {
+          // If token provided via header, hard fail; if via cookie, ignore and try Auth0 fallback
+          if (tokenCameFromHeader) {
+            return { error: 'Invalid or expired session', status: 401 }
+          }
+        } else {
+          const user = await User.findOne({ id: decoded.userId, isActive: true })
+          if (!user) {
+            if (tokenCameFromHeader) {
+              return { error: 'User not found or inactive', status: 401 }
+            }
+          } else {
+            await UserSession.updateOne(
+              { _id: session._id },
+              { lastUsedAt: new Date() }
+            )
+            return {
+              user: AuthService.sanitizeUser(user.toObject()),
+              session: session.toObject()
+            }
+          }
+        }
+      } catch (_e) {
+        // If token path fails unexpectedly, continue to Auth0 fallback
+        if (tokenCameFromHeader) {
+          return { error: 'Invalid or expired token', status: 401 }
+        }
+      }
+    }
+
+    // 2) Fallback: Auth0 session from cookies (App Router)
+    try {
+      const res = new NextResponse()
+      const auth0 = await getSession(request, res)
+      const auth0User = auth0?.user as { email?: string } | undefined
+      if (!auth0User?.email) {
+        return { error: 'Not authenticated', status: 401 }
+      }
+
+      const dbUser = await User.findOne({ email: auth0User.email, isActive: true })
+      if (!dbUser) {
+        // Authenticated via Auth0 but no local user record: treat as basic user
+        return {
+          user: {
+            email: auth0User.email,
+            role: 'user'
+          } as Partial<UserType>,
+          session: { provider: 'auth0' }
+        }
+      }
+
+      return {
+        user: AuthService.sanitizeUser(dbUser.toObject()),
+        session: { provider: 'auth0' }
+      }
+    } catch (_e) {
+      // No session found
       return { error: 'Not authenticated', status: 401 }
-    }
-
-    const decoded = AuthService.verifyAccessToken(token)
-    
-    // Check if session exists and is active
-    const session = await UserSession.findOne({
-      accessToken: token,
-      isActive: true,
-      expiresAt: { $gt: new Date() }
-    })
-
-    if (!session) {
-      return { error: 'Invalid or expired session', status: 401 }
-    }
-
-    // Get user from database
-    const user = await User.findOne({ id: decoded.userId, isActive: true })
-    if (!user) {
-      return { error: 'User not found or inactive', status: 401 }
-    }
-
-    // Update session last used time
-    await UserSession.updateOne(
-      { _id: session._id },
-      { lastUsedAt: new Date() }
-    )
-
-    return { 
-      user: AuthService.sanitizeUser(user.toObject()),
-      session: session.toObject()
     }
   } catch (error) {
     console.error('Authentication error:', error)

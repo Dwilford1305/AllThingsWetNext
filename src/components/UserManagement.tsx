@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { csrfFetch } from '@/lib/csrf'
 import { 
   Search, 
   UserPlus, 
@@ -133,8 +134,9 @@ export function UserManagement({ onClose: _onClose }: UserManagementProps) {
     if (!selectedUser) return
 
     try {
-      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
-        method: 'DELETE'
+      const response = await csrfFetch(`/api/admin/users/${selectedUser.id}`, {
+        method: 'DELETE',
+        credentials: 'include'
       })
       
       if (response.ok) {

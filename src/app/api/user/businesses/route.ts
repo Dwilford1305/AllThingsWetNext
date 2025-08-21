@@ -1,51 +1,43 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Business } from '@/models'
-import { User } from '@/models/auth'
-import { AuthService } from '@/lib/auth'
+import { withAuth, type AuthenticatedRequest } from '@/lib/auth-middleware'
+import type { User as UserType } from '@/types/auth'
 
-export async function GET(request: NextRequest) {
+async function getUserBusinesses(request: AuthenticatedRequest) {
   try {
     await connectDB()
 
-    // Get the authorization header
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const u = (request.user || {}) as Partial<UserType>
+  const email = u.email
+  const userId = u.id
+  const businessIds = u.businessIds || []
+
+    if (!email && !userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Verify the JWT token
-    const token = authHeader.substring(7)
-    let decoded
-    try {
-      decoded = AuthService.verifyAccessToken(token)
-    } catch (_error) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
-
-    // Get user info
-    const user = await User.findOne({ id: decoded.userId })
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    // Find businesses claimed by this user (by email or in businessIds array)
-    const claimedBusinesses = await Business.find({ 
+    // Find businesses claimed by this user
+  const query: Record<string, unknown> = {
       $or: [
-        { claimedBy: user.email, isClaimed: true },
-        { id: { $in: user.businessIds || [] } }
+        // Claimed via email
+    ...(email ? [{ claimedBy: email, isClaimed: true } as Record<string, unknown>] : []),
+        // Claimed via userId linkage
+    ...(userId ? [{ claimedByUserId: userId } as Record<string, unknown>] : []),
+        // Explicit business ownership list on user
+    ...(businessIds.length ? [{ id: { $in: businessIds } } as Record<string, unknown>] : []),
       ]
-    }).sort({ claimedAt: -1 }).lean()
+  }
 
-    return NextResponse.json({
-      success: true,
-      businesses: claimedBusinesses
-    })
+    const claimedBusinesses = await Business.find(query)
+      .sort({ claimedAt: -1 })
+      .lean()
 
+    return NextResponse.json({ success: true, businesses: claimedBusinesses })
   } catch (error) {
     console.error('Error fetching user businesses:', error)
-    return NextResponse.json({ 
-      error: 'Internal server error' 
-    }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+export const GET = withAuth(getUserBusinesses)

@@ -1,5 +1,6 @@
-'use client';
+"use client";
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { Card } from '@/components/ui/Card';
@@ -12,9 +13,32 @@ interface AdminAuthProps {
 
 export const AdminAuth = ({ children }: AdminAuthProps) => {
   const { user, isLoading } = useUser();
-  const isSuperAdmin = user?.role === 'super_admin';
+  const [role, setRole] = useState<string | null>(null);
+  const [checking, setChecking] = useState(true);
 
-  if (isLoading) {
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        if (!user) { setRole(null); return; }
+        const res = await fetch('/api/auth/profile', { credentials: 'include' });
+        if (!res.ok) { setRole(null); return; }
+        const json = await res.json();
+        if (cancelled) return;
+        setRole(json?.data?.role ?? null);
+      } catch {
+        setRole(null);
+      } finally {
+        if (!cancelled) setChecking(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  const isSuperAdmin = role === 'super_admin';
+
+  if (isLoading || checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -34,7 +58,7 @@ export const AdminAuth = ({ children }: AdminAuthProps) => {
             <p className="text-gray-600 mt-2 mb-6">
               Super Administrator access required to view this page.
             </p>
-            {!user ? (
+      {!user ? (
               <p className="text-sm text-gray-500">
                 Please{' '}
                 <Link href="/" className="text-blue-600 hover:underline">
@@ -44,7 +68,7 @@ export const AdminAuth = ({ children }: AdminAuthProps) => {
               </p>
             ) : (
               <p className="text-sm text-gray-500">
-                Your account ({user.role}) does not have sufficient permissions.
+        Your account {role ? `(${role})` : ''} does not have sufficient permissions.
               </p>
             )}
           </div>

@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import type { Business, Event, NewsArticle, BusinessCategory, SubscriptionTier } from '@/types';
 import ScraperLogs from './ScraperLogs';
+import { csrfFetch } from '@/lib/csrf';
 
 interface ContentStats {
   businesses: Business[];
@@ -626,9 +627,10 @@ export const AdminDashboard = () => {
       if (clearOldData) params.append('clearOldData', 'true');
       if (forceRefresh) params.append('forceRefresh', 'true');
       
-      const response = await fetch(`/api/scraper/comprehensive?${params.toString()}`, {
+      const response = await csrfFetch(`/api/scraper/comprehensive?${params.toString()}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
       });
       
       const result = await response.json();
@@ -659,8 +661,9 @@ export const AdminDashboard = () => {
     }
     
     try {
-      const response = await fetch('/api/scraper/comprehensive', {
-        method: 'DELETE'
+      const response = await csrfFetch('/api/scraper/comprehensive', {
+        method: 'DELETE',
+        credentials: 'include'
       });
       
       const result = await response.json();
@@ -1733,9 +1736,10 @@ const BusinessManagementModal: React.FC<BusinessManagementModalProps> = ({
     setSaving(true);
 
     try {
-      const response = await fetch(`/api/businesses/${business.id}`, {
+      const response = await csrfFetch(`/api/businesses/${business.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(formData)
       });
 
@@ -1908,9 +1912,10 @@ const SubscriptionManagementModal: React.FC<SubscriptionManagementModalProps> = 
     setSaving(true);
 
     try {
-      const response = await fetch(`/api/admin/businesses/${business.id}/subscription`, {
+      const response = await csrfFetch(`/api/admin/businesses/${business.id}/subscription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ 
           tier: newTier,
           duration: duration
