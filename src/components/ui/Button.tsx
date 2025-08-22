@@ -10,20 +10,20 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'default', size = 'md', asChild = false, ...props }, ref) => {
-    const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
+    const baseClasses = 'inline-flex items-center justify-center rounded-lg font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 transform hover:scale-105 active:scale-95'
     
     const variants = {
-      default: 'bg-gray-900 text-white hover:bg-gray-800',
-      primary: 'bg-blue-600 text-white hover:bg-blue-700',
-      secondary: 'bg-yellow-500 text-black hover:bg-yellow-600',
-      outline: 'border border-gray-400 bg-white text-gray-800 hover:bg-gray-50 hover:text-gray-900',
-      ghost: 'text-gray-800 hover:bg-gray-100'
+      default: 'bg-gradient-to-r from-gray-800 to-gray-900 text-white hover:from-gray-700 hover:to-gray-800 shadow-lg hover:shadow-xl',
+      primary: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-500 hover:to-blue-600 shadow-lg hover:shadow-xl focus-visible:ring-blue-500',
+      secondary: 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-black hover:from-yellow-400 hover:to-yellow-500 shadow-lg hover:shadow-xl focus-visible:ring-yellow-500',
+      outline: 'border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 hover:shadow-md focus-visible:ring-gray-500',
+      ghost: 'text-gray-700 hover:bg-gray-100 hover:shadow-md focus-visible:ring-gray-500'
     }
     
     const sizes = {
-      sm: 'h-8 px-3 text-sm',
-      md: 'h-10 px-4 text-sm',
-      lg: 'h-12 px-6 text-base'
+      sm: 'h-9 px-4 text-sm',
+      md: 'h-11 px-6 text-sm',
+      lg: 'h-13 px-8 text-base'
     }
 
     const Comp = asChild ? Slot : 'button'

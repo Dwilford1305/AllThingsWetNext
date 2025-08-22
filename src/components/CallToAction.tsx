@@ -6,14 +6,17 @@ import { ArrowRight, Users, Heart, Sparkles, Smartphone, Bell, Home } from 'luci
 
 const CallToAction = () => {
   return (
-    <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-purple-700 text-white py-12 sm:py-16 relative overflow-hidden">
-      {/* Background Pattern */}
+    <section className="bg-gradient-to-br from-blue-600 via-indigo-700 to-purple-800 text-white py-16 sm:py-20 relative overflow-hidden">
+      {/* Enhanced Background Pattern */}
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-6 sm:top-10 left-6 sm:left-10 w-12 h-12 sm:w-20 sm:h-20 border-2 border-white rounded-full"></div>
-        <div className="absolute top-20 sm:top-32 right-12 sm:right-20 w-10 h-10 sm:w-16 sm:h-16 border-2 border-white rounded-full"></div>
-        <div className="absolute bottom-12 sm:bottom-20 left-20 sm:left-32 w-8 h-8 sm:w-12 sm:h-12 border-2 border-white rounded-full"></div>
-        <div className="absolute bottom-6 sm:bottom-10 right-6 sm:right-10 w-16 h-16 sm:w-24 sm:h-24 border-2 border-white rounded-full"></div>
+        <div className="absolute top-6 sm:top-10 left-6 sm:left-10 w-12 h-12 sm:w-20 sm:h-20 border-2 border-white rounded-full animate-bounce-subtle"></div>
+        <div className="absolute top-20 sm:top-32 right-12 sm:right-20 w-10 h-10 sm:w-16 sm:h-16 border-2 border-white rounded-full animate-pulse"></div>
+        <div className="absolute bottom-12 sm:bottom-20 left-20 sm:left-32 w-8 h-8 sm:w-12 sm:h-12 border-2 border-white rounded-full animate-bounce-subtle" style={{animationDelay: '1s'}}></div>
+        <div className="absolute bottom-6 sm:bottom-10 right-6 sm:right-10 w-16 h-16 sm:w-24 sm:h-24 border-2 border-white rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
       </div>
+      
+      {/* Gradient Overlay for extra depth */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
 
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 relative z-10">
         <div className="text-center">
@@ -94,7 +97,7 @@ const CallToAction = () => {
             >
               <Link
                 href="/events"
-                className="group inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-white hover:text-blue-700 transition-all duration-300 w-full sm:w-auto"
+                className="group inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-8 sm:px-10 py-4 sm:py-5 rounded-xl font-bold text-base sm:text-lg hover:bg-white hover:text-blue-700 transition-all duration-300 w-full sm:w-auto shadow-lg hover:shadow-xl hover:scale-105"
               >
                 Browse Events
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
@@ -107,7 +110,7 @@ const CallToAction = () => {
             >
               <Link
                 href="/businesses"
-                className="group inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-white hover:text-blue-700 transition-all duration-300 w-full sm:w-auto"
+                className="group inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-8 sm:px-10 py-4 sm:py-5 rounded-xl font-bold text-base sm:text-lg hover:bg-white hover:text-blue-700 transition-all duration-300 w-full sm:w-auto shadow-lg hover:shadow-xl hover:scale-105"
               >
                 Explore Businesses
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
@@ -139,7 +142,7 @@ const CallToAction = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white border-2 border-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-colors text-sm sm:text-base shadow-lg"
+                  className="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white border-2 border-white/20 px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-bold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 text-sm sm:text-base shadow-lg hover:shadow-xl"
                   onClick={() => {
                     // PWA install logic will go here
                     alert('Feature coming soon! For now, use your browser\'s "Add to Home Screen" option.')
@@ -151,7 +154,7 @@ const CallToAction = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="group inline-flex items-center justify-center gap-2 border-2 border-white text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-700 transition-all duration-300 text-sm sm:text-base"
+                  className="group inline-flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-bold hover:bg-white hover:text-blue-700 transition-all duration-300 text-sm sm:text-base shadow-lg hover:shadow-xl"
                   onClick={() => {
                     // Notification permission logic will go here
                     if ('Notification' in window) {

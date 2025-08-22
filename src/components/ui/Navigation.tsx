@@ -153,10 +153,10 @@ const Navigation = () => {
   // For home page, use transparent when at top
   const getNavStyles = () => {
     if (!isHomePage) {
-      return 'bg-white/95 backdrop-blur-md shadow-lg border-b';
+      return 'bg-white/95 backdrop-blur-xl shadow-medium border-b border-white/20';
     }
     return isScrolled 
-      ? 'bg-white/95 backdrop-blur-md shadow-lg border-b' 
+      ? 'bg-white/95 backdrop-blur-xl shadow-medium border-b border-white/20' 
       : 'bg-transparent';
   };
 
@@ -171,13 +171,13 @@ const Navigation = () => {
     <>
       {/* Foldable Sidebar Navigation (client-only) */}
       {hasMounted && isFoldableUnfolded() && (
-        <aside className="fixed left-0 top-20 sm:top-16 md:top-12 bottom-0 w-24 bg-white/95 backdrop-blur-md shadow-lg border-r z-40 flex flex-col items-center py-4 foldable-sidebar overflow-y-auto">
+        <aside className="fixed left-0 top-20 sm:top-16 md:top-12 bottom-0 w-24 bg-white/95 backdrop-blur-xl shadow-strong border-r border-white/20 z-40 flex flex-col items-center py-4 foldable-sidebar overflow-y-auto">
           {/* Logo/Home */}
-          <Link href="/" className="mb-4 p-2 rounded-lg hover:bg-blue-50 transition-colors flex flex-col items-center flex-shrink-0">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mb-1">
-              <Home size={18} className="text-white" />
+          <Link href="/" className="mb-4 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200 hover:scale-105 flex flex-col items-center flex-shrink-0 group">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center mb-1 shadow-medium group-hover:shadow-strong transition-all">
+              <Home size={20} className="text-white" />
             </div>
-            <span className="text-xs font-medium text-gray-700">Home</span>
+            <span className="text-xs font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">Home</span>
           </Link>
           
           {/* Navigation Items */}
@@ -186,16 +186,16 @@ const Navigation = () => {
               <Link
                 key={href}
                 href={href}
-                className={`p-2 rounded-lg transition-colors group relative flex flex-col items-center flex-shrink-0 ${
+                className={`p-3 rounded-xl transition-all duration-200 group relative flex flex-col items-center flex-shrink-0 hover:scale-105 ${
                   pathname === href 
-                    ? 'bg-blue-600 text-white' 
-                    : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600'
+                    ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-medium' 
+                    : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600 hover:shadow-soft'
                 }`}
                 title={label}
               >
-                <Icon size={18} className="mb-1" />
-                <span className={`text-xs font-medium leading-tight text-center ${
-                  pathname === href ? 'text-white' : 'text-gray-700'
+                <Icon size={20} className="mb-1" />
+                <span className={`text-xs font-semibold leading-tight text-center ${
+                  pathname === href ? 'text-white' : 'text-gray-700 group-hover:text-blue-600'
                 }`}>
                   {label}
                 </span>
