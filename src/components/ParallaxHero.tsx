@@ -39,45 +39,49 @@ const ParallaxHero = () => {
 
   return (
     <div ref={ref} className="relative h-screen overflow-hidden max-h-screen" data-scroll-container="true">
-      {/* Animated Background Gradients */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-600/20 via-secondary-600/10 to-accent-600/20 animate-gradient" />
-        <div className="absolute inset-0 bg-gradient-to-tl from-primary-900/30 via-transparent to-secondary-900/20" />
-      </div>
-
-      {/* Parallax Background */}
+      {/* Water Tower Background - Full Opacity */}
       <motion.div
         style={{ 
           y, 
-          opacity: useTransform(opacity, [0.2, 0.8, 1], [0.1, 0.4, 0.5]),
+          opacity,
           scale,
           backgroundImage: "url('/WaterTower.png')",
-          backgroundPosition: 'center 30%',
+          backgroundPosition: 'center center',
           backgroundSize: 'cover',
         }}
-        className="absolute inset-0 w-full h-[120%] bg-cover bg-center bg-no-repeat opacity-50
-          sm:bg-center sm:h-[120%]
-          md:bg-[length:100%_100%] md:bg-center md:h-full
-          lg:bg-[length:80%_100%] lg:bg-center lg:h-full"
+        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
       />
       
-      {/* Floating Elements */}
+      {/* Professional Dark Overlay for Text Readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
+      
+      {/* Subtle Floating Elements */}
       <motion.div
         style={{
-          x: useTransform(mouseX, [-1, 1], [-20, 20]),
-          y: useTransform(mouseY, [-1, 1], [-20, 20])
+          x: useTransform(mouseX, [-1, 1], [-10, 10]),
+          y: useTransform(mouseY, [-1, 1], [-10, 10])
         }}
-        className="absolute top-1/4 left-1/4 w-32 h-32 bg-white/5 rounded-full blur-xl animate-float"
+        className="absolute top-1/4 left-1/4 w-20 h-20 bg-white/5 rounded-full blur-xl"
+        animate={{
+          scale: [1, 1.1, 1],
+          opacity: [0.3, 0.5, 0.3]
+        }}
+        transition={{
+          duration: 6,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
       />
       <motion.div
         style={{
-          x: useTransform(mouseX, [-1, 1], [30, -30]),
-          y: useTransform(mouseY, [-1, 1], [30, -30])
+          x: useTransform(mouseX, [-1, 1], [15, -15]),
+          y: useTransform(mouseY, [-1, 1], [15, -15])
         }}
-        className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-blue-500/10 rounded-full blur-2xl animate-float"
+        className="absolute bottom-1/4 right-1/4 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl"
         animate={{
           scale: [1, 1.2, 1],
-          opacity: [0.3, 0.5, 0.3]
+          opacity: [0.2, 0.4, 0.2]
         }}
         transition={{
           duration: 8,
@@ -86,94 +90,76 @@ const ParallaxHero = () => {
         }}
       />
       
-      {/* Enhanced Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/50" />
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 via-transparent to-purple-900/20" />
-      
-      {/* Content - Modern Layout */}
+      {/* Content - Professional Layout */}
       <div className="relative z-10 flex flex-col h-full text-white px-4 sm:px-6 lg:px-8 overflow-hidden max-h-screen">
-        {/* Top Section - Modern Title */}
+        {/* Top Section - Clean Professional Title */}
         <motion.div
-          initial={{ opacity: 0, y: -50 }}
+          initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2, delay: 0.3, ease: [0.4, 0, 0.2, 1] }}
+          transition={{ duration: 1, delay: 0.3, ease: [0.4, 0, 0.2, 1] }}
           className="flex-1 flex items-center justify-center pt-24 sm:pt-20 md:pt-16 overflow-hidden max-h-screen"
         >
-          <div className="text-center max-w-4xl relative">
-            {/* Subtle backdrop for better text readability */}
-            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm rounded-3xl -m-8"></div>
-            <div className="relative z-10">
+          <div className="text-center max-w-4xl">
             <motion.h1 
-              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-none mb-4"
-              initial={{ opacity: 0, y: 30 }}
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-none mb-6"
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.5, ease: [0.4, 0, 0.2, 1] }}
+              transition={{ duration: 0.8, delay: 0.5, ease: [0.4, 0, 0.2, 1] }}
             >
-              <span className="block bg-gradient-to-r from-white via-gray-100 to-white bg-clip-text text-transparent drop-shadow-2xl"
-                    style={{ 
-                      textShadow: '2px 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6)', 
-                      WebkitTextStroke: '1px rgba(255,255,255,0.1)' 
-                    }}>
+              <span className="block text-white mb-2">
                 All Things
               </span>
               <motion.span 
-                className="block bg-gradient-to-r from-blue-300 via-purple-300 to-indigo-300 bg-clip-text text-transparent drop-shadow-2xl"
-                style={{ 
-                  textShadow: '2px 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6)', 
-                  WebkitTextStroke: '1px rgba(255,255,255,0.1)' 
-                }}
-                initial={{ opacity: 0, x: -30 }}
+                className="block bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 1, delay: 0.8, ease: [0.4, 0, 0.2, 1] }}
+                transition={{ duration: 0.8, delay: 0.7, ease: [0.4, 0, 0.2, 1] }}
               >
                 Wetaskiwin
               </motion.span>
             </motion.h1>
             
-            {/* Subtitle with modern styling */}
+            {/* Clean Professional Subtitle */}
             <motion.p 
-              className="text-lg sm:text-xl md:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto mt-6"
+              className="text-lg sm:text-xl md:text-2xl text-gray-200 leading-relaxed max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 1.2, ease: [0.4, 0, 0.2, 1] }}
+              transition={{ duration: 0.8, delay: 0.9, ease: [0.4, 0, 0.2, 1] }}
             >
               Your modern community hub connecting 
               <span className="text-blue-300 font-semibold"> Wetaskiwin </span>
               through innovation
             </motion.p>
-            </div>
           </div>
         </motion.div>
 
-        {/* Bottom Section - Enhanced CTA */}
+        {/* Bottom Section - Professional CTA */}
         <motion.div
-          initial={{ opacity: 0, y: 60 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2, delay: 1.4, ease: [0.4, 0, 0.2, 1] }}
+          transition={{ duration: 0.8, delay: 1.1, ease: [0.4, 0, 0.2, 1] }}
           className="flex-1 flex flex-col items-center justify-end pb-16 sm:pb-20 text-center px-4 overflow-hidden max-h-screen"
         >
           <motion.div 
             className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 w-full max-w-2xl"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 1.8 }}
+            transition={{ duration: 0.6, delay: 1.4 }}
           >
             <motion.div
               whileHover={{ 
-                scale: 1.05, 
-                boxShadow: "0 20px 40px rgba(59, 130, 246, 0.3)",
-                y: -5
+                scale: 1.05,
+                y: -3
               }}
-              whileTap={{ scale: 0.95 }}
-              className="group"
+              whileTap={{ scale: 0.98 }}
             >
               <Link 
                 href="/events"
-                className="btn-glass glass backdrop-blur-md px-8 py-4 rounded-xl font-bold text-lg text-white border border-white/30 hover:bg-white/20 hover:border-white/50 transition-all duration-500 group-hover:shadow-glass inline-flex items-center gap-3"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-white/10 backdrop-blur-md border border-white/30 rounded-xl font-semibold text-lg text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300"
               >
                 <span>Explore Events</span>
                 <motion.div
-                  animate={{ x: [0, 5, 0] }}
+                  animate={{ x: [0, 3, 0] }}
                   transition={{ repeat: Infinity, duration: 2 }}
                 >
                   →
@@ -183,21 +169,19 @@ const ParallaxHero = () => {
             
             <motion.div
               whileHover={{ 
-                scale: 1.05, 
-                boxShadow: "0 20px 40px rgba(168, 85, 247, 0.3)",
-                y: -5
+                scale: 1.05,
+                y: -3
               }}
-              whileTap={{ scale: 0.95 }}
-              className="group"
+              whileTap={{ scale: 0.98 }}
             >
               <Link 
                 href="/businesses"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-500 shadow-lg hover:shadow-xl inline-flex items-center gap-3"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
               >
                 <span>Browse Businesses</span>
                 <motion.div
-                  animate={{ rotate: [0, 180, 360] }}
-                  transition={{ repeat: Infinity, duration: 3 }}
+                  animate={{ rotate: [0, 90, 180, 270, 360] }}
+                  transition={{ repeat: Infinity, duration: 4 }}
                 >
                   ✦
                 </motion.div>
@@ -205,38 +189,20 @@ const ParallaxHero = () => {
             </motion.div>
           </motion.div>
           
-          {/* Scroll Indicator */}
+          {/* Clean Scroll Indicator */}
           <motion.div 
             className="mt-16 sm:mt-20"
-            animate={{ y: [0, 10, 0] }}
-            transition={{ repeat: Infinity, duration: 2 }}
+            animate={{ y: [0, 8, 0] }}
+            transition={{ repeat: Infinity, duration: 2.5 }}
           >
-            <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
+            <div className="w-6 h-10 border-2 border-white/40 rounded-full flex justify-center">
               <motion.div 
-                className="w-1 h-3 bg-white rounded-full mt-2"
-                animate={{ y: [0, 12, 0] }}
-                transition={{ repeat: Infinity, duration: 2 }}
+                className="w-1 h-3 bg-white/60 rounded-full mt-2"
+                animate={{ y: [0, 10, 0] }}
+                transition={{ repeat: Infinity, duration: 2.5 }}
               />
             </div>
           </motion.div>
-        </motion.div>
-
-        {/* Floating Elements */}
-        <motion.div
-          animate={{ 
-            y: [0, -10, 0],
-            opacity: [0.7, 1, 0.7]
-          }}
-          transition={{ 
-            duration: 3, 
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2"
-        >
-          <div className="w-5 h-8 sm:w-6 sm:h-10 border-2 border-white rounded-full flex justify-center">
-            <div className="w-1 h-2 sm:h-3 bg-white rounded-full mt-1.5 sm:mt-2 animate-pulse"></div>
-          </div>
         </motion.div>
       </div>
     </div>
