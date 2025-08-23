@@ -1,5 +1,4 @@
 {
-  "installCommand": "npm install --omit=dev",
   "crons": [
     { "path": "/api/cron/scrape?type=news", "schedule": "0 12 * * *" },
     { "path": "/api/cron/scrape?type=events", "schedule": "0 12 * * *" }
