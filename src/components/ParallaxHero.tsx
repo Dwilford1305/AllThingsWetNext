@@ -38,7 +38,7 @@ const ParallaxHero = () => {
   }, [])
 
   return (
-    <div ref={ref} className="relative h-screen overflow-hidden max-h-screen" data-scroll-container="true">
+    <div ref={ref} className="relative h-screen overflow-hidden" style={{ willChange: 'transform' }}>
       {/* Water Tower Background - Full Opacity */}
       <motion.div
         style={{ 
@@ -91,20 +91,20 @@ const ParallaxHero = () => {
       />
       
       {/* Content - Professional Layout */}
-      <div className="relative z-10 flex flex-col h-full text-white px-4 sm:px-6 lg:px-8 overflow-hidden max-h-screen">
+      <div className="relative z-10 flex flex-col h-full text-white px-4 sm:px-6 lg:px-8">
         {/* Top Section - Clean Professional Title */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.3, ease: [0.4, 0, 0.2, 1] }}
-          className="flex-1 flex items-center justify-center pt-24 sm:pt-20 md:pt-16 overflow-hidden max-h-screen"
+          transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+          className="flex-1 flex items-center justify-center pt-24 sm:pt-20 md:pt-16"
         >
           <div className="text-center max-w-4xl">
             <motion.h1 
               className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-none mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.5, ease: [0.4, 0, 0.2, 1] }}
+              transition={{ duration: 0.6, delay: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
             >
               <span className="block text-white mb-2">
                 All Things
@@ -113,7 +113,7 @@ const ParallaxHero = () => {
                 className="block bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.7, ease: [0.4, 0, 0.2, 1] }}
+                transition={{ duration: 0.6, delay: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
               >
                 Wetaskiwin
               </motion.span>
@@ -124,7 +124,7 @@ const ParallaxHero = () => {
               className="text-lg sm:text-xl md:text-2xl text-gray-200 leading-relaxed max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.9, ease: [0.4, 0, 0.2, 1] }}
+              transition={{ duration: 0.6, delay: 0.9, ease: [0.25, 0.1, 0.25, 1] }}
             >
               Your modern community hub connecting 
               <span className="text-blue-300 font-semibold"> Wetaskiwin </span>
@@ -137,14 +137,14 @@ const ParallaxHero = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.1, ease: [0.4, 0, 0.2, 1] }}
-          className="flex-1 flex flex-col items-center justify-end pb-16 sm:pb-20 text-center px-4 overflow-hidden max-h-screen"
+          transition={{ duration: 0.6, delay: 1.1, ease: [0.25, 0.1, 0.25, 1] }}
+          className="flex-1 flex flex-col items-center justify-end pb-16 sm:pb-20 text-center px-4"
         >
           <motion.div 
             className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 w-full max-w-2xl"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 1.4 }}
+            transition={{ duration: 0.5, delay: 1.4 }}
           >
             <motion.div
               whileHover={{ 

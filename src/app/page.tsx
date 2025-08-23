@@ -16,7 +16,7 @@ export default function Home() {
         <ParallaxHero />
       
       {/* Top Banner Ad - High visibility */}
-      <AnimatedSection>
+      <AnimatedSection delay={0}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-2 sm:py-4 lg:py-6">
           <AdPlaceholder 
             type="google" 
@@ -26,12 +26,12 @@ export default function Home() {
         </div>
       </AnimatedSection>
 
-      <AnimatedSection>
+      <AnimatedSection delay={0.1}>
         <Dashboard />
       </AnimatedSection>
 
       {/* Platinum Tier - Premium positioning near top */}
-      <AnimatedSection delay={0.1}>
+      <AnimatedSection delay={0.15}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
           <div className="text-center mb-4 sm:mb-6">
             <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Premium Business Spotlight</h3>
@@ -82,12 +82,12 @@ export default function Home() {
         </div>
       </AnimatedSection>
 
-      <AnimatedSection delay={0.35}>
+      <AnimatedSection delay={0.32}>
         <CallToAction />
       </AnimatedSection>
 
       {/* Silver Tier - Enhanced listings toward bottom */}
-      <AnimatedSection delay={0.4}>
+      <AnimatedSection delay={0.35}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
           <div className="text-center mb-3 sm:mb-4 lg:mb-6">
             <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-white mb-1 sm:mb-2">Enhanced Local Listings</h3>

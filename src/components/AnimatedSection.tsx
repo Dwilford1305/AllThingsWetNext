@@ -23,18 +23,18 @@ const AnimatedSection = ({
   const ref = useRef(null)
   const isInView = useInView(ref, { 
     once: true, 
-    margin: "0px 0px -150px 0px",
-    amount: 0.1 
+    margin: "0px 0px -100px 0px", // Reduced margin for better performance
+    amount: 0.2 // Increased threshold for more consistent triggering
   })
 
   const variants: Variants = {
     hidden: {
       opacity: 0,
-      ...(direction === 'up' && { y: 60 }),
-      ...(direction === 'down' && { y: -60 }),
-      ...(direction === 'left' && { x: -60 }),
-      ...(direction === 'right' && { x: 60 }),
-      ...(direction === 'scale' && { scale: 0.8 }),
+      ...(direction === 'up' && { y: 30 }), // Reduced movement for smoother animation
+      ...(direction === 'down' && { y: -30 }),
+      ...(direction === 'left' && { x: -30 }),
+      ...(direction === 'right' && { x: 30 }),
+      ...(direction === 'scale' && { scale: 0.95 }),
     },
     visible: {
       opacity: 1,
@@ -42,8 +42,9 @@ const AnimatedSection = ({
       x: 0,
       scale: 1,
       transition: {
-        duration,
+        duration: duration * 0.8, // Slightly faster transitions
         delay,
+        ease: [0.25, 0.1, 0.25, 1], // Smoother easing curve
         ...(stagger > 0 && { staggerChildren: stagger }),
       }
     }
@@ -52,13 +53,14 @@ const AnimatedSection = ({
   const childVariants: Variants = {
     hidden: {
       opacity: 0,
-      y: 20,
+      y: 15, // Reduced movement
     },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.5,
+        duration: 0.4, // Faster child animations
+        ease: [0.25, 0.1, 0.25, 1]
       }
     }
   }
