@@ -49,13 +49,13 @@ const ParallaxHero = () => {
       <motion.div
         style={{ 
           y, 
-          opacity,
+          opacity: useTransform(opacity, [0.2, 0.8, 1], [0.1, 0.4, 0.5]),
           scale,
           backgroundImage: "url('/WaterTower.png')",
           backgroundPosition: 'center 30%',
           backgroundSize: 'cover',
         }}
-        className="absolute inset-0 w-full h-[120%] bg-cover bg-center bg-no-repeat
+        className="absolute inset-0 w-full h-[120%] bg-cover bg-center bg-no-repeat opacity-50
           sm:bg-center sm:h-[120%]
           md:bg-[length:100%_100%] md:bg-center md:h-full
           lg:bg-[length:80%_100%] lg:bg-center lg:h-full"
@@ -99,25 +99,28 @@ const ParallaxHero = () => {
           transition={{ duration: 1.2, delay: 0.3, ease: [0.4, 0, 0.2, 1] }}
           className="flex-1 flex items-center justify-center pt-24 sm:pt-20 md:pt-16 overflow-hidden max-h-screen"
         >
-          <div className="text-center max-w-4xl">
+          <div className="text-center max-w-4xl relative">
+            {/* Subtle backdrop for better text readability */}
+            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm rounded-3xl -m-8"></div>
+            <div className="relative z-10">
             <motion.h1 
               className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-none mb-4"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.5, ease: [0.4, 0, 0.2, 1] }}
             >
-              <span className="block bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent drop-shadow-2xl shadow-2xl"
+              <span className="block bg-gradient-to-r from-white via-gray-100 to-white bg-clip-text text-transparent drop-shadow-2xl"
                     style={{ 
-                      textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6)', 
-                      WebkitTextStroke: '1px rgba(0,0,0,0.3)' 
+                      textShadow: '2px 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6)', 
+                      WebkitTextStroke: '1px rgba(255,255,255,0.1)' 
                     }}>
                 All Things
               </span>
               <motion.span 
-                className="block bg-gradient-to-r from-blue-900 via-purple-900 to-indigo-900 bg-clip-text text-transparent drop-shadow-2xl shadow-2xl"
+                className="block bg-gradient-to-r from-blue-300 via-purple-300 to-indigo-300 bg-clip-text text-transparent drop-shadow-2xl"
                 style={{ 
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6)', 
-                  WebkitTextStroke: '1px rgba(0,0,0,0.3)' 
+                  textShadow: '2px 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6)', 
+                  WebkitTextStroke: '1px rgba(255,255,255,0.1)' 
                 }}
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -138,6 +141,7 @@ const ParallaxHero = () => {
               <span className="text-blue-300 font-semibold"> Wetaskiwin </span>
               through innovation
             </motion.p>
+            </div>
           </div>
         </motion.div>
 
