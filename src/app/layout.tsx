@@ -1,21 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "./providers";
 
 import Script from "next/script";
 import DevelopmentBanner from "@/components/DevelopmentBanner";
 import CookieConsent from "@/components/CookieConsent";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "All Things Wetaskiwin - Your Community Hub",
@@ -86,7 +75,7 @@ export default function RootLayout({
         )}
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-hidden max-w-full w-screen`}
+        className="antialiased overflow-x-hidden max-w-full w-screen font-sans"
       >
         <Providers>
           <DevelopmentBanner />
