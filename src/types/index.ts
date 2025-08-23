@@ -306,5 +306,24 @@ export interface OfferCodeValidationResult {
   description?: string
 }
 
+// Discussion Types (Community Q&A)
+export interface Discussion {
+  id: string
+  title: string
+  content: string
+  author: string // User ID reference
+  comments: DiscussionComment[]
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface DiscussionComment {
+  id: string
+  content: string
+  author: string // User ID reference
+  createdAt: Date
+  updatedAt: Date
+}
+
 // Re-export auth types for convenience
 export * from './auth'

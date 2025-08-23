@@ -285,6 +285,23 @@ const OfferCodeSchema = new Schema({
   }]
 })
 
+// Discussion Schema (Community Q&A)
+const DiscussionSchema = new Schema({
+  id: { type: String, required: true, unique: true },
+  title: { type: String, required: true },
+  content: { type: String, required: true },
+  author: { type: String, required: true }, // User ID reference
+  comments: [{
+    id: { type: String, required: true },
+    content: { type: String, required: true },
+    author: { type: String, required: true }, // User ID reference
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+  }],
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+})
+
 // Export models
 export const Event = models.Event || model('Event', EventSchema)
 export const NewsArticle = models.NewsArticle || model('NewsArticle', NewsSchema)
@@ -294,6 +311,7 @@ export const Classified = models.Classified || model('Classified', ClassifiedSch
 export const ScraperLog = models.ScraperLog || model('ScraperLog', ScraperLogSchema)
 export const ScraperConfig = models.ScraperConfig || model('ScraperConfig', ScraperConfigSchema)
 export const OfferCode = models.OfferCode || model('OfferCode', OfferCodeSchema)
+export const Discussion = models.Discussion || model('Discussion', DiscussionSchema)
 
 // Re-export auth models for convenience
 export * from './auth'
