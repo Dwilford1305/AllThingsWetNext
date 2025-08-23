@@ -47,9 +47,9 @@ const DiscussionsPage = () => {
     <>
       <Navigation />
       <FoldableLayout>
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-6">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
                 <MessageCircle className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -77,7 +77,7 @@ const DiscussionsPage = () => {
           </div>
 
           {/* Stats */}
-          <Card className="mb-8 p-6">
+          <Card className="mb-6 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2">
@@ -93,7 +93,7 @@ const DiscussionsPage = () => {
             </div>
           </Card>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Main Content */}
             <div className="lg:col-span-3">
               {/* New Discussion Form Modal */}
@@ -116,7 +116,7 @@ const DiscussionsPage = () => {
 
               {/* Sign in prompt for non-authenticated users */}
               {!user && !isLoading && (
-                <Card className="p-6 text-center">
+                <Card className="p-4 text-center mt-4">
                   <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                     Join the conversation
@@ -132,10 +132,10 @@ const DiscussionsPage = () => {
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               <AdPlaceholder type="google" size="sidebar" />
               
-              <Card className="p-6">
+              <Card className="p-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                   Community Guidelines
                 </h3>

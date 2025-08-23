@@ -14,10 +14,10 @@ interface DiscussionListProps {
 const DiscussionList: React.FC<DiscussionListProps> = ({ discussions, loading }) => {
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Card key={i} className="p-6 animate-pulse">
-            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-3"></div>
+          <Card key={i} className="p-4 animate-pulse">
+            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
           </Card>
@@ -28,7 +28,7 @@ const DiscussionList: React.FC<DiscussionListProps> = ({ discussions, loading })
 
   if (discussions.length === 0) {
     return (
-      <Card className="p-12 text-center">
+      <Card className="p-8 text-center">
         <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
           No discussions yet
@@ -52,11 +52,11 @@ const DiscussionList: React.FC<DiscussionListProps> = ({ discussions, loading })
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {discussions.map((discussion) => (
-        <Card key={discussion.id} className="p-6 hover:shadow-md transition-shadow">
+        <Card key={discussion.id} className="p-4 hover:shadow-md transition-shadow">
           <Link href={`/discussions/${discussion.id}`} className="block">
-            <div className="flex items-start justify-between mb-3">
+            <div className="flex items-start justify-between mb-2">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 {discussion.title}
               </h3>
@@ -66,7 +66,7 @@ const DiscussionList: React.FC<DiscussionListProps> = ({ discussions, loading })
               </div>
             </div>
             
-            <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
+            <p className="text-gray-600 dark:text-gray-400 mb-3 line-clamp-3">
               {discussion.content.length > 200 
                 ? `${discussion.content.substring(0, 200)}...`
                 : discussion.content

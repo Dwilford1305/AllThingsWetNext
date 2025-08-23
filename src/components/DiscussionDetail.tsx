@@ -90,10 +90,10 @@ const DiscussionDetail: React.FC<DiscussionDetailProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Discussion Header */}
-      <Card className="p-6">
-        <div className="flex items-start justify-between mb-4">
+      <Card className="p-4">
+        <div className="flex items-start justify-between mb-3">
           <Badge variant="secondary">Q&A</Badge>
           <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <Clock className="w-4 h-4" />
@@ -101,11 +101,11 @@ const DiscussionDetail: React.FC<DiscussionDetailProps> = ({
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
           {discussion.title}
         </h1>
 
-        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
+        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-3">
           <User className="w-4 h-4" />
           <span>Asked by User {discussion.author}</span>
         </div>
@@ -118,8 +118,8 @@ const DiscussionDetail: React.FC<DiscussionDetailProps> = ({
       </Card>
 
       {/* Comments Section */}
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-6">
+      <Card className="p-4">
+        <div className="flex items-center gap-2 mb-4">
           <MessageCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             Comments ({discussion.comments?.length || 0})
@@ -128,9 +128,9 @@ const DiscussionDetail: React.FC<DiscussionDetailProps> = ({
 
         {/* Comment Form */}
         {currentUser && !isLoading && (
-          <form onSubmit={handleCommentSubmit} className="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+          <form onSubmit={handleCommentSubmit} className="mb-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
             {commentError && (
-              <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+              <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
                 <p className="text-sm text-red-600 dark:text-red-400">{commentError}</p>
               </div>
             )}
@@ -139,12 +139,12 @@ const DiscussionDetail: React.FC<DiscussionDetailProps> = ({
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Share your thoughts or answer this question..."
-              rows={4}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 resize-none"
               maxLength={1000}
             />
 
-            <div className="flex items-center justify-between mt-3">
+            <div className="flex items-center justify-between mt-2">
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 {newComment.length}/1000 characters
               </p>
@@ -162,8 +162,8 @@ const DiscussionDetail: React.FC<DiscussionDetailProps> = ({
 
         {/* Sign in prompt for non-authenticated users */}
         {!currentUser && !isLoading && (
-          <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-center">
-            <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
+          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg text-center">
+            <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
               Sign in to join the discussion and post comments
             </p>
             <Link href="/api/auth/login">
@@ -173,10 +173,10 @@ const DiscussionDetail: React.FC<DiscussionDetailProps> = ({
         )}
 
         {/* Comments List */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {discussion.comments && discussion.comments.length > 0 ? (
             discussion.comments.map((comment) => (
-              <div key={comment.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div key={comment.id} className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <User className="w-4 h-4" />
@@ -192,8 +192,8 @@ const DiscussionDetail: React.FC<DiscussionDetailProps> = ({
               </div>
             ))
           ) : (
-            <div className="text-center py-8">
-              <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+            <div className="text-center py-6">
+              <MessageCircle className="w-10 h-10 text-gray-400 mx-auto mb-2" />
               <p className="text-gray-500 dark:text-gray-400">
                 No comments yet. Be the first to share your thoughts!
               </p>
