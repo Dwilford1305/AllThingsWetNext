@@ -5,11 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Navigation from '@/components/ui/Navigation';
 import FoldableLayout from '@/components/FoldableLayout';
+import AnimatedSection from '@/components/AnimatedSection';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import AdPlaceholder from '@/components/AdPlaceholder';
 import ComingSoonModal from '@/components/ComingSoonModal';
+import { motion } from 'framer-motion';
 import { Building, Phone, Mail, Globe, MapPin, Clock, ArrowLeft, Search, Filter, Star, Shield, Award } from 'lucide-react';
 import type { Business } from '@/types';
 
@@ -133,27 +135,40 @@ const BusinessesPage = () => {
   return (
     <FoldableLayout>
       <Navigation />
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center space-x-4 mb-4">
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Home
-                </Link>
-              </Button>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Building className="h-8 w-8 text-green-600" />
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Local Businesses</h1>
-                <p className="text-gray-600">Discover and support Wetaskiwin businesses</p>
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900">
+        {/* Modern Hero Header */}
+        <AnimatedSection>
+          <div className="relative bg-gradient-to-r from-black/60 via-black/40 to-black/60 backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <div className="flex items-center space-x-4 mb-6">
+                <Button asChild variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                  <Link href="/">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Home
+                  </Link>
+                </Button>
+              </div>
+              <div className="text-center">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="flex items-center justify-center space-x-4 mb-6"
+                >
+                  <Building className="h-12 w-12 text-green-400" />
+                  <div>
+                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white to-green-200 bg-clip-text text-transparent">
+                      Businesses
+                    </h1>
+                    <p className="text-xl text-green-200 mt-2">
+                      Discover and support Wetaskiwin businesses
+                    </p>
+                  </div>
+                </motion.div>
               </div>
             </div>
           </div>
-        </div>
+        </AnimatedSection>
 
         {/* Top Ad - Google AdSense Leaderboard */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

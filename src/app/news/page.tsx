@@ -72,27 +72,40 @@ const NewsPage = () => {
   return (
     <FoldableLayout>
       <Navigation />
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center space-x-4 mb-4">
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Home
-                </Link>
-              </Button>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Newspaper className="h-8 w-8 text-blue-600" />
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">News</h1>
-                <p className="text-gray-600">Stay informed with the latest from Wetaskiwin</p>
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900">
+        {/* Modern Hero Header */}
+        <AnimatedSection>
+          <div className="relative bg-gradient-to-r from-black/60 via-black/40 to-black/60 backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <div className="flex items-center space-x-4 mb-6">
+                <Button asChild variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                  <Link href="/">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Home
+                  </Link>
+                </Button>
+              </div>
+              <div className="text-center">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="flex items-center justify-center space-x-4 mb-6"
+                >
+                  <Newspaper className="h-12 w-12 text-blue-400" />
+                  <div>
+                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                      News
+                    </h1>
+                    <p className="text-xl text-blue-200 mt-2">
+                      Stay informed with the latest from Wetaskiwin
+                    </p>
+                  </div>
+                </motion.div>
               </div>
             </div>
           </div>
-        </div>
+        </AnimatedSection>
 
         {/* Top Ad - Google AdSense Leaderboard */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
