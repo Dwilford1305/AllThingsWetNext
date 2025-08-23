@@ -7,11 +7,19 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { MessageCircle, Clock, User, Send } from 'lucide-react';
 import type { Discussion } from '@/types';
-import type { UserProfile } from '@auth0/nextjs-auth0/client';
+
+type DiscussionUser = {
+  id?: string;
+  email?: string;
+  given_name?: string;
+  family_name?: string;
+  name?: string;
+  picture?: string;
+};
 
 interface DiscussionDetailProps {
   discussion: Discussion;
-  currentUser: UserProfile | undefined;
+  currentUser: DiscussionUser | undefined;
   isLoading: boolean;
   onCommentAdded: (updatedDiscussion: Discussion) => void;
 }

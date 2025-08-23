@@ -5,17 +5,16 @@ import { withAuth, type AuthenticatedRequest } from '@/lib/auth-middleware'
 import type { ApiResponse } from '@/types'
 import { randomUUID } from 'crypto'
 
-interface RouteParams {
-  params: { id: string }
-}
-
 // POST /api/discussions/[id]/comments - Add comment to discussion (protected route)
 async function postComment(
   request: AuthenticatedRequest,
   context?: Record<string, unknown>
 ) {
-  const params = (context as RouteParams)?.params
-  if (!params) {
+  // TypeScript workaround: context should contain params for dynamic routes
+  const routeContext = context as { params?: { id: string } } | undefined
+  const params = routeContext?.params
+  
+  if (!params?.id) {
     return NextResponse.json(
       { success: false, error: 'Invalid request parameters' },
       { status: 400 }

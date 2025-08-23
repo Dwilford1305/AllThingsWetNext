@@ -133,7 +133,7 @@ const DiscussionsPage = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              <AdPlaceholder size="sidebar" />
+              <AdPlaceholder type="google" size="sidebar" />
               
               <Card className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
