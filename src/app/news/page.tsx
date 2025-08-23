@@ -117,29 +117,29 @@ const NewsPage = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Search and Filter */}
-          <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
+          {/* Search and Filter - Modern glassmorphism design */}
+          <div className="glass-card p-6 rounded-2xl mb-8 border-white/10">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-blue-200" />
                 <input
                   type="text"
                   placeholder="Search news..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent text-white placeholder-blue-200"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <div className="flex items-center space-x-2">
-                <Filter className="h-4 w-4 text-gray-400" />
+                <Filter className="h-4 w-4 text-blue-200" />
                 <select
                   aria-label="Filter news by category"
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent text-white"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
                 >
                   {categories.map(category => (
-                    <option key={category} value={category}>
+                    <option key={category} value={category} className="bg-slate-800 text-white">
                       {category === 'all' ? 'All Categories' : category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </option>
                   ))}
@@ -151,8 +151,8 @@ const NewsPage = () => {
           {/* News Sponsor Spotlight */}
           <div className="mb-8">
             <div className="text-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">News Sponsors</h3>
-              <p className="text-sm text-gray-600">Supporting local journalism</p>
+              <h3 className="text-lg font-semibold text-white mb-2">News Sponsors</h3>
+              <p className="text-sm text-blue-200">Supporting local journalism</p>
             </div>
             <div className="flex justify-center">
               <AdPlaceholder 
@@ -166,13 +166,13 @@ const NewsPage = () => {
           {/* Featured Articles */}
           {filteredArticles.some(article => article.featured) && (
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Featured Stories</h2>
+              <h2 className="text-2xl font-bold text-white mb-4">Featured Stories</h2>
               <div className="grid md:grid-cols-2 gap-6 mb-8">
                 {filteredArticles
                   .filter(article => article.featured)
                   .slice(0, 2)
                   .map((article) => (
-                    <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-white">
+                    <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow glass-card border-white/10">
                       {article.imageUrl && (
                         <div className="h-48 bg-gray-200 relative">
                           <Image
@@ -183,7 +183,7 @@ const NewsPage = () => {
                           />
                         </div>
                       )}
-                      <div className="p-6 bg-white relative z-10">
+                      <div className="p-6 glass-card relative z-10">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center space-x-2">
                             <Badge variant="default" className="bg-yellow-500 text-black">
@@ -191,20 +191,20 @@ const NewsPage = () => {
                             </Badge>
                             <NewBadge date={article.publishedAt || article.createdAt} />
                           </div>
-                          <Badge variant="secondary">
+                          <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
                             {article.category.replace('-', ' ')}
                           </Badge>
                         </div>
                         
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">
+                        <h3 className="text-xl font-bold text-white mb-2">
                           {article.title}
                         </h3>
                         
-                        <p className="text-gray-600 mb-4 line-clamp-3">
+                        <p className="text-blue-100 mb-4 line-clamp-3">
                           {article.summary}
                         </p>
                         
-                        <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                        <div className="flex items-center justify-between text-sm text-blue-200 mb-4">
                           <div className="flex items-center space-x-4">
                             <div className="flex items-center">
                               <Calendar className="h-4 w-4 mr-1" />
@@ -214,20 +214,20 @@ const NewsPage = () => {
                               <span>by {article.author}</span>
                             )}
                           </div>
-                          <span className="text-blue-600">{article.sourceName}</span>
+                          <span className="text-blue-300">{article.sourceName}</span>
                         </div>
                         
                         {article.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1 mb-4">
                             {article.tags.slice(0, 3).map((tag, index) => (
-                              <Badge key={index} variant="outline" className="text-xs">
+                              <Badge key={index} variant="outline" className="text-xs bg-white/10 text-blue-200 border-white/30">
                                 {tag}
                               </Badge>
                             ))}
                           </div>
                         )}
                         
-                        <Button asChild size="sm" variant="outline">
+                        <Button asChild size="sm" variant="outline" className="border-white/30 text-white hover:bg-white/10">
                           <a href={article.sourceUrl} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="h-4 w-4 mr-2" />
                             Read Full Article
@@ -242,11 +242,11 @@ const NewsPage = () => {
 
           {/* All Articles */}
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Latest News</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">Latest News</h2>
             {filteredArticles.length > 0 ? (
               <div className="space-y-6">
                 {filteredArticles.map((article) => (
-                  <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-white">
+                  <Card key={article.id} className="overflow-hidden hover:shadow-lg transition-shadow glass-card border-white/10">
                     <div className="md:flex">
                       {article.imageUrl && (
                         <div className="md:w-1/3 h-48 md:h-auto bg-gray-200 relative">
@@ -258,10 +258,10 @@ const NewsPage = () => {
                           />
                         </div>
                       )}
-                      <div className="flex-1 p-6 bg-white relative z-10">
+                      <div className="flex-1 p-6 glass-card relative z-10">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center space-x-2">
-                            <Badge variant="secondary">
+                            <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
                               {article.category.replace('-', ' ')}
                             </Badge>
                             <NewBadge date={article.publishedAt || article.createdAt} />
@@ -273,15 +273,15 @@ const NewsPage = () => {
                           )}
                         </div>
                         
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">
+                        <h3 className="text-xl font-bold text-white mb-2">
                           {article.title}
                         </h3>
                         
-                        <p className="text-gray-600 mb-4">
+                        <p className="text-blue-100 mb-4">
                           {article.summary}
                         </p>
                         
-                        <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                        <div className="flex items-center justify-between text-sm text-blue-200 mb-4">
                           <div className="flex items-center space-x-4">
                             <div className="flex items-center">
                               <Calendar className="h-4 w-4 mr-1" />
@@ -291,20 +291,20 @@ const NewsPage = () => {
                               <span>by {article.author}</span>
                             )}
                           </div>
-                          <span className="text-blue-600">{article.sourceName}</span>
+                          <span className="text-blue-300">{article.sourceName}</span>
                         </div>
                         
                         {article.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1 mb-4">
                             {article.tags.slice(0, 5).map((tag, index) => (
-                              <Badge key={index} variant="outline" className="text-xs">
+                              <Badge key={index} variant="outline" className="text-xs bg-white/10 text-blue-200 border-white/30">
                                 {tag}
                               </Badge>
                             ))}
                           </div>
                         )}
                         
-                        <Button asChild size="sm" variant="outline">
+                        <Button asChild size="sm" variant="outline" className="border-white/30 text-white hover:bg-white/10">
                           <a href={article.sourceUrl} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="h-4 w-4 mr-2" />
                             Read Full Article
@@ -316,10 +316,10 @@ const NewsPage = () => {
                 ))}
               </div>
             ) : (
-              <Card className="p-12 text-center">
-                <Newspaper className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No articles found</h3>
-                <p className="text-gray-600">
+              <Card className="p-12 text-center glass-card border-white/10">
+                <Newspaper className="h-12 w-12 text-blue-300 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-white mb-2">No articles found</h3>
+                <p className="text-blue-200">
                   {searchTerm || selectedCategory !== 'all' 
                     ? 'Try adjusting your search or filter criteria.' 
                     : 'No news articles are currently available.'}
@@ -328,10 +328,10 @@ const NewsPage = () => {
             )}
 
             {/* Bottom Ad Section */}
-            <div className="mt-12 pt-8 border-t border-gray-200">
+            <div className="mt-12 pt-8 border-t border-white/20">
               <div className="text-center mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">News Partners</h3>
-                <p className="text-sm text-gray-600">Supporting local news coverage</p>
+                <h3 className="text-lg font-semibold text-white mb-2">News Partners</h3>
+                <p className="text-sm text-blue-200">Supporting local news coverage</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mb-6">
                 <AdPlaceholder type="gold" size="square" />

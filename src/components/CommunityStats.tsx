@@ -72,11 +72,11 @@ const CommunityStats = () => {
 
   return (
     <section className="relative py-20 md:py-32">
-      {/* Modern Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50/30" />
+      {/* Modern Dark Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900" />
       <div className="absolute inset-0">
-        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-blue-100/20 to-purple-100/10 rounded-full blur-3xl animate-pulse-slow" />
-        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-br from-purple-100/10 to-blue-100/20 rounded-full blur-3xl animate-float" />
+        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-3xl animate-pulse-slow" />
+        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-br from-purple-400/10 to-blue-400/10 rounded-full blur-3xl animate-float" />
       </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -93,15 +93,15 @@ const CommunityStats = () => {
             whileInView={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
-            className="inline-block px-6 py-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full text-blue-700 font-semibold text-sm mb-6"
+            className="inline-block px-6 py-2 bg-gradient-to-r from-white/10 to-blue-200/10 backdrop-blur-sm rounded-full text-blue-200 font-semibold text-sm mb-6"
           >
             📊 Community Insights
           </motion.div>
           
-          <h2 className="text-4xl md:text-6xl font-bold leading-tight mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h2 className="text-4xl md:text-6xl font-bold leading-tight mb-6 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
             Your Community at a Glance
           </h2>
-          <p className="text-xl md:text-2xl text-gray-600 leading-relaxed max-w-3xl mx-auto mb-12">
+          <p className="text-xl md:text-2xl text-blue-100 leading-relaxed max-w-3xl mx-auto mb-12">
             Join thousands of Wetaskiwin residents who stay connected through our community hub
           </p>
 
@@ -121,15 +121,15 @@ const CommunityStats = () => {
                 whileHover={{ y: -8, scale: 1.02 }}
                 className="group"
               >
-                <div className="bg-white rounded-2xl shadow-lg p-6 lg:p-8 border border-gray-100/50 transition-all duration-300 hover:shadow-xl hover:border-gray-200 relative overflow-hidden">
+                <div className="glass-card rounded-2xl p-6 lg:p-8 border-white/10 transition-all duration-300 hover:bg-white/10 hover:border-white/20 relative overflow-hidden">
                   <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${stat.gradient}`} />
                   <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${stat.gradient} rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300`}>
                     <stat.icon className="h-8 w-8 text-white" />
                   </div>
-                  <div className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors duration-300">
+                  <div className="text-3xl lg:text-4xl font-bold text-white mb-2 group-hover:text-blue-200 transition-colors duration-300">
                     {stat.value.toLocaleString()}
                   </div>
-                  <div className="text-sm font-medium text-gray-600 leading-tight">{stat.label}</div>
+                  <div className="text-sm font-medium text-blue-100 leading-tight">{stat.label}</div>
                 </div>
               </motion.div>
             ))}
@@ -153,7 +153,7 @@ const CommunityStats = () => {
               transition={{ duration: 0.8, delay: 0.1 * index, ease: [0.4, 0, 0.2, 1] }}
               viewport={{ once: true }}
               whileHover={{ y: -8, scale: 1.02 }}
-              className="group bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-all duration-300 border border-gray-100/50 relative overflow-hidden"
+              className="group glass-card rounded-2xl p-8 hover:bg-white/10 transition-all duration-300 border-white/10 relative overflow-hidden"
             >
               <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${getFeatureGradient(index)} opacity-10 rounded-full -translate-y-16 translate-x-16`} />
               
@@ -162,10 +162,10 @@ const CommunityStats = () => {
                   <feature.icon className="h-8 w-8 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-300">
+                  <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-blue-200 transition-colors duration-300">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600 leading-relaxed text-lg">
+                  <p className="text-blue-100 leading-relaxed text-lg">
                     {feature.description}
                   </p>
                 </div>
@@ -183,9 +183,9 @@ const CommunityStats = () => {
           className="mt-12 sm:mt-16 text-center"
         >
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 sm:p-8 text-white">
-            <MapPin className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-blue-200" />
+            <MapPin className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-white/80" />
             <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Proudly Serving Wetaskiwin</h3>
-            <p className="text-base sm:text-lg text-blue-100 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg text-white/80 max-w-2xl mx-auto leading-relaxed">
               Located in the heart of Alberta, Wetaskiwin is a vibrant community rich in history, 
               culture, and opportunity. We&apos;re here to help you discover all it has to offer.
             </p>

@@ -180,16 +180,16 @@ const BusinessesPage = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Search and Filter */}
-          <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
+          {/* Search and Filter - Modern glassmorphism design */}
+          <div className="glass-card p-6 rounded-2xl mb-8 border-white/10">
             <div className="space-y-4">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-green-200" />
                 <input
                   type="text"
                   placeholder="Search businesses..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent text-white placeholder-green-200"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -198,10 +198,10 @@ const BusinessesPage = () => {
               {/* Filters Row */}
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex items-center space-x-2">
-                  <Filter className="h-4 w-4 text-gray-400" />
+                  <Filter className="h-4 w-4 text-green-200" />
                   <select
                     aria-label="Filter businesses by category"
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent text-white"
                     value={selectedCategory}
                     onChange={(e) => {
                       setSelectedCategory(e.target.value);
@@ -209,7 +209,7 @@ const BusinessesPage = () => {
                     }}
                   >
                     {categories.map(category => (
-                      <option key={category} value={category}>
+                      <option key={category} value={category} className="bg-slate-800 text-white">
                         {category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1)}
                       </option>
                     ))}
@@ -217,23 +217,23 @@ const BusinessesPage = () => {
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600">Sort:</span>
+                  <span className="text-sm text-green-200">Sort:</span>
                   <select
                     aria-label="Sort businesses"
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent text-white"
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                   >
-                    <option value="name">Alphabetical</option>
-                    <option value="featured">Featured First</option>
-                    <option value="rating">Rating</option>
-                    <option value="newest">Newest</option>
+                    <option value="name" className="bg-slate-800 text-white">Alphabetical</option>
+                    <option value="featured" className="bg-slate-800 text-white">Featured First</option>
+                    <option value="rating" className="bg-slate-800 text-white">Rating</option>
+                    <option value="newest" className="bg-slate-800 text-white">Newest</option>
                   </select>
                 </div>
               </div>
 
               {/* Alphabetical Navigation */}
-              <div className="border-t pt-4">
+              <div className="border-t border-white/20 pt-4">
                 <div className="flex flex-wrap gap-1">
                   <button
                     onClick={() => {
@@ -242,8 +242,8 @@ const BusinessesPage = () => {
                     }}
                     className={`px-3 py-1 text-sm rounded ${
                       selectedLetter === 'all' 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-white/10 text-green-200 hover:bg-white/20'
                     }`}
                   >
                     All
@@ -257,8 +257,8 @@ const BusinessesPage = () => {
                       }}
                       className={`px-3 py-1 text-sm rounded ${
                         selectedLetter === letter 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          ? 'bg-green-600 text-white' 
+                          : 'bg-white/10 text-green-200 hover:bg-white/20'
                       }`}
                     >
                       {letter}
@@ -268,7 +268,7 @@ const BusinessesPage = () => {
               </div>
 
               {/* Results Summary */}
-              <div className="flex flex-wrap gap-4 text-sm text-gray-600 pt-2 border-t">
+              <div className="flex flex-wrap gap-4 text-sm text-green-200 pt-2 border-t border-white/20">
                 <span>Total: {summary.total}</span>
                 <span>Showing: {pagination.totalCount} results</span>
               </div>
@@ -278,8 +278,8 @@ const BusinessesPage = () => {
           {/* Premium Business Showcase */}
           <div className="mb-8">
             <div className="text-center mb-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Premium Business Directory</h3>
-              <p className="text-sm text-gray-600">Featuring our most valued business partners</p>
+              <h3 className="text-xl font-semibold text-white mb-2">Premium Business Directory</h3>
+              <p className="text-sm text-green-200">Featuring our most valued business partners</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
               <AdPlaceholder 
@@ -297,7 +297,7 @@ const BusinessesPage = () => {
             <>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 {businesses.map((business) => (
-                  <Card key={business.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <Card key={business.id} className="overflow-hidden hover:shadow-lg transition-shadow glass-card border-white/10">
                     {business.imageUrl && (
                       <div className="h-48 bg-gray-200 relative">
                         <Image
@@ -311,7 +311,7 @@ const BusinessesPage = () => {
                     <div className="p-6">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex flex-wrap gap-2">
-                          <Badge variant="secondary">
+                          <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
                             {business.category}
                           </Badge>
                           {getSubscriptionBadge(business.subscriptionTier || 'free', business.isClaimed || false)}
@@ -323,26 +323,26 @@ const BusinessesPage = () => {
                         )}
                       </div>
                       
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      <h3 className="text-xl font-bold text-white mb-2">
                         {business.name}
                       </h3>
                       
-                      <p className="text-gray-600 mb-4 line-clamp-3">
+                      <p className="text-green-100 mb-4 line-clamp-3">
                         {business.description}
                       </p>
                       
                       <div className="space-y-2 mb-4">
-                        <div className="flex items-center text-sm text-gray-500">
+                        <div className="flex items-center text-sm text-green-200">
                           <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
                           <span className="truncate">{business.address}</span>
                         </div>
                         
                         {business.phone && (
-                          <div className="flex items-center text-sm text-gray-500">
+                          <div className="flex items-center text-sm text-green-200">
                             <Phone className="h-4 w-4 mr-2 flex-shrink-0" />
                             <a 
                               href={`tel:${business.phone}`}
-                              className="hover:text-blue-600 transition-colors"
+                              className="hover:text-green-100 transition-colors"
                             >
                               {business.phone}
                             </a>
@@ -350,11 +350,11 @@ const BusinessesPage = () => {
                         )}
                         
                         {business.email && (
-                          <div className="flex items-center text-sm text-gray-500">
+                          <div className="flex items-center text-sm text-green-200">
                             <Mail className="h-4 w-4 mr-2 flex-shrink-0" />
                             <a 
                               href={`mailto:${business.email}`}
-                              className="hover:text-blue-600 transition-colors truncate"
+                              className="hover:text-green-100 transition-colors truncate"
                             >
                               {business.email}
                             </a>
@@ -362,7 +362,7 @@ const BusinessesPage = () => {
                         )}
                         
                         {business.hours && (
-                          <div className="flex items-center text-sm text-gray-500">
+                          <div className="flex items-center text-sm text-green-200">
                             <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
                             <span>Today: {formatHours(business.hours)}</span>
                           </div>
@@ -371,7 +371,7 @@ const BusinessesPage = () => {
                       
                       <div className="flex flex-wrap gap-2">
                         {business.website && (
-                          <Button asChild size="sm" variant="outline">
+                          <Button asChild size="sm" variant="outline" className="border-white/30 text-white hover:bg-white/10">
                             <a href={business.website} target="_blank" rel="noopener noreferrer">
                               <Globe className="h-4 w-4 mr-2" />
                               Website
@@ -379,7 +379,7 @@ const BusinessesPage = () => {
                           </Button>
                         )}
                         {business.phone && (
-                          <Button asChild size="sm" variant="primary">
+                          <Button asChild size="sm" className="bg-green-600 hover:bg-green-700 text-white">
                             <a href={`tel:${business.phone}`}>
                               <Phone className="h-4 w-4 mr-2" />
                               Call
@@ -387,7 +387,7 @@ const BusinessesPage = () => {
                           </Button>
                         )}
                         {business.isClaimed ? (
-                          <Button asChild size="sm" variant="outline" className="border-green-500 text-green-600 hover:bg-green-50">
+                          <Button asChild size="sm" variant="outline" className="border-green-400 text-green-300 hover:bg-green-900/20">
                             <Link href={`/businesses/manage?id=${business.id}`}>
                               Manage Listing
                             </Link>
@@ -396,7 +396,7 @@ const BusinessesPage = () => {
                           <Button 
                             size="sm" 
                             variant="outline"
-                            className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                            className="border-orange-400 text-orange-300 hover:bg-orange-900/20"
                             onClick={() => handleClaimBusiness(business)}
                           >
                             Claim This Business
@@ -410,9 +410,9 @@ const BusinessesPage = () => {
 
               {/* Pagination Controls */}
               {pagination.totalPages > 1 && (
-                <div className="bg-white p-6 rounded-lg shadow-sm">
+                <div className="glass-card p-6 rounded-2xl border-white/10">
                   <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-green-200">
                       Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to {Math.min(pagination.currentPage * pagination.limit, pagination.totalCount)} of {pagination.totalCount} results
                     </div>
                     
@@ -420,6 +420,7 @@ const BusinessesPage = () => {
                       <Button
                         variant="outline"
                         size="sm"
+                        className="border-white/30 text-white hover:bg-white/10"
                         onClick={() => handlePageChange(pagination.currentPage - 1)}
                         disabled={!pagination.hasPrevPage}
                       >
@@ -440,8 +441,8 @@ const BusinessesPage = () => {
                               onClick={() => handlePageChange(pageNum)}
                               className={`px-3 py-1 text-sm rounded ${
                                 pageNum === pagination.currentPage
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                  ? 'bg-green-600 text-white'
+                                  : 'bg-white/10 text-green-200 hover:bg-white/20'
                               }`}
                             >
                               {pageNum}
@@ -453,6 +454,7 @@ const BusinessesPage = () => {
                       <Button
                         variant="outline"
                         size="sm"
+                        className="border-white/30 text-white hover:bg-white/10"
                         onClick={() => handlePageChange(pagination.currentPage + 1)}
                         disabled={!pagination.hasNextPage}
                       >
@@ -467,10 +469,10 @@ const BusinessesPage = () => {
 
           {/* Empty State */}
           {!loading && businesses.length === 0 && (
-            <Card className="p-12 text-center">
-              <Building className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No businesses found</h3>
-              <p className="text-gray-600">
+            <Card className="p-12 text-center glass-card border-white/10">
+              <Building className="h-12 w-12 text-green-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-white mb-2">No businesses found</h3>
+              <p className="text-green-200">
                 {searchTerm || selectedCategory !== 'all' || selectedLetter !== 'all'
                   ? 'Try adjusting your search or filter criteria.' 
                   : 'No businesses are currently listed.'}
@@ -479,10 +481,10 @@ const BusinessesPage = () => {
           )}
 
           {/* Bottom Business Partners Section */}
-          <div className="mt-12 pt-8 border-t border-gray-200">
+          <div className="mt-12 pt-8 border-t border-white/20">
             <div className="text-center mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Business Community Partners</h3>
-              <p className="text-sm text-gray-600">Join our thriving business directory</p>
+              <h3 className="text-lg font-semibold text-white mb-2">Business Community Partners</h3>
+              <p className="text-sm text-green-200">Join our thriving business directory</p>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <AdPlaceholder type="silver" size="square" />
