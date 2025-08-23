@@ -153,10 +153,10 @@ const Navigation = () => {
   // For home page, use transparent when at top
   const getNavStyles = () => {
     if (!isHomePage) {
-      return 'bg-white/95 backdrop-blur-md shadow-lg border-b';
+      return 'glass border border-white/10 shadow-glass';
     }
     return isScrolled 
-      ? 'bg-white/95 backdrop-blur-md shadow-lg border-b' 
+      ? 'glass border border-white/10 shadow-glass' 
       : 'bg-transparent';
   };
 
@@ -171,13 +171,13 @@ const Navigation = () => {
     <>
       {/* Foldable Sidebar Navigation (client-only) */}
       {hasMounted && isFoldableUnfolded() && (
-        <aside className="fixed left-0 top-20 sm:top-16 md:top-12 bottom-0 w-24 bg-white/95 backdrop-blur-md shadow-lg border-r z-40 flex flex-col items-center py-4 foldable-sidebar overflow-y-auto">
+        <aside className="fixed left-0 top-20 sm:top-16 md:top-12 bottom-0 w-24 glass-card border-r border-white/20 z-40 flex flex-col items-center py-6 foldable-sidebar overflow-y-auto">
           {/* Logo/Home */}
-          <Link href="/" className="mb-4 p-2 rounded-lg hover:bg-blue-50 transition-colors flex flex-col items-center flex-shrink-0">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mb-1">
-              <Home size={18} className="text-white" />
+          <Link href="/" className="mb-6 p-3 rounded-xl hover:bg-white/10 transition-all duration-300 hover-lift flex flex-col items-center flex-shrink-0 group">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300">
+              <Home size={20} className="text-white" />
             </div>
-            <span className="text-xs font-medium text-gray-700">Home</span>
+            <span className="text-xs font-semibold text-gray-700 group-hover:text-blue-600 transition-colors duration-300">Home</span>
           </Link>
           
           {/* Navigation Items */}
@@ -186,16 +186,16 @@ const Navigation = () => {
               <Link
                 key={href}
                 href={href}
-                className={`p-2 rounded-lg transition-colors group relative flex flex-col items-center flex-shrink-0 ${
+                className={`p-3 rounded-xl transition-all duration-300 hover-lift group relative flex flex-col items-center flex-shrink-0 ${
                   pathname === href 
-                    ? 'bg-blue-600 text-white' 
-                    : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600'
+                    ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg' 
+                    : 'text-gray-600 hover:bg-white/10 hover:text-blue-600'
                 }`}
                 title={label}
               >
-                <Icon size={18} className="mb-1" />
-                <span className={`text-xs font-medium leading-tight text-center ${
-                  pathname === href ? 'text-white' : 'text-gray-700'
+                <Icon size={20} className="mb-2 group-hover:scale-110 transition-transform duration-300" />
+                <span className={`text-xs font-semibold leading-tight text-center transition-colors duration-300 ${
+                  pathname === href ? 'text-white' : 'text-gray-700 group-hover:text-blue-600'
                 }`}>
                   {label}
                 </span>
@@ -204,29 +204,29 @@ const Navigation = () => {
           </nav>
 
           {/* Authentication Section - Fixed at bottom */}
-          <div className="mt-2 pt-3 border-t border-gray-300 flex flex-col space-y-2 flex-shrink-0">
+          <div className="mt-auto pt-4 border-t border-white/20 flex flex-col space-y-3 flex-shrink-0">
       {user ? (
               <>
                 {/* User Profile - Clickable */}
                 <Link
                   href="/profile"
-                  className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 flex flex-col items-center text-center flex-shrink-0 transition-colors"
+                  className="p-3 rounded-xl bg-white/10 hover:bg-white/20 flex flex-col items-center text-center flex-shrink-0 transition-all duration-300 hover-lift group"
                   title="Profile Settings"
                 >
-                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center mb-1">
+                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300">
           {displayPicture ? (
                       <Image
             src={displayPicture}
             alt={`${displayFirst} ${displayLast}`}
-                        width={24}
-                        height={24}
-                        className="w-6 h-6 rounded-full object-cover"
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full object-cover"
                       />
                     ) : (
-                      <User size={14} className="text-white" />
+                      <User size={16} className="text-white" />
                     )}
                   </div>
-                  <span className="text-xs font-medium text-gray-700 leading-tight text-center">
+                  <span className="text-xs font-semibold text-gray-700 leading-tight text-center group-hover:text-blue-600 transition-colors duration-300">
           {displayFirst}
                   </span>
                 </Link>
@@ -275,16 +275,16 @@ const Navigation = () => {
       )}
 
       {/* Traditional Navigation for non-foldable devices (always rendered) */}
-      <nav className={`fixed w-full max-w-full top-20 sm:top-16 md:top-12 z-40 transition-all duration-300 nav-container overflow-x-hidden no-horizontal-scroll safe-width` +
+      <nav className={`fixed w-full max-w-full top-20 sm:top-16 md:top-12 z-40 transition-all duration-500 nav-container overflow-x-hidden no-horizontal-scroll safe-width rounded-b-2xl` +
         ` ${getNavStyles()} ${hasMounted && isFoldableUnfolded() ? 'hidden' : ''}`}
       >
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 overflow-x-hidden no-horizontal-scroll safe-width">
-          <div className="flex justify-between items-center h-14 sm:h-16 min-w-0 flex-between w-full overflow-x-hidden no-horizontal-scroll safe-width">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-hidden no-horizontal-scroll safe-width">
+          <div className="flex justify-between items-center h-16 sm:h-18 min-w-0 flex-between w-full overflow-x-hidden no-horizontal-scroll safe-width">
             <div className="flex items-center min-w-0 flex-1 mr-3 overflow-x-hidden no-horizontal-scroll safe-width">
               {/* Heading only appears after scroll and after mount */}
               {hasMounted && isScrolled && (
-                <Link href="/" className="flex-shrink-0 min-w-0 overflow-x-hidden no-horizontal-scroll safe-width">
-                  <h1 className={`nav-title text-2xl sm:text-3xl md:text-3xl font-bold transition-colors duration-300 ${getTextStyles()} truncate ${getTitleMaxWidth()} overflow-x-hidden no-horizontal-scroll safe-width`}>
+                <Link href="/" className="flex-shrink-0 min-w-0 overflow-x-hidden no-horizontal-scroll safe-width group">
+                  <h1 className={`nav-title text-2xl sm:text-3xl md:text-3xl font-bold transition-all duration-300 ${getTextStyles()} truncate ${getTitleMaxWidth()} overflow-x-hidden no-horizontal-scroll safe-width group-hover:scale-105`}>
                     All Things Wetaskiwin
                   </h1>
                 </Link>
@@ -292,24 +292,26 @@ const Navigation = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-4 lg:space-x-8">
+            <div className="hidden md:flex items-center space-x-2 lg:space-x-4">
               {navItems.map(({ href, label, icon: Icon }) => (
                 <Link
                   key={href}
                   href={href}
-                  className={`px-2 lg:px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
-                    !isHomePage || (hasMounted && isScrolled)
-                      ? 'text-gray-600 hover:text-blue-600' 
-                      : 'text-white/90 hover:text-white'
+                  className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center gap-2 hover-lift group ${
+                    pathname === href 
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg'
+                      : !isHomePage || (hasMounted && isScrolled)
+                        ? 'text-gray-700 hover:bg-white/20 hover:text-blue-600' 
+                        : 'text-white/90 hover:text-white hover:bg-white/10'
                   }`}
                 >
-                  <Icon size={16} />
+                  <Icon size={18} className="group-hover:scale-110 transition-transform duration-300" />
                   <span className="hidden lg:inline">{label}</span>
                 </Link>
               ))}
               
               {/* Authentication Buttons */}
-              <div className="flex items-center space-x-2 ml-4">
+              <div className="flex items-center space-x-3 ml-6">
                 {user ? (
                   <div className="flex items-center space-x-2">
                     <Link
