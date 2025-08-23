@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, Variants } from 'framer-motion'
 import { useRef } from 'react'
 
 interface AnimatedSectionProps {
@@ -27,7 +27,7 @@ const AnimatedSection = ({
     amount: 0.1 
   })
 
-  const variants = {
+  const variants: Variants = {
     hidden: {
       opacity: 0,
       ...(direction === 'up' && { y: 60 }),
@@ -44,14 +44,12 @@ const AnimatedSection = ({
       transition: {
         duration,
         delay,
-        ease: [0.4, 0, 0.2, 1],
-        when: "beforeChildren",
-        staggerChildren: stagger,
+        ...(stagger > 0 && { staggerChildren: stagger }),
       }
     }
   }
 
-  const childVariants = {
+  const childVariants: Variants = {
     hidden: {
       opacity: 0,
       y: 20,
@@ -61,7 +59,6 @@ const AnimatedSection = ({
       y: 0,
       transition: {
         duration: 0.5,
-        ease: [0.4, 0, 0.2, 1],
       }
     }
   }
