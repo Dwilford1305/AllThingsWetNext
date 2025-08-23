@@ -299,21 +299,21 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
           </div>
 
           {currentTier === 'free' && (
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="p-4 border rounded-lg">
-                <h4 className="font-medium text-gray-900 mb-2 flex items-center">
-                  <Shield className="h-4 w-4 mr-2" />
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="p-6 border border-gray-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-xl">
+                <h4 className="font-bold text-gray-900 mb-3 flex items-center">
+                  <Shield className="h-5 w-5 mr-2 text-blue-600" />
                   Silver
                 </h4>
-                <p className="text-2xl font-bold text-gray-900 mb-2">$19.99<span className="text-sm font-normal">/month</span></p>
-                <ul className="text-sm text-gray-600 mb-4 space-y-1">
-                  <li>• Enhanced listing</li>
-                  <li>• Contact form</li>
-                  <li>• Basic analytics</li>
-                  <li>• Business hours</li>
+                <p className="text-3xl font-bold text-gray-900 mb-3">$19.99<span className="text-base font-normal text-gray-600">/month</span></p>
+                <ul className="text-sm text-gray-600 mb-6 space-y-2">
+                  <li className="flex items-center"><span className="text-green-500 mr-2">✓</span>Enhanced listing</li>
+                  <li className="flex items-center"><span className="text-green-500 mr-2">✓</span>Contact form</li>
+                  <li className="flex items-center"><span className="text-green-500 mr-2">✓</span>Basic analytics</li>
+                  <li className="flex items-center"><span className="text-green-500 mr-2">✓</span>Business hours</li>
                 </ul>
                 <Button 
-                  size="sm" 
+                  size="md" 
                   variant="outline" 
                   className="w-full"
                   onClick={() => handleUpgrade('silver')}
@@ -323,21 +323,22 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                 </Button>
               </div>
 
-              <div className="p-4 border-2 border-yellow-500 rounded-lg relative">
-                <Badge className="absolute -top-2 left-4 bg-yellow-500 text-black">Popular</Badge>
-                <h4 className="font-medium text-gray-900 mb-2 flex items-center">
-                  <Star className="h-4 w-4 mr-2" />
+              <div className="p-6 border-2 border-yellow-400/80 bg-gradient-to-br from-yellow-50 to-orange-50 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 rounded-xl relative">
+                <Badge className="absolute -top-3 left-6 bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-medium">Popular</Badge>
+                <h4 className="font-bold text-gray-900 mb-3 flex items-center">
+                  <Star className="h-5 w-5 mr-2 text-yellow-600" />
                   Gold
                 </h4>
-                <p className="text-2xl font-bold text-gray-900 mb-2">$39.99<span className="text-sm font-normal">/month</span></p>
-                <ul className="text-sm text-gray-600 mb-4 space-y-1">
-                  <li>• Everything in Silver</li>
-                  <li>• Photo gallery</li>
-                  <li>• Social media links</li>
-                  <li>• Featured placement</li>
+                <p className="text-3xl font-bold text-gray-900 mb-3">$39.99<span className="text-base font-normal text-gray-600">/month</span></p>
+                <ul className="text-sm text-gray-600 mb-6 space-y-2">
+                  <li className="flex items-center"><span className="text-green-500 mr-2">✓</span>Everything in Silver</li>
+                  <li className="flex items-center"><span className="text-green-500 mr-2">✓</span>Photo gallery</li>
+                  <li className="flex items-center"><span className="text-green-500 mr-2">✓</span>Social media links</li>
+                  <li className="flex items-center"><span className="text-green-500 mr-2">✓</span>Featured placement</li>
                 </ul>
                 <Button 
-                  size="sm" 
+                  size="md" 
+                  size="md" 
                   variant="primary" 
                   className="w-full"
                   onClick={() => handleUpgrade('gold')}
@@ -347,20 +348,20 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                 </Button>
               </div>
 
-              <div className="p-4 border rounded-lg">
-                <h4 className="font-medium text-gray-900 mb-2 flex items-center">
-                  <Award className="h-4 w-4 mr-2" />
+              <div className="p-6 border border-gray-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 rounded-xl">
+                <h4 className="font-bold text-gray-900 mb-3 flex items-center">
+                  <Award className="h-5 w-5 mr-2 text-purple-600" />
                   Platinum
                 </h4>
-                <p className="text-2xl font-bold text-gray-900 mb-2">$79.99<span className="text-sm font-normal">/month</span></p>
-                <ul className="text-sm text-gray-600 mb-4 space-y-1">
-                  <li>• Everything in Gold</li>
-                  <li>• Logo upload</li>
-                  <li>• Advanced analytics</li>
-                  <li>• Priority support</li>
+                <p className="text-3xl font-bold text-gray-900 mb-3">$79.99<span className="text-base font-normal text-gray-600">/month</span></p>
+                <ul className="text-sm text-gray-600 mb-6 space-y-2">
+                  <li className="flex items-center"><span className="text-green-500 mr-2">✓</span>Everything in Gold</li>
+                  <li className="flex items-center"><span className="text-green-500 mr-2">✓</span>Logo upload</li>
+                  <li className="flex items-center"><span className="text-green-500 mr-2">✓</span>Advanced analytics</li>
+                  <li className="flex items-center"><span className="text-green-500 mr-2">✓</span>Priority support</li>
                 </ul>
                 <Button 
-                  size="sm" 
+                  size="md" 
                   variant="outline" 
                   className="w-full"
                   onClick={() => handleUpgrade('platinum')}
