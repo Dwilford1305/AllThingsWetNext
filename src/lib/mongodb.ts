@@ -2,12 +2,18 @@ import mongoose from 'mongoose'
 
 const MONGODB_URI = process.env.MONGODB_URI
 
-// During build time on Vercel, environment variables should be available
-// but let's be more defensive about it
+// During build time, we might not have environment variables available
+const isBuildTime = !process.env.NODE_ENV || process.env.VERCEL_ENV === undefined
+const isRealProduction = process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production'
+
 if (!MONGODB_URI && process.env.NODE_ENV !== 'test') {
-  console.error('Missing MONGODB_URI environment variable')
-  if (process.env.VERCEL_ENV === 'production') {
-    throw new Error('MONGODB_URI environment variable is required in production')
+  if (isBuildTime) {
+    console.warn('Missing MONGODB_URI environment variable during build time')
+  } else {
+    console.error('Missing MONGODB_URI environment variable')
+    if (isRealProduction) {
+      throw new Error('MONGODB_URI environment variable is required in production')
+    }
   }
 }
 
@@ -33,6 +39,12 @@ async function connectDB(): Promise<typeof mongoose> {
   }
 
   if (!MONGODB_URI) {
+    // During build time, just return a mock connection
+    if (isBuildTime || process.env.NODE_ENV === 'test') {
+      console.warn('Skipping MongoDB connection during build time')
+      // Return a mock mongoose instance for build compatibility
+      return mongoose
+    }
     throw new Error('MONGODB_URI is not defined')
   }
 

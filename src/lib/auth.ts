@@ -22,8 +22,10 @@ if (!JWT_REFRESH_SECRET || typeof JWT_REFRESH_SECRET !== 'string') {
 }
 // Treat true production differently from Vercel preview builds.
 // Vercel sets NODE_ENV=production for preview & prod, but exposes VERCEL_ENV ("preview" | "production" | "development").
-const isRealProduction = process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV !== 'preview'
-if (isRealProduction) {
+const isRealProduction = process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production'
+const isBuildTime = !process.env.NODE_ENV || process.env.VERCEL_ENV === undefined
+
+if (isRealProduction && !isBuildTime) {
   if (JWT_SECRET.includes('fallback-secret')) {
     throw new Error('Insecure fallback JWT_SECRET detected in production')
   }
@@ -35,6 +37,9 @@ if (isRealProduction) {
     // Soft warning to encourage setting preview secrets without blocking build
     console.warn('[auth] Using fallback JWT secrets on preview build. Set JWT_SECRET & JWT_REFRESH_SECRET in Vercel for stronger security.')
   }
+} else if (isBuildTime) {
+  // During build time, allow fallback secrets but warn
+  console.warn('[auth] Using fallback JWT secrets during build. Set JWT_SECRET & JWT_REFRESH_SECRET for deployment.')
 }
 
 export class AuthService {
