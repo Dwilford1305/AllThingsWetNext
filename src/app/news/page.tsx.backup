@@ -1,0 +1,365 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import Navigation from '@/components/ui/Navigation';
+import FoldableLayout from '@/components/FoldableLayout';
+import AnimatedSection from '@/components/AnimatedSection';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import AdPlaceholder from '@/components/AdPlaceholder';
+import NewBadge from '@/components/NewBadge';
+import { motion } from 'framer-motion';
+import { Newspaper, Calendar, ExternalLink, ArrowLeft, Search, Filter } from 'lucide-react';
+import type { NewsArticle } from '@/types';
+
+const NewsPage = () => {
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const response = await fetch('/api/news');
+        const data = await response.json();
+        if (data.success) {
+          setArticles(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching news:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNews();
+  }, []);
+
+  const formatDate = (date: Date | string) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString('en-CA', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const filteredArticles = articles.filter(article => {
+    const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         article.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesCategory = selectedCategory === 'all' || article.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const categories = ['all', 'local-news', 'city-council', 'business', 'sports', 'community', 'education', 'health', 'weather', 'other'];
+
+  if (loading) {
+    return (
+      <FoldableLayout>
+        <Navigation />
+        <div className="min-h-screen bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+            <p className="text-white">Loading news...</p>
+          </div>
+        </div>
+      </FoldableLayout>
+    );
+  }
+
+  return (
+    <FoldableLayout>
+      <Navigation />
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900">
+        {/* Modern Hero Header */}
+        <AnimatedSection>
+          <div className="relative bg-gradient-to-r from-black/60 via-black/40 to-black/60 backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <div className="flex items-center space-x-4 mb-6">
+                <Button asChild variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                  <Link href="/">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Home
+                  </Link>
+                </Button>
+              </div>
+              <div className="text-center">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="flex items-center justify-center space-x-4 mb-6"
+                >
+                  <Newspaper className="h-12 w-12 text-blue-400" />
+                  <div>
+                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                      News
+                    </h1>
+                    <p className="text-xl text-blue-200 mt-2">
+                      Stay informed with the latest from Wetaskiwin
+                    </p>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </AnimatedSection>
+
+        {/* Top Ad - Google AdSense Leaderboard */}
+        <AnimatedSection delay={0.1}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <AdPlaceholder 
+              type="google" 
+              size="leaderboard" 
+              className="w-full max-w-4xl mx-auto" 
+            />
+          </div>
+        </AnimatedSection>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Modern Search and Filter */}
+          <AnimatedSection delay={0.15}>
+            <div className="card-glass p-6 rounded-2xl mb-8">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-300" />
+                  <input
+                    type="text"
+                    placeholder="Search news..."
+                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent text-white placeholder-gray-300 backdrop-blur-sm"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Filter className="h-4 w-4 text-gray-300" />
+                  <select
+                  aria-label="Filter news by category"
+                  className="px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent text-white backdrop-blur-sm"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                  {categories.map(category => (
+                    <option key={category} value={category} className="bg-slate-800 text-white">
+                      {category === 'all' ? 'All Categories' : category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </AnimatedSection>
+
+          {/* News Sponsor Spotlight */}
+          <AnimatedSection delay={0.2}>
+            <div className="mb-8">
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-semibold text-white mb-2">News Sponsors</h3>
+                <p className="text-sm text-gray-300">Supporting local journalism</p>
+              </div>
+              <div className="flex justify-center">
+                <AdPlaceholder 
+                  type="platinum" 
+                  size="large" 
+                  className="w-full max-w-md" 
+                />
+              </div>
+            </div>
+          </AnimatedSection>
+
+          {/* Featured Articles */}
+          {filteredArticles.some(article => article.featured) && (
+            <AnimatedSection delay={0.25}>
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-white mb-4">Featured Stories</h2>
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
+                  {filteredArticles
+                    .filter(article => article.featured)
+                    .slice(0, 2)
+                    .map((article) => (
+                      <Card key={article.id} className="card-glass overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-white/5 border-white/10">
+                        {article.imageUrl && (
+                          <div className="h-48 bg-gray-700/50 relative">
+                            <Image
+                              src={article.imageUrl}
+                              alt={article.title}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="p-6 relative z-10">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-2">
+                              <Badge variant="default" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-black border-0">
+                                Featured
+                              </Badge>
+                              <NewBadge date={article.publishedAt || article.createdAt} />
+                            </div>
+                            <Badge variant="secondary" className="bg-blue-600/20 text-blue-300 border-blue-400/30">
+                              {article.category.replace('-', ' ')}
+                            </Badge>
+                          </div>
+                        
+                        <h3 className="text-xl font-bold text-white mb-2">
+                          {article.title}
+                        </h3>
+                        
+                        <p className="text-gray-300 mb-4 line-clamp-3">
+                          {article.summary}
+                        </p>
+                        
+                        <div className="flex items-center justify-between text-sm text-gray-300 mb-4">
+                          <div className="flex items-center space-x-4">
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 mr-1 text-blue-400" />
+                              {formatDate(article.publishedAt)}
+                            </div>
+                            {article.author && (
+                              <span>by {article.author}</span>
+                            )}
+                          </div>
+                          <span className="text-blue-300">{article.sourceName}</span>
+                        </div>
+                        
+                        {article.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mb-4">
+                            {article.tags.slice(0, 3).map((tag, index) => (
+                              <Badge key={index} variant="outline" className="text-xs border-white/20 text-gray-300">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        
+                        <Button asChild size="sm" variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                          <a href={article.sourceUrl} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            Read Full Article
+                          </a>
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+              </div>
+            </AnimatedSection>
+          )}
+
+          {/* All Articles */}
+          <AnimatedSection delay={0.3}>
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-4">Latest News</h2>
+              {filteredArticles.length > 0 ? (
+                <div className="space-y-6">
+                  {filteredArticles.map((article) => (
+                    <Card key={article.id} className="card-glass overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-white/5 border-white/10">
+                      <div className="md:flex">
+                        {article.imageUrl && (
+                          <div className="md:w-1/3 h-48 md:h-auto bg-gray-700/50 relative">
+                            <Image
+                              src={article.imageUrl}
+                              alt={article.title}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 p-6 relative z-10">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-2">
+                              <Badge variant="secondary" className="bg-blue-600/20 text-blue-300 border-blue-400/30">
+                                {article.category.replace('-', ' ')}
+                              </Badge>
+                              <NewBadge date={article.publishedAt || article.createdAt} />
+                            </div>
+                            {article.featured && (
+                              <Badge variant="default" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-black border-0">
+                                Featured
+                              </Badge>
+                            )}
+                          </div>
+                        
+                        <h3 className="text-xl font-bold text-white mb-2">
+                          {article.title}
+                        </h3>
+                        
+                        <p className="text-gray-300 mb-4">
+                          {article.summary}
+                        </p>
+                        
+                        <div className="flex items-center justify-between text-sm text-gray-300 mb-4">
+                          <div className="flex items-center space-x-4">
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 mr-1 text-blue-400" />
+                              {formatDate(article.publishedAt)}
+                            </div>
+                            {article.author && (
+                              <span>by {article.author}</span>
+                            )}
+                          </div>
+                          <span className="text-blue-300">{article.sourceName}</span>
+                        </div>
+                        
+                        {article.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mb-4">
+                            {article.tags.slice(0, 5).map((tag, index) => (
+                              <Badge key={index} variant="outline" className="text-xs border-white/20 text-gray-300">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        
+                        <Button asChild size="sm" variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                          <a href={article.sourceUrl} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            Read Full Article
+                          </a>
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card className="card-glass p-12 text-center bg-white/5 border-white/10">
+                <Newspaper className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-white mb-2">No articles found</h3>
+                <p className="text-gray-300">
+                  {searchTerm || selectedCategory !== 'all' 
+                    ? 'Try adjusting your search or filter criteria.' 
+                    : 'No news articles are currently available.'}
+                </p>
+              </Card>
+            )}
+
+            {/* Bottom Ad Section */}
+            <div className="mt-12 pt-8 border-t border-white/20">
+              <div className="text-center mb-6">
+                <h3 className="text-lg font-semibold text-white mb-2">News Partners</h3>
+                <p className="text-sm text-gray-300">Supporting local news coverage</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mb-6">
+                <AdPlaceholder type="gold" size="square" />
+                <AdPlaceholder type="silver" size="square" />
+              </div>
+              <div className="flex justify-center">
+                <AdPlaceholder 
+                  type="google" 
+                  size="banner" 
+                  className="w-full max-w-2xl mx-auto" 
+                />
+              </div>
+            </div>
+          </AnimatedSection>
+        </div>
+      </div>
+    </FoldableLayout>
+  );
+};
+
+export default NewsPage;

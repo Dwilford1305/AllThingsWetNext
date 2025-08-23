@@ -23,18 +23,18 @@ const AnimatedSection = ({
   const ref = useRef(null)
   const isInView = useInView(ref, { 
     once: true, 
-    margin: "0px 0px -100px 0px", // Reduced margin for better performance
-    amount: 0.2 // Increased threshold for more consistent triggering
+    margin: "0px 0px -50px 0px", // Smaller margin for smoother triggering
+    amount: 0.15 // Lower threshold to trigger animations earlier and avoid scroll conflicts
   })
 
   const variants: Variants = {
     hidden: {
       opacity: 0,
-      ...(direction === 'up' && { y: 30 }), // Reduced movement for smoother animation
-      ...(direction === 'down' && { y: -30 }),
-      ...(direction === 'left' && { x: -30 }),
-      ...(direction === 'right' && { x: 30 }),
-      ...(direction === 'scale' && { scale: 0.95 }),
+      ...(direction === 'up' && { y: 20 }), // Further reduced movement to minimize scroll interference
+      ...(direction === 'down' && { y: -20 }),
+      ...(direction === 'left' && { x: -20 }),
+      ...(direction === 'right' && { x: 20 }),
+      ...(direction === 'scale' && { scale: 0.98 }),
     },
     visible: {
       opacity: 1,
@@ -42,10 +42,10 @@ const AnimatedSection = ({
       x: 0,
       scale: 1,
       transition: {
-        duration: duration * 0.8, // Slightly faster transitions
+        duration: duration * 0.7, // Even faster transitions to avoid scroll blocking
         delay,
-        ease: [0.25, 0.1, 0.25, 1], // Smoother easing curve
-        ...(stagger > 0 && { staggerChildren: stagger }),
+        ease: [0.25, 0.15, 0.25, 1], // Optimized easing for smooth performance
+        ...(stagger > 0 && { staggerChildren: stagger * 0.8 }), // Reduce stagger delay
       }
     }
   }
@@ -53,14 +53,14 @@ const AnimatedSection = ({
   const childVariants: Variants = {
     hidden: {
       opacity: 0,
-      y: 15, // Reduced movement
+      y: 10, // Minimal movement to avoid scroll interference
     },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.4, // Faster child animations
-        ease: [0.25, 0.1, 0.25, 1]
+        duration: 0.3, // Very fast child animations
+        ease: [0.25, 0.15, 0.25, 1]
       }
     }
   }

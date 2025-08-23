@@ -5,11 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Navigation from '@/components/ui/Navigation';
 import FoldableLayout from '@/components/FoldableLayout';
+import AnimatedSection from '@/components/AnimatedSection';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import AdPlaceholder from '@/components/AdPlaceholder';
 import NewBadge from '@/components/NewBadge';
+import { motion } from 'framer-motion';
 import { Newspaper, Calendar, ExternalLink, ArrowLeft, Search, Filter } from 'lucide-react';
 import type { NewsArticle } from '@/types';
 

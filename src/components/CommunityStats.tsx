@@ -71,7 +71,7 @@ const CommunityStats = () => {
   ]
 
   return (
-    <section className="relative py-20 md:py-32 overflow-hidden">
+    <section className="relative py-20 md:py-32">
       {/* Modern Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50/30" />
       <div className="absolute inset-0">
