@@ -106,11 +106,19 @@ const ParallaxHero = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.5, ease: [0.4, 0, 0.2, 1] }}
             >
-              <span className="block bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent drop-shadow-2xl">
+              <span className="block bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent drop-shadow-2xl shadow-2xl"
+                    style={{ 
+                      textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6)', 
+                      WebkitTextStroke: '1px rgba(0,0,0,0.3)' 
+                    }}>
                 All Things
               </span>
               <motion.span 
-                className="block bg-gradient-to-r from-blue-300 via-purple-300 to-blue-300 bg-clip-text text-transparent drop-shadow-2xl"
+                className="block bg-gradient-to-r from-blue-900 via-purple-900 to-indigo-900 bg-clip-text text-transparent drop-shadow-2xl shadow-2xl"
+                style={{ 
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.6)', 
+                  WebkitTextStroke: '1px rgba(0,0,0,0.3)' 
+                }}
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 1, delay: 0.8, ease: [0.4, 0, 0.2, 1] }}
