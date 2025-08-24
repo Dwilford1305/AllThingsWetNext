@@ -7,9 +7,9 @@ import { ArrowRight, Users, Heart, Sparkles, Smartphone, Bell, Home } from 'luci
 const CallToAction = () => {
   return (
     <section className="relative py-20 md:py-32 overflow-hidden">
-      {/* Lighter Dynamic Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-400 via-purple-400 to-blue-500" />
-      <div className="absolute inset-0 bg-gradient-to-tl from-purple-600/30 via-transparent to-blue-600/20" />
+      {/* Lighter Dark Theme Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-700 via-purple-700 to-blue-800" />
+      <div className="absolute inset-0 bg-gradient-to-tl from-purple-800/20 via-transparent to-blue-800/15" />
       
       {/* Animated Background Elements */}
       <div className="absolute inset-0 opacity-20">

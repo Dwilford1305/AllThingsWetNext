@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { Card } from './ui/Card';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
-import { Calendar, Clock, MapPin, Newspaper } from 'lucide-react';
+import { Calendar, Clock, MapPin } from 'lucide-react';
 import type { Event, NewsArticle } from '@/types';
 
 const Dashboard = () => {
@@ -139,7 +139,7 @@ const Dashboard = () => {
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h3 className="text-2xl sm:text-3xl font-bold text-neutral-900 mb-2">Upcoming Events</h3>
-                <p className="text-neutral-600">Don't miss out on community happenings</p>
+                <p className="text-neutral-600">Don&apos;t miss out on community happenings</p>
               </div>
               <motion.div
                 whileHover={{ scale: 1.05 }}

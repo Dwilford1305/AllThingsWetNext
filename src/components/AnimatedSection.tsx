@@ -17,24 +17,24 @@ const AnimatedSection = ({
   className = '', 
   delay = 0,
   direction = 'up',
-  duration = 0.6,
+  duration = 0.3, // Faster default animation
   stagger = 0
 }: AnimatedSectionProps) => {
   const ref = useRef(null)
   const isInView = useInView(ref, { 
     once: true, 
-    margin: "0px 0px -25px 0px", // Even smaller margin for instant triggering
-    amount: 0.1 // Lower threshold to avoid scroll blocking
+    margin: "0px 0px -50px 0px", // Larger margin for earlier triggering  
+    amount: 0.05 // Very low threshold to minimize scroll blocking
   })
 
   const variants: Variants = {
     hidden: {
       opacity: 0,
-      ...(direction === 'up' && { y: 10 }), // Even smaller movement to avoid scroll interference
-      ...(direction === 'down' && { y: -10 }),
-      ...(direction === 'left' && { x: -10 }),
-      ...(direction === 'right' && { x: 10 }),
-      ...(direction === 'scale' && { scale: 0.99 }),
+      ...(direction === 'up' && { y: 5 }), // Minimal movement to avoid scroll interference
+      ...(direction === 'down' && { y: -5 }),
+      ...(direction === 'left' && { x: -5 }),
+      ...(direction === 'right' && { x: 5 }),
+      ...(direction === 'scale' && { scale: 0.98 }),
     },
     visible: {
       opacity: 1,
@@ -42,10 +42,10 @@ const AnimatedSection = ({
       x: 0,
       scale: 1,
       transition: {
-        duration: duration * 0.5, // Much faster animations to prevent scroll blocking
+        duration: duration * 0.3, // Ultra-fast animations to prevent any scroll blocking
         delay,
-        ease: [0.25, 0.1, 0.25, 1], // Smooth easing
-        ...(stagger > 0 && { staggerChildren: stagger * 0.5 }), // Reduce stagger even more
+        ease: [0.20, 0, 0.13, 1], // Very smooth easing
+        ...(stagger > 0 && { staggerChildren: stagger * 0.3 }), // Minimal stagger
       }
     }
   }
@@ -53,14 +53,14 @@ const AnimatedSection = ({
   const childVariants: Variants = {
     hidden: {
       opacity: 0,
-      y: 5, // Minimal movement
+      y: 2, // Almost no movement
     },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.2, // Ultra-fast child animations
-        ease: [0.25, 0.1, 0.25, 1]
+        duration: 0.1, // Extremely fast child animations
+        ease: [0.20, 0, 0.13, 1]
       }
     }
   }
