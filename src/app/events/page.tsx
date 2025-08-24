@@ -82,10 +82,10 @@ const EventsPage = () => {
     return (
       <FoldableLayout>
         <Navigation />
-        <div className="min-h-screen bg-gradient-to-b from-slate-100 via-blue-50 to-slate-200 flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-slate-800 via-blue-800 to-slate-800 flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-700">Loading events...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+            <p className="text-blue-200">Loading events...</p>
           </div>
         </div>
       </FoldableLayout>
@@ -95,13 +95,19 @@ const EventsPage = () => {
   return (
     <FoldableLayout>
       <Navigation />
-      <div className="min-h-screen bg-gradient-to-b from-slate-100 via-blue-50 to-slate-200">
-        {/* Modern Hero Header - Lighter theme */}
+      <div className="min-h-screen bg-gradient-to-br from-slate-800 via-blue-800 to-slate-800 relative">
+        {/* Modern Background Effects */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-3xl animate-pulse-slow" />
+          <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-br from-purple-400/10 to-blue-400/10 rounded-full blur-3xl animate-float" />
+        </div>
+        
+        {/* Modern Hero Header - Dark theme */}
         <AnimatedSection>
-          <div className="relative bg-gradient-to-r from-white/80 via-white/60 to-white/80 backdrop-blur-sm">
+          <div className="relative bg-white/10 backdrop-blur-lg border-b border-white/20 z-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <div className="flex items-center space-x-4 mb-6">
-                <Button asChild variant="ghost" size="sm" className="text-gray-700 hover:bg-gray-100">
+                <Button asChild variant="ghost" size="sm" className="text-white hover:text-blue-200 hover:bg-white/10">
                   <Link href="/">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Home
@@ -115,12 +121,12 @@ const EventsPage = () => {
                   transition={{ duration: 0.6 }}
                   className="flex items-center justify-center space-x-4 mb-6"
                 >
-                  <Calendar className="h-12 w-12 text-blue-600" />
+                  <Calendar className="h-12 w-12 text-blue-400" />
                   <div>
-                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-gray-800 to-blue-600 bg-clip-text text-transparent">
+                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
                       Events
                     </h1>
-                    <p className="text-xl text-gray-600 mt-2">
+                    <p className="text-xl text-blue-200 mt-2">
                       Discover what&apos;s happening in Wetaskiwin
                     </p>
                   </div>
@@ -147,7 +153,7 @@ const EventsPage = () => {
             <div className="card-glass p-6 rounded-2xl mb-8">
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-300" />
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-white" />
                   <input
                     type="text"
                     placeholder="Search events..."
@@ -157,7 +163,7 @@ const EventsPage = () => {
                   />
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Filter className="h-4 w-4 text-gray-300" />
+                  <Filter className="h-4 w-4 text-white" />
                   <select
                     aria-label="Filter events by category"
                     className="px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent text-white backdrop-blur-sm"
@@ -180,7 +186,7 @@ const EventsPage = () => {
             <div className="mb-8">
               <div className="text-center mb-4">
                 <h3 className="text-lg font-semibold text-white mb-2">Event Sponsors</h3>
-                <p className="text-sm text-gray-300">Supporting our community events</p>
+                <p className="text-sm text-white">Supporting our community events</p>
               </div>
               <div className="flex justify-center">
                 <AdPlaceholder 
@@ -200,7 +206,7 @@ const EventsPage = () => {
                   {filteredEvents.slice(0, 6).map((event) => (
                   <Card key={event.id} className="card-glass overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-white/5 border-white/10">
                     {event.imageUrl && (
-                      <div className="h-48 bg-gray-700/50 relative">
+                      <div className="h-48 bg-gray-700/50/50 relative">
                         <Image
                           src={event.imageUrl}
                           alt={event.title}
@@ -228,24 +234,24 @@ const EventsPage = () => {
                         {event.title}
                       </h3>
                       
-                      <p className="text-gray-300 mb-4 line-clamp-3">
+                      <p className="text-white mb-4 line-clamp-3">
                         {event.description}
                       </p>
                       
                       <div className="space-y-2 mb-4">
-                        <div className="flex items-center text-sm text-gray-300">
+                        <div className="flex items-center text-sm text-white">
                           <Calendar className="h-4 w-4 mr-2 text-blue-400" />
                           {formatDate(event.date)}
                         </div>
-                        <div className="flex items-center text-sm text-gray-300">
+                        <div className="flex items-center text-sm text-white">
                           <Clock className="h-4 w-4 mr-2 text-green-400" />
                           {formatTime(event.time)}
                         </div>
-                        <div className="flex items-center text-sm text-gray-300">
+                        <div className="flex items-center text-sm text-white">
                           <MapPin className="h-4 w-4 mr-2 text-red-400" />
                           {event.location}
                         </div>
-                        <div className="flex items-center text-sm text-gray-300">
+                        <div className="flex items-center text-sm text-white">
                           <Users className="h-4 w-4 mr-2 text-purple-400" />
                           {event.organizer}
                         </div>
@@ -299,7 +305,7 @@ const EventsPage = () => {
                     {filteredEvents.slice(6).map((event) => (
                       <Card key={event.id} className="card-glass overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-white/5 border-white/10">
                         {event.imageUrl && (
-                          <div className="h-48 bg-gray-700/50 relative">
+                          <div className="h-48 bg-gray-700/50/50 relative">
                             <Image 
                               src={event.imageUrl} 
                               alt={event.title}
@@ -317,22 +323,22 @@ const EventsPage = () => {
                             {event.featured && <Badge variant="default" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-black border-0">Featured</Badge>}
                           </div>
                           <h3 className="text-xl font-semibold text-white mb-2">{event.title}</h3>
-                          <p className="text-gray-300 mb-4 line-clamp-2">{event.description}</p>
+                          <p className="text-white mb-4 line-clamp-2">{event.description}</p>
                           
                           <div className="space-y-2 mb-4">
-                            <div className="flex items-center text-sm text-gray-300">
+                            <div className="flex items-center text-sm text-white">
                               <Calendar className="h-4 w-4 mr-2 text-blue-400" />
                               {formatDate(event.date)}
                             </div>
-                            <div className="flex items-center text-sm text-gray-300">
+                            <div className="flex items-center text-sm text-white">
                               <Clock className="h-4 w-4 mr-2 text-green-400" />
                               {formatTime(event.time)}
                             </div>
-                            <div className="flex items-center text-sm text-gray-300">
+                            <div className="flex items-center text-sm text-white">
                               <MapPin className="h-4 w-4 mr-2 text-red-400" />
                               {event.location}
                             </div>
-                            <div className="flex items-center text-sm text-gray-300">
+                            <div className="flex items-center text-sm text-white">
                               <Users className="h-4 w-4 mr-2 text-purple-400" />
                               {event.organizer}
                             </div>
@@ -364,9 +370,9 @@ const EventsPage = () => {
           ) : (
             <AnimatedSection delay={0.25}>
               <Card className="card-glass p-12 text-center bg-white/5 border-white/10">
-                <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <Calendar className="h-12 w-12 text-white mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-white mb-2">No events found</h3>
-                <p className="text-gray-300">
+                <p className="text-white">
                   {searchTerm || selectedCategory !== 'all' 
                     ? 'Try adjusting your search or filter criteria.' 
                     : 'No events are currently available.'}
@@ -380,7 +386,7 @@ const EventsPage = () => {
             <div className="mt-12 pt-8 border-t border-white/20">
               <div className="text-center mb-6">
                 <h3 className="text-lg font-semibold text-white mb-2">Community Partners</h3>
-                <p className="text-sm text-gray-300">Supporting events in Wetaskiwin</p>
+                <p className="text-sm text-white">Supporting events in Wetaskiwin</p>
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <AdPlaceholder type="silver" size="square" />

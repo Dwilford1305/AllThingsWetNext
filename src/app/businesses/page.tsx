@@ -111,7 +111,7 @@ const BusinessesPage = () => {
     
     switch (tier) {
       case 'silver':
-        return <Badge variant="secondary" className="bg-gray-400 text-white"><Shield className="h-3 w-3 mr-1" />Silver</Badge>;
+        return <Badge variant="secondary" className="bg-gray-700/50 text-white"><Shield className="h-3 w-3 mr-1" />Silver</Badge>;
       case 'gold':
         return <Badge variant="secondary" className="bg-yellow-500 text-black"><Star className="h-3 w-3 mr-1" />Gold</Badge>;
       case 'platinum':
@@ -125,8 +125,8 @@ const BusinessesPage = () => {
     return (
       <>
         <Navigation />
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="min-h-screen bg-gradient-to-br from-slate-800 via-green-800 to-slate-800 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400"></div>
         </div>
       </>
     );
@@ -135,13 +135,18 @@ const BusinessesPage = () => {
   return (
     <FoldableLayout>
       <Navigation />
-      <div className="min-h-screen bg-gradient-to-b from-slate-100 via-green-50 to-slate-200">
-        {/* Modern Hero Header - Lighter theme */}
+      <div className="min-h-screen bg-gradient-to-br from-slate-800 via-green-800 to-slate-800 relative">
+        {/* Modern Background Effects */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-green-400/10 to-blue-400/10 rounded-full blur-3xl animate-pulse-slow" />
+          <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-br from-blue-400/10 to-green-400/10 rounded-full blur-3xl animate-float" />
+        </div>
+        {/* Modern Hero Header - Dark theme */}
         <AnimatedSection>
-          <div className="relative bg-gradient-to-r from-white/80 via-white/60 to-white/80 backdrop-blur-sm">
+          <div className="relative bg-white/10 backdrop-blur-lg border-b border-white/20 z-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <div className="flex items-center space-x-4 mb-6">
-                <Button asChild variant="ghost" size="sm" className="text-gray-700 hover:bg-gray-100">
+                <Button asChild variant="ghost" size="sm" className="text-white hover:bg-gray-700/50">
                   <Link href="/">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Home
@@ -155,12 +160,12 @@ const BusinessesPage = () => {
                   transition={{ duration: 0.6 }}
                   className="flex items-center justify-center space-x-4 mb-6"
                 >
-                  <Building className="h-12 w-12 text-green-600" />
+                  <Building className="h-12 w-12 text-green-400" />
                   <div>
-                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-gray-800 to-green-600 bg-clip-text text-transparent">
+                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white to-green-200 bg-clip-text text-transparent">
                       Businesses
                     </h1>
-                    <p className="text-xl text-gray-600 mt-2">
+                    <p className="text-xl text-white mt-2">
                       Discover and support Wetaskiwin businesses
                     </p>
                   </div>
@@ -181,15 +186,15 @@ const BusinessesPage = () => {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Search and Filter - Modern light glassmorphism design */}
-          <div className="bg-white/60 backdrop-blur-lg p-6 rounded-2xl mb-8 border border-white/30 shadow-lg">
+          <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl mb-8 border border-white/20 shadow-lg">
             <div className="space-y-4">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-white" />
                 <input
                   type="text"
                   placeholder="Search businesses..."
-                  className="w-full pl-10 pr-4 py-2 bg-white/80 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  className="w-full pl-10 pr-4 py-2 bg-white/10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-white placeholder-gray-500"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -198,10 +203,10 @@ const BusinessesPage = () => {
               {/* Filters Row */}
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex items-center space-x-2">
-                  <Filter className="h-4 w-4 text-gray-600" />
+                  <Filter className="h-4 w-4 text-white" />
                   <select
                     aria-label="Filter businesses by category"
-                    className="px-4 py-2 bg-white/80 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
+                    className="px-4 py-2 bg-white/10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-white"
                     value={selectedCategory}
                     onChange={(e) => {
                       setSelectedCategory(e.target.value);
@@ -209,7 +214,7 @@ const BusinessesPage = () => {
                     }}
                   >
                     {categories.map(category => (
-                      <option key={category} value={category} className="bg-white text-gray-900">
+                      <option key={category} value={category} className="bg-white text-white">
                         {category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1)}
                       </option>
                     ))}
@@ -217,17 +222,17 @@ const BusinessesPage = () => {
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600">Sort:</span>
+                  <span className="text-sm text-white">Sort:</span>
                   <select
                     aria-label="Sort businesses"
-                    className="px-4 py-2 bg-white/80 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
+                    className="px-4 py-2 bg-white/10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-white"
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                   >
-                    <option value="name" className="bg-white text-gray-900">Alphabetical</option>
-                    <option value="featured" className="bg-white text-gray-900">Featured First</option>
-                    <option value="rating" className="bg-white text-gray-900">Rating</option>
-                    <option value="newest" className="bg-white text-gray-900">Newest</option>
+                    <option value="name" className="bg-white text-white">Alphabetical</option>
+                    <option value="featured" className="bg-white text-white">Featured First</option>
+                    <option value="rating" className="bg-white text-white">Rating</option>
+                    <option value="newest" className="bg-white text-white">Newest</option>
                   </select>
                 </div>
               </div>
@@ -243,7 +248,7 @@ const BusinessesPage = () => {
                     className={`px-3 py-1 text-sm rounded ${
                       selectedLetter === 'all' 
                         ? 'bg-green-600 text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-gray-700/50 text-white hover:bg-gray-700/50'
                     }`}
                   >
                     All
@@ -299,7 +304,7 @@ const BusinessesPage = () => {
                 {businesses.map((business) => (
                   <Card key={business.id} className="overflow-hidden hover:shadow-lg transition-shadow glass-card border-white/10">
                     {business.imageUrl && (
-                      <div className="h-48 bg-gray-200 relative">
+                      <div className="h-48 bg-gray-700/50 relative">
                         <Image
                           src={business.imageUrl}
                           alt={business.name}
@@ -311,7 +316,7 @@ const BusinessesPage = () => {
                     <div className="p-6">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex flex-wrap gap-2">
-                          <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                          <Badge variant="secondary" className="bg-white/20 text-white border-white/20">
                             {business.category}
                           </Badge>
                           {getSubscriptionBadge(business.subscriptionTier || 'free', business.isClaimed || false)}
@@ -371,7 +376,7 @@ const BusinessesPage = () => {
                       
                       <div className="flex flex-wrap gap-2">
                         {business.website && (
-                          <Button asChild size="sm" variant="outline" className="border-white/30 text-white hover:bg-white/10">
+                          <Button asChild size="sm" variant="outline" className="border-white/20 text-white hover:bg-white/10">
                             <a href={business.website} target="_blank" rel="noopener noreferrer">
                               <Globe className="h-4 w-4 mr-2" />
                               Website
@@ -420,7 +425,7 @@ const BusinessesPage = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="border-white/30 text-white hover:bg-white/10"
+                        className="border-white/20 text-white hover:bg-white/10"
                         onClick={() => handlePageChange(pagination.currentPage - 1)}
                         disabled={!pagination.hasPrevPage}
                       >
@@ -454,7 +459,7 @@ const BusinessesPage = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="border-white/30 text-white hover:bg-white/10"
+                        className="border-white/20 text-white hover:bg-white/10"
                         onClick={() => handlePageChange(pagination.currentPage + 1)}
                         disabled={!pagination.hasNextPage}
                       >
