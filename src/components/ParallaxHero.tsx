@@ -39,11 +39,11 @@ const ParallaxHero = () => {
 
   return (
     <div ref={ref} className="relative h-screen overflow-hidden" style={{ willChange: 'transform' }}>
-      {/* Water Tower Background - Full Opacity */}
+      {/* Water Tower Background - Lighter for better readability */}
       <motion.div
         style={{ 
           y, 
-          opacity,
+          opacity: useTransform(opacity, [1, 0.2], [0.7, 0.1]), // Make it lighter
           scale,
           backgroundImage: "url('/WaterTower.png')",
           backgroundPosition: 'center center',
@@ -52,9 +52,9 @@ const ParallaxHero = () => {
         className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
       />
       
-      {/* Professional Dark Overlay for Text Readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
+      {/* Lighter Professional Overlay for better text contrast */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/50" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/20" />
       
       {/* Subtle Floating Elements */}
       <motion.div

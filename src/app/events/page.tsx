@@ -82,10 +82,10 @@ const EventsPage = () => {
     return (
       <FoldableLayout>
         <Navigation />
-        <div className="min-h-screen bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-b from-slate-100 via-blue-50 to-slate-200 flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
-            <p className="text-white">Loading events...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-700">Loading events...</p>
           </div>
         </div>
       </FoldableLayout>
@@ -95,13 +95,13 @@ const EventsPage = () => {
   return (
     <FoldableLayout>
       <Navigation />
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900">
-        {/* Modern Hero Header */}
+      <div className="min-h-screen bg-gradient-to-b from-slate-100 via-blue-50 to-slate-200">
+        {/* Modern Hero Header - Lighter theme */}
         <AnimatedSection>
-          <div className="relative bg-gradient-to-r from-black/60 via-black/40 to-black/60 backdrop-blur-sm">
+          <div className="relative bg-gradient-to-r from-white/80 via-white/60 to-white/80 backdrop-blur-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <div className="flex items-center space-x-4 mb-6">
-                <Button asChild variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                <Button asChild variant="ghost" size="sm" className="text-gray-700 hover:bg-gray-100">
                   <Link href="/">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Home
@@ -115,12 +115,12 @@ const EventsPage = () => {
                   transition={{ duration: 0.6 }}
                   className="flex items-center justify-center space-x-4 mb-6"
                 >
-                  <Calendar className="h-12 w-12 text-blue-400" />
+                  <Calendar className="h-12 w-12 text-blue-600" />
                   <div>
-                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-gray-800 to-blue-600 bg-clip-text text-transparent">
                       Events
                     </h1>
-                    <p className="text-xl text-blue-200 mt-2">
+                    <p className="text-xl text-gray-600 mt-2">
                       Discover what&apos;s happening in Wetaskiwin
                     </p>
                   </div>

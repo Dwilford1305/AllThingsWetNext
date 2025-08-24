@@ -135,13 +135,13 @@ const BusinessesPage = () => {
   return (
     <FoldableLayout>
       <Navigation />
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900">
-        {/* Modern Hero Header */}
+      <div className="min-h-screen bg-gradient-to-b from-slate-100 via-green-50 to-slate-200">
+        {/* Modern Hero Header - Lighter theme */}
         <AnimatedSection>
-          <div className="relative bg-gradient-to-r from-black/60 via-black/40 to-black/60 backdrop-blur-sm">
+          <div className="relative bg-gradient-to-r from-white/80 via-white/60 to-white/80 backdrop-blur-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <div className="flex items-center space-x-4 mb-6">
-                <Button asChild variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                <Button asChild variant="ghost" size="sm" className="text-gray-700 hover:bg-gray-100">
                   <Link href="/">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Home
@@ -155,12 +155,12 @@ const BusinessesPage = () => {
                   transition={{ duration: 0.6 }}
                   className="flex items-center justify-center space-x-4 mb-6"
                 >
-                  <Building className="h-12 w-12 text-green-400" />
+                  <Building className="h-12 w-12 text-green-600" />
                   <div>
-                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white to-green-200 bg-clip-text text-transparent">
+                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-gray-800 to-green-600 bg-clip-text text-transparent">
                       Businesses
                     </h1>
-                    <p className="text-xl text-green-200 mt-2">
+                    <p className="text-xl text-gray-600 mt-2">
                       Discover and support Wetaskiwin businesses
                     </p>
                   </div>
@@ -180,16 +180,16 @@ const BusinessesPage = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Search and Filter - Modern glassmorphism design */}
-          <div className="glass-card p-6 rounded-2xl mb-8 border-white/10">
+          {/* Search and Filter - Modern light glassmorphism design */}
+          <div className="bg-white/60 backdrop-blur-lg p-6 rounded-2xl mb-8 border border-white/30 shadow-lg">
             <div className="space-y-4">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-green-200" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
                 <input
                   type="text"
                   placeholder="Search businesses..."
-                  className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent text-white placeholder-green-200"
+                  className="w-full pl-10 pr-4 py-2 bg-white/80 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -198,10 +198,10 @@ const BusinessesPage = () => {
               {/* Filters Row */}
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex items-center space-x-2">
-                  <Filter className="h-4 w-4 text-green-200" />
+                  <Filter className="h-4 w-4 text-gray-600" />
                   <select
                     aria-label="Filter businesses by category"
-                    className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent text-white"
+                    className="px-4 py-2 bg-white/80 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
                     value={selectedCategory}
                     onChange={(e) => {
                       setSelectedCategory(e.target.value);
@@ -209,7 +209,7 @@ const BusinessesPage = () => {
                     }}
                   >
                     {categories.map(category => (
-                      <option key={category} value={category} className="bg-slate-800 text-white">
+                      <option key={category} value={category} className="bg-white text-gray-900">
                         {category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1)}
                       </option>
                     ))}
@@ -217,23 +217,23 @@ const BusinessesPage = () => {
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-green-200">Sort:</span>
+                  <span className="text-sm text-gray-600">Sort:</span>
                   <select
                     aria-label="Sort businesses"
-                    className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-green-400 focus:border-transparent text-white"
+                    className="px-4 py-2 bg-white/80 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                   >
-                    <option value="name" className="bg-slate-800 text-white">Alphabetical</option>
-                    <option value="featured" className="bg-slate-800 text-white">Featured First</option>
-                    <option value="rating" className="bg-slate-800 text-white">Rating</option>
-                    <option value="newest" className="bg-slate-800 text-white">Newest</option>
+                    <option value="name" className="bg-white text-gray-900">Alphabetical</option>
+                    <option value="featured" className="bg-white text-gray-900">Featured First</option>
+                    <option value="rating" className="bg-white text-gray-900">Rating</option>
+                    <option value="newest" className="bg-white text-gray-900">Newest</option>
                   </select>
                 </div>
               </div>
 
               {/* Alphabetical Navigation */}
-              <div className="border-t border-white/20 pt-4">
+              <div className="border-t border-gray-200/50 pt-4">
                 <div className="flex flex-wrap gap-1">
                   <button
                     onClick={() => {
@@ -243,7 +243,7 @@ const BusinessesPage = () => {
                     className={`px-3 py-1 text-sm rounded ${
                       selectedLetter === 'all' 
                         ? 'bg-green-600 text-white' 
-                        : 'bg-white/10 text-green-200 hover:bg-white/20'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
                     All
