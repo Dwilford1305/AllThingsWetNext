@@ -232,7 +232,7 @@ const NewsPage = () => {
                           </div>
                         )}
                         
-                        <Button asChild size="sm" variant="outline" className="border-white/20 text-blue-200 hover:bg-white/10">
+                        <Button asChild size="sm" variant="outline" className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900">
                           <a href={article.sourceUrl} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="h-4 w-4 mr-2" />
                             Read Full Article
@@ -309,7 +309,7 @@ const NewsPage = () => {
                           </div>
                         )}
                         
-                        <Button asChild size="sm" variant="outline" className="border-white/20 text-blue-200 hover:bg-white/10">
+                        <Button asChild size="sm" variant="outline" className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900">
                           <a href={article.sourceUrl} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="h-4 w-4 mr-2" />
                             Read Full Article

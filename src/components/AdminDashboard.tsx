@@ -715,17 +715,17 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-6 admin-dashboard">
       {/* Tab Navigation - Mobile Friendly */}
-      <Card className="p-2 md:p-4">
+      <Card className="p-2 md:p-4 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
         {/* Mobile Dropdown for small screens */}
         <div className="block md:hidden">
           <select
             value={activeTab}
             onChange={(e) => setActiveTab(e.target.value as typeof activeTab)}
-            className="w-full px-3 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 text-sm font-medium text-white bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent backdrop-blur-sm"
             title="Select admin dashboard tab"
           >
             {tabs.map((tab) => (
-              <option key={tab.id} value={tab.id}>
+              <option key={tab.id} value={tab.id} className="bg-slate-800 text-white">
                 {tab.label}
               </option>
             ))}
@@ -743,7 +743,7 @@ const AdminDashboard = () => {
                 className={`flex items-center px-3 lg:px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors min-w-0 ${
                   activeTab === tab.id
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-transparent hover:border-gray-200'
+                    : 'text-blue-200 hover:text-white hover:bg-white/20 border border-transparent hover:border-white/20 backdrop-blur-sm'
                 }`}
               >
                 <Icon className="h-4 w-4 mr-1 lg:mr-2 flex-shrink-0" />
@@ -775,32 +775,32 @@ const AdminDashboard = () => {
       {activeTab === 'overview' && data && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Business Categories */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Business Categories</h3>
+          <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
+            <h3 className="text-lg font-semibold text-white mb-4">Business Categories</h3>
             <div className="space-y-3">
               {Array.isArray(data.categoryStats) ? data.categoryStats.slice(0, 8).map((category) => (
                 <div key={category._id} className="flex items-center justify-between">
                   <div>
-                    <span className="font-medium text-gray-900">{category._id}</span>
-                    <div className="text-sm text-gray-700">
+                    <span className="font-medium text-white">{category._id}</span>
+                    <div className="text-sm text-blue-200">
                       {category.claimed} claimed • {category.premium} premium
                     </div>
                   </div>
-                  <Badge variant="secondary">{category.total}</Badge>
+                  <Badge variant="secondary" className="bg-white/20 text-blue-200 border-white/20">{category.total}</Badge>
                 </div>
               )) : null}
             </div>
           </Card>
 
           {/* Recent Claims */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Business Claims</h3>
+          <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
+            <h3 className="text-lg font-semibold text-white mb-4">Recent Business Claims</h3>
             <div className="space-y-3">
               {Array.isArray(data.recentClaims) ? data.recentClaims.slice(0, 5).map((business) => (
                 <div key={business.id} className="flex items-center justify-between">
                   <div>
-                    <span className="font-medium text-gray-900">{business.name}</span>
-                    <div className="text-sm text-gray-700">
+                    <span className="font-medium text-white">{business.name}</span>
+                    <div className="text-sm text-blue-200">
                       {business.category} • Claimed {business.claimedAt ? new Date(business.claimedAt).toLocaleDateString() : 'Recently'}
                     </div>
                   </div>
@@ -822,18 +822,18 @@ const AdminDashboard = () => {
       {activeTab === 'businesses' && !loading && data && (
         <div className="space-y-6">
           {/* Business Management Header */}
-          <Card className="p-6">
+          <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Business Management</h3>
-                <p className="text-sm text-gray-600">Manage all businesses, subscriptions, and premium features</p>
+                <h3 className="text-lg font-semibold text-white">Business Management</h3>
+                <p className="text-sm text-blue-200">Manage all businesses, subscriptions, and premium features</p>
               </div>
               <div className="flex space-x-3">
-                <Button size="sm" variant="outline" onClick={refreshBusinessData}>
+                <Button size="sm" variant="outline" onClick={refreshBusinessData} className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900">
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Refresh
                 </Button>
-                <Button size="sm" variant="outline" onClick={exportBusinessData}>
+                <Button size="sm" variant="outline" onClick={exportBusinessData} className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900">
                   Export Data
                 </Button>
               </div>
@@ -841,20 +841,20 @@ const AdminDashboard = () => {
             
             {/* Business Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">
+              <div className="bg-blue-500/20 p-4 rounded-lg backdrop-blur-sm border border-blue-400/20">
+                <div className="text-2xl font-bold text-blue-300">
                   {Array.isArray(data.businesses) ? data.businesses.filter(b => b.isClaimed).length : 0}
                 </div>
-                <div className="text-sm text-blue-800">Claimed Businesses</div>
+                <div className="text-sm text-blue-200">Claimed Businesses</div>
               </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">
+              <div className="bg-green-500/20 p-4 rounded-lg backdrop-blur-sm border border-green-400/20">
+                <div className="text-2xl font-bold text-green-300">
                   {Array.isArray(data.businesses) ? data.businesses.filter(b => b.subscriptionTier && b.subscriptionTier !== 'free').length : 0}
                 </div>
-                <div className="text-sm text-green-800">Premium Subscribers</div>
+                <div className="text-sm text-green-200">Premium Subscribers</div>
               </div>
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-purple-600">
+              <div className="bg-purple-500/20 p-4 rounded-lg backdrop-blur-sm border border-purple-400/20">
+                <div className="text-2xl font-bold text-purple-300">
                   $
                   {Array.isArray(data.businesses) ? data.businesses
                     .filter(b => b.subscriptionTier && b.subscriptionTier !== 'free')
@@ -864,9 +864,9 @@ const AdminDashboard = () => {
                     }, 0)
                     .toFixed(2) : '0.00'}
                 </div>
-                <div className="text-sm text-purple-800">Monthly Revenue</div>
+                <div className="text-sm text-purple-200">Monthly Revenue</div>
               </div>
-              <div className="bg-yellow-50 p-4 rounded-lg">
+              <div className="bg-yellow-500/20 p-4 rounded-lg backdrop-blur-sm border border-yellow-400/20">
                 <div className="text-2xl font-bold text-yellow-600">
                   {Array.isArray(data.businesses) ? data.businesses.filter(b => !b.isClaimed).length : 0}
                 </div>
