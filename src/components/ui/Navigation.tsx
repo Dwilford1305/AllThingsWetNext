@@ -115,11 +115,11 @@ const Navigation = () => {
   const isFoldableUnfolded = () => {
     if (viewportWidth === 0) return false;
     
-    // Primary detection based on known foldable widths
+    // Primary detection based on known foldable widths - more precise ranges, exclude standard tablet sizes
     const isDefinitelyFoldable = (
-      (viewportWidth >= 650 && viewportWidth <= 690) || // Pixel Fold, OnePlus Open, Honor Magic V, Motorola Razr+ (expanded range)
-      (viewportWidth >= 715 && viewportWidth <= 735) || // Surface Duo range (expanded)
-      (viewportWidth >= 740 && viewportWidth <= 785) || // Samsung Z Fold series, Xiaomi, Huawei (expanded)
+      (viewportWidth >= 650 && viewportWidth <= 690) || // Pixel Fold, OnePlus Open, Honor Magic V, Motorola Razr+
+      (viewportWidth >= 715 && viewportWidth <= 735) || // Surface Duo range
+      (viewportWidth >= 740 && viewportWidth <= 765) || // Samsung Z Fold series, Xiaomi, Huawei (exclude 768)
       (viewportWidth >= 840 && viewportWidth <= 860)    // Pixel 9 Pro Fold (851px)
     );
     
@@ -128,11 +128,20 @@ const Navigation = () => {
     const aspectRatioDetection = () => {
       if (typeof window === 'undefined') return false;
       const aspectRatio = window.innerWidth / window.innerHeight;
-      // Adjusted for Pixel 9 Pro Fold (1.21 ratio) and other foldables
-      return aspectRatio > 1.15 && aspectRatio < 2.1 && viewportWidth >= 640 && viewportWidth <= 900;
+      // More strict aspect ratio detection - exclude regular tablets
+      return aspectRatio > 1.15 && aspectRatio < 1.5 && viewportWidth >= 640 && viewportWidth <= 900;
     };
     
     const isFoldable = isDefinitelyFoldable || aspectRatioDetection();
+    
+    // Debug logging for development
+    console.log('FoldableLayout detection:', { 
+      viewportWidth, 
+      aspectRatio: typeof window !== 'undefined' ? (window.innerWidth / window.innerHeight).toFixed(2) : 'N/A',
+      isDefinitelyFoldable, 
+      aspectRatioDetection: aspectRatioDetection(),
+      finalResult: isFoldable 
+    });
     
     return isFoldable;
   };
@@ -275,16 +284,14 @@ const Navigation = () => {
       )}
 
       {/* Traditional Navigation for non-foldable devices (always rendered) */}
-      <nav className={`fixed w-full max-w-full top-20 sm:top-16 md:top-12 z-40 transition-all duration-500 nav-container overflow-x-hidden no-horizontal-scroll safe-width rounded-b-2xl` +
-        ` ${getNavStyles()} ${hasMounted && isFoldableUnfolded() ? 'hidden' : ''}`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-hidden no-horizontal-scroll safe-width">
-          <div className="flex justify-between items-center h-16 sm:h-18 min-w-0 flex-between w-full overflow-x-hidden no-horizontal-scroll safe-width">
-            <div className="flex items-center min-w-0 flex-1 mr-3 overflow-x-hidden no-horizontal-scroll safe-width">
+      <nav className={`fixed w-full max-w-full top-20 sm:top-16 md:top-12 z-40 transition-all duration-500 nav-container overflow-x-hidden rounded-b-2xl ${getNavStyles()} ${hasMounted && isFoldableUnfolded() ? 'hidden' : ''}`}>
+        <div className="responsive-container">
+          <div className="flex justify-between items-center h-16 sm:h-18 min-w-0 w-full">
+            <div className="flex items-center min-w-0 flex-1 mr-3">
               {/* Heading only appears after scroll and after mount */}
               {hasMounted && isScrolled && (
-                <Link href="/" className="flex-shrink-0 min-w-0 overflow-x-hidden no-horizontal-scroll safe-width group">
-                  <h1 className={`nav-title text-2xl sm:text-3xl md:text-3xl font-bold transition-all duration-300 ${getTextStyles()} truncate ${getTitleMaxWidth()} overflow-x-hidden no-horizontal-scroll safe-width group-hover:scale-105`}>
+                <Link href="/" className="flex-shrink-0 min-w-0 group">
+                  <h1 className={`nav-title text-lg sm:text-xl md:text-2xl font-bold transition-all duration-300 ${getTextStyles()} truncate ${getTitleMaxWidth()} group-hover:scale-105`}>
                     All Things Wetaskiwin
                   </h1>
                 </Link>
@@ -403,72 +410,74 @@ const Navigation = () => {
         {/* Mobile Navigation */}
         {isOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white/95 backdrop-blur-md border-t max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-5rem)] md:max-h-[calc(100vh-4rem)] overflow-y-auto">
-              {navItems.map(({ href, label, icon: Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <Icon size={20} />
-                  {label}
-                </Link>
-              ))}
-              
-              {/* Mobile Authentication */}
-              <div className="border-t pt-3 mt-3">
-                {user ? (
-                  <>
-                    <Link
-                      href="/profile"
-                      className="w-full text-left text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      {displayPicture ? (
-                        <Image
-                          src={displayPicture}
-                          alt={`${displayFirst} ${displayLast}`}
-                          width={20}
-                          height={20}
-                          className="w-5 h-5 rounded-full object-cover"
-                        />
-                      ) : (
-                        <User size={20} />
-                      )}
-                      <span className="font-medium">
-                        {displayFirst} {displayLast}
-                      </span>
-                    </Link>
-                    <a
-                      href={logoutHref}
-                      onClick={() => setIsOpen(false)}
-                      className="w-full text-left text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2"
-                    >
-                      <LogOut size={20} />
-                      Logout
-                    </a>
-                  </>
-                ) : (
-                  <>
-                    <a
-                      href={loginHref}
-                      onClick={() => setIsOpen(false)}
-                      className="w-full text-left text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2"
-                    >
-                      <LogIn size={20} />
-                      Login
-                    </a>
-                    <a
-                      href={signupHref}
-                      onClick={() => setIsOpen(false)}
-                      className="w-full text-left text-blue-600 hover:text-blue-700 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2 border border-blue-600 mt-2"
-                    >
-                      <UserPlus size={20} />
-                      Register
-                    </a>
-                  </>
-                )}
+            <div className="responsive-container bg-white/95 backdrop-blur-md border-t max-h-[calc(100vh-6rem)] overflow-y-auto">
+              <div className="py-2 space-y-1">
+                {navItems.map(({ href, label, icon: Icon }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="text-gray-600 hover:text-blue-600 px-3 py-3 rounded-md text-base font-medium transition-colors flex items-center gap-3 min-h-[44px]"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Icon size={20} />
+                    {label}
+                  </Link>
+                ))}
+                
+                {/* Mobile Authentication */}
+                <div className="border-t pt-3 mt-3">
+                  {user ? (
+                    <>
+                      <Link
+                        href="/profile"
+                        className="w-full text-left text-gray-700 hover:text-blue-600 px-3 py-3 rounded-md text-base font-medium transition-colors flex items-center gap-3 min-h-[44px]"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        {displayPicture ? (
+                          <Image
+                            src={displayPicture}
+                            alt={`${displayFirst} ${displayLast}`}
+                            width={20}
+                            height={20}
+                            className="w-5 h-5 rounded-full object-cover"
+                          />
+                        ) : (
+                          <User size={20} />
+                        )}
+                        <span className="font-medium">
+                          {displayFirst} {displayLast}
+                        </span>
+                      </Link>
+                      <a
+                        href={logoutHref}
+                        onClick={() => setIsOpen(false)}
+                        className="w-full text-left text-gray-600 hover:text-red-600 px-3 py-3 rounded-md text-base font-medium transition-colors flex items-center gap-3 min-h-[44px]"
+                      >
+                        <LogOut size={20} />
+                        Logout
+                      </a>
+                    </>
+                  ) : (
+                    <>
+                      <a
+                        href={loginHref}
+                        onClick={() => setIsOpen(false)}
+                        className="w-full text-left text-gray-600 hover:text-blue-600 px-3 py-3 rounded-md text-base font-medium transition-colors flex items-center gap-3 min-h-[44px]"
+                      >
+                        <LogIn size={20} />
+                        Login
+                      </a>
+                      <a
+                        href={signupHref}
+                        onClick={() => setIsOpen(false)}
+                        className="w-full text-left text-blue-600 hover:text-blue-700 px-3 py-3 rounded-md text-base font-medium transition-colors flex items-center gap-3 border border-blue-600 mt-2 min-h-[44px]"
+                      >
+                        <UserPlus size={20} />
+                        Register
+                      </a>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
