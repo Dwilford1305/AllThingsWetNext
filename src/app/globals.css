@@ -684,23 +684,23 @@ button, .btn, [role="button"] {
 }
 
 /* PROFILE PAGE SPECIFIC FIXES */
-/* Fix profile page tab navigation text colors */
-.profile-page nav button:not(.bg-blue-100) {
-  color: #111827 !important; /* gray-900 for better contrast */
+/* Fix profile page tab navigation text colors - Updated for modern theme */
+.profile-page nav button:not(.profile-tab-active) {
+  color: #374151 !important; /* gray-700 for better contrast on light backgrounds */
 }
 
-.profile-page nav button.bg-blue-100 {
-  color: #1e40af !important; /* blue-800 for active state */
+.profile-page nav button.profile-tab-active {
+  color: white !important; /* White text on gradient background */
 }
 
-/* Profile page tab navigation override */
+/* Profile page tab navigation override - Updated */
 nav button[class*="text-gray-"] {
-  color: #111827 !important; /* Force dark text for profile tabs */
+  color: #374151 !important; /* Force readable text for profile tabs */
 }
 
 /* Additional specific targeting for profile page buttons */
 .profile-page button[class*="text-gray-800"] {
-  color: #111827 !important; /* Force to gray-900 */
+  color: #374151 !important; /* Update to gray-700 for better readability */
 }
 
 /* Override any conflicting button inheritance for profile tabs */
@@ -708,13 +708,72 @@ nav button[class*="text-gray-"] {
   color: inherit !important;
 }
 
-/* Specific profile tab button styles */
+/* Updated profile tab button styles for modern theme */
 .profile-tab-button.profile-tab-inactive {
-  color: #111827 !important; /* Very dark gray for inactive tabs */
+  color: #374151 !important; /* Gray-700 for inactive tabs */
 }
 
 .profile-tab-button.profile-tab-active {
-  color: #1e40af !important; /* Blue for active tab */
+  color: white !important; /* White text on gradient background */
+}
+
+.profile-tab-button.profile-tab-active svg {
+  color: white !important; /* Ensure icons are also white on active state */
+}
+
+/* Mobile responsive improvements for profile page */
+@media (max-width: 1024px) {
+  .profile-page .grid-cols-1.lg\\:grid-cols-4 {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .profile-page .lg\\:col-span-1,
+  .profile-page .lg\\:col-span-3 {
+    grid-column: span 1;
+  }
+  
+  /* Make profile tabs horizontal on mobile */
+  .profile-page nav.space-y-1 {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  
+  .profile-page nav.space-y-1 > * + * {
+    margin-top: 0;
+  }
+  
+  .profile-tab-button {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .profile-tab-button span {
+    font-size: 0.75rem;
+    display: none;
+  }
+  
+  .profile-tab-button svg {
+    margin-right: 0;
+  }
+}
+
+/* Tablet improvements */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .profile-tab-button span {
+    display: inline;
+    font-size: 0.875rem;
+  }
+  
+  .profile-tab-button svg {
+    margin-right: 0.5rem;
+  }
 }
 
 /* Preserve colored backgrounds and their text */
