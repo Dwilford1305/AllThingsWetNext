@@ -239,12 +239,14 @@ export default function ProfilePage() {
     <RequireAuth>
       <FoldableLayout>
         <Navigation />
-      <div className={`min-h-screen bg-gray-50 profile-page ${getTopPadding()}`}>
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
-            <p className="text-gray-700 mt-2">Manage your profile, preferences, and business settings</p>
+      <div className={`min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 profile-page ${getTopPadding()}`}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Modern Header with gradient */}
+          <div className="mb-8 text-center sm:text-left">
+            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+              Account Settings
+            </h1>
+            <p className="text-gray-600 mt-2 text-lg">Manage your profile, preferences, and business settings</p>
           </div>
 
           {/* Message */}
@@ -261,10 +263,10 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Sidebar */}
             <div className="lg:col-span-1">
-              <Card className="p-6">
+              <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg ring-1 ring-primary-100">
                 {/* Profile Summary */}
                 <div className="text-center mb-6">
-                  <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <div className="w-20 h-20 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
                     {profileData.profileImage ? (
                       <Image
                         src={profileData.profileImage}
@@ -280,8 +282,10 @@ export default function ProfilePage() {
                   <h3 className="font-semibold text-gray-900">
                     {profileData.firstName} {profileData.lastName}
                   </h3>
-                  <p className="text-sm text-gray-700">{profileData.email}</p>
-                  <p className="text-xs text-blue-700 mt-1 font-medium capitalize">{profileData.role.replace('_', ' ')}</p>
+                  <p className="text-sm text-gray-600">{profileData.email}</p>
+                  <p className="text-xs text-primary-700 mt-1 font-medium capitalize bg-primary-50 px-2 py-1 rounded-full">
+                    {profileData.role.replace('_', ' ')}
+                  </p>
                 </div>
 
                 {/* Navigation */}
@@ -292,10 +296,10 @@ export default function ProfilePage() {
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors profile-tab-button ${
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 profile-tab-button ${
                           activeTab === tab.id
-                            ? 'bg-blue-100 profile-tab-active'
-                            : 'hover:bg-gray-100 profile-tab-inactive'
+                            ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md profile-tab-active'
+                            : 'hover:bg-primary-50 text-gray-700 hover:text-primary-700 profile-tab-inactive'
                         }`}
                       >
                         <Icon size={16} />
@@ -309,7 +313,7 @@ export default function ProfilePage() {
 
             {/* Main Content */}
             <div className="lg:col-span-3">
-              <Card className="p-6">
+              <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg ring-1 ring-primary-100">
                 {activeTab === 'profile' && (
                   <ProfileTab 
                     profileData={profileData} 
@@ -376,7 +380,9 @@ function ProfileTab({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Profile Information</h2>
+      <h2 className="text-xl font-semibold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-6">
+        Profile Information
+      </h2>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Profile Picture */}
@@ -416,7 +422,7 @@ function ProfileTab({
               id="firstName"
               value={formData.firstName}
               onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
             />
           </div>
           
@@ -429,7 +435,7 @@ function ProfileTab({
               id="lastName"
               value={formData.lastName}
               onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
             />
           </div>
         </div>
@@ -445,7 +451,7 @@ function ProfileTab({
               id="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
             />
           </div>
           <p className="text-xs text-gray-600 mt-1">
@@ -464,7 +470,7 @@ function ProfileTab({
               id="phone"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
               placeholder="(555) 123-4567"
             />
           </div>
@@ -529,7 +535,9 @@ function PreferencesTab({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Preferences</h2>
+      <h2 className="text-xl font-semibold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-6">
+        Preferences
+      </h2>
       
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Theme */}
@@ -548,7 +556,7 @@ function PreferencesTab({
                   value={value}
                   checked={prefs.theme === value}
                   onChange={(e) => setPrefs({ ...prefs, theme: e.target.value as 'light' | 'dark' | 'system' })}
-                  className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  className="h-4 w-4 text-primary-600 border-gray-300 focus:ring-primary-500"
                 />
                 <Icon className="h-5 w-5 text-gray-500" />
                 <span className="text-sm font-medium text-gray-900">{label}</span>
@@ -577,7 +585,7 @@ function PreferencesTab({
                   type="checkbox"
                   checked={prefs.notifications[key as keyof UserPreferences['notifications']]}
                   onChange={(e) => updateNotificationPref(key as keyof UserPreferences['notifications'], e.target.checked)}
-                  className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                 />
               </label>
             ))}
@@ -601,7 +609,7 @@ function PreferencesTab({
                   type="checkbox"
                   checked={prefs.privacy[key as keyof UserPreferences['privacy']]}
                   onChange={(e) => updatePrivacyPref(key as keyof UserPreferences['privacy'], e.target.checked)}
-                  className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                 />
               </label>
             ))}
@@ -690,15 +698,17 @@ function BusinessTab({ userId: _userId }: { userId: string }) {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Business Management</h2>
+      <h2 className="text-xl font-semibold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-6">
+        Business Management
+      </h2>
       <div className="space-y-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="text-lg font-medium text-blue-900 mb-2">Add Your Business</h3>
-          <p className="text-blue-800 mb-4">
+        <div className="bg-gradient-to-r from-primary-50 to-secondary-50 border border-primary-200 rounded-xl p-6">
+          <h3 className="text-lg font-medium text-primary-900 mb-2">Add Your Business</h3>
+          <p className="text-primary-800 mb-4">
             Get your business listed in our directory to reach more customers in Wetaskiwin.
           </p>
           <Button 
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
             onClick={() => setShowRequestForm(true)}
           >
             <Building className="h-4 w-4 mr-2" />
@@ -776,7 +786,9 @@ function ListingsTab({ userId: _userId }: { userId: string }) {
   
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">My Listings</h2>
+      <h2 className="text-xl font-semibold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-6">
+        My Listings
+      </h2>
       
       {/* Sub-tabs */}
       <div className="border-b border-gray-200 mb-6">
@@ -790,9 +802,9 @@ function ListingsTab({ userId: _userId }: { userId: string }) {
               <button
                 key={tab.id}
                 onClick={() => setActiveListingTab(tab.id)}
-                className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${
+                className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeListingTab === tab.id
-                    ? 'border-blue-500 text-blue-700'
+                    ? 'border-primary-500 text-primary-700'
                     : 'border-transparent text-gray-600 hover:text-gray-800'
                 }`}
               >
@@ -852,7 +864,9 @@ function SecurityTab({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Security Settings</h2>
+      <h2 className="text-xl font-semibold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-6">
+        Security Settings
+      </h2>
       
       <div className="space-y-8">
         {/* Change Password */}
@@ -870,7 +884,7 @@ function SecurityTab({
                   id="currentPassword"
                   value={passwordForm.currentPassword}
                   onChange={(e) => onPasswordFormChange({ ...passwordForm, currentPassword: e.target.value })}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                 />
               </div>
             </div>
@@ -886,7 +900,7 @@ function SecurityTab({
                   id="newPassword"
                   value={passwordForm.newPassword}
                   onChange={(e) => onPasswordFormChange({ ...passwordForm, newPassword: e.target.value })}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                 />
               </div>
             </div>
@@ -902,7 +916,7 @@ function SecurityTab({
                   id="confirmPassword"
                   value={passwordForm.confirmPassword}
                   onChange={(e) => onPasswordFormChange({ ...passwordForm, confirmPassword: e.target.value })}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
                 />
               </div>
             </div>

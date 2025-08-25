@@ -39,11 +39,11 @@ const ParallaxHero = () => {
 
   return (
     <div ref={ref} className="relative h-screen overflow-hidden" style={{ willChange: 'transform' }}>
-      {/* Water Tower Background - Much Lighter for better readability */}
+      {/* Water Tower Background - Balanced visibility and readability */}
       <motion.div
         style={{ 
           y, 
-          opacity: useTransform(opacity, [1, 0.2], [0.4, 0.05]), // Much lighter opacity
+          opacity: useTransform(opacity, [1, 0.2], [0.55, 0.15]), // Optimal visibility without sacrificing readability
           scale,
           backgroundImage: "url('/WaterTower.png')",
           backgroundPosition: 'center center',
@@ -52,9 +52,8 @@ const ParallaxHero = () => {
         className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
       />
       
-      {/* Lighter Professional Overlay for better text contrast */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/15 to-black/40" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/15 via-transparent to-black/15" />
+      {/* Subtle gradient overlay for text contrast - following parallax best practices */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/30" />
       
       {/* Subtle Floating Elements */}
       <motion.div
@@ -102,6 +101,10 @@ const ParallaxHero = () => {
           <div className="text-center max-w-4xl">
             <motion.h1 
               className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-none mb-6"
+              style={{ 
+                textShadow: '3px 3px 0px rgba(0, 0, 0, 0.8), 6px 6px 12px rgba(0, 0, 0, 0.6), 0px 0px 24px rgba(0, 0, 0, 0.4)',
+                WebkitTextStroke: '1px rgba(0, 0, 0, 0.3)'
+              }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
@@ -111,6 +114,10 @@ const ParallaxHero = () => {
               </span>
               <motion.span 
                 className="block bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"
+                style={{ 
+                  textShadow: '3px 3px 0px rgba(0, 0, 0, 0.8), 6px 6px 12px rgba(0, 0, 0, 0.6)',
+                  WebkitTextStroke: '1px rgba(0, 0, 0, 0.2)'
+                }}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
@@ -121,7 +128,10 @@ const ParallaxHero = () => {
             
             {/* Clean Professional Subtitle */}
             <motion.p 
-              className="text-lg sm:text-xl md:text-2xl text-gray-200 leading-relaxed max-w-3xl mx-auto"
+              className="text-lg sm:text-xl md:text-2xl text-gray-100 leading-relaxed max-w-3xl mx-auto"
+              style={{ 
+                textShadow: '2px 2px 0px rgba(0, 0, 0, 0.9), 4px 4px 8px rgba(0, 0, 0, 0.7), 0px 0px 16px rgba(0, 0, 0, 0.5)' 
+              }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.9, ease: [0.25, 0.1, 0.25, 1] }}
@@ -156,6 +166,7 @@ const ParallaxHero = () => {
               <Link 
                 href="/events"
                 className="inline-flex items-center gap-3 px-8 py-4 bg-white/10 backdrop-blur-md border border-white/30 rounded-xl font-semibold text-lg text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300"
+                style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' }}
               >
                 <span>Explore Events</span>
                 <motion.div
@@ -177,6 +188,7 @@ const ParallaxHero = () => {
               <Link 
                 href="/businesses"
                 className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+                style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' }}
               >
                 <span>Browse Businesses</span>
                 <motion.div
