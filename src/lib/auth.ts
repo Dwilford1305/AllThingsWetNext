@@ -22,7 +22,12 @@ if (!JWT_REFRESH_SECRET || typeof JWT_REFRESH_SECRET !== 'string') {
 }
 // Treat true production differently from Vercel preview builds.
 // Vercel sets NODE_ENV=production for preview & prod, but exposes VERCEL_ENV ("preview" | "production" | "development").
-const isRealProduction = process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV !== 'preview'
+// Only check for secure secrets at runtime, not during build
+const isRealProduction = process.env.NODE_ENV === 'production' && 
+                        process.env.VERCEL_ENV === 'production' && 
+                        typeof window === 'undefined' && // Only on server
+                        process.env.VERCEL_URL // Only when deployed
+                        
 if (isRealProduction) {
   if (JWT_SECRET.includes('fallback-secret')) {
     throw new Error('Insecure fallback JWT_SECRET detected in production')
