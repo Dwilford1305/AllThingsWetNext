@@ -6,28 +6,67 @@ import { ArrowRight, Users, Heart, Sparkles, Smartphone, Bell, Home } from 'luci
 
 const CallToAction = () => {
   return (
-    <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-purple-700 text-white py-12 sm:py-16 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-6 sm:top-10 left-6 sm:left-10 w-12 h-12 sm:w-20 sm:h-20 border-2 border-white rounded-full"></div>
-        <div className="absolute top-20 sm:top-32 right-12 sm:right-20 w-10 h-10 sm:w-16 sm:h-16 border-2 border-white rounded-full"></div>
-        <div className="absolute bottom-12 sm:bottom-20 left-20 sm:left-32 w-8 h-8 sm:w-12 sm:h-12 border-2 border-white rounded-full"></div>
-        <div className="absolute bottom-6 sm:bottom-10 right-6 sm:right-10 w-16 h-16 sm:w-24 sm:h-24 border-2 border-white rounded-full"></div>
+    <section className="relative py-20 md:py-32 overflow-hidden">
+      {/* Lighter Dark Theme Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-700 via-purple-700 to-blue-800" />
+      <div className="absolute inset-0 bg-gradient-to-tl from-purple-800/20 via-transparent to-blue-800/15" />
+      
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 opacity-20">
+        <motion.div
+          animate={{ 
+            scale: [1, 1.2, 1],
+            rotate: [0, 90, 180, 270, 360]
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute top-1/4 left-1/4 w-32 h-32 border-2 border-white rounded-full"
+        />
+        <motion.div
+          animate={{ 
+            scale: [1.2, 1, 1.2],
+            rotate: [360, 270, 180, 90, 0]
+          }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className="absolute bottom-1/4 right-1/4 w-48 h-48 border border-white rounded-full"
+        />
+        <motion.div
+          animate={{ 
+            x: [-20, 20, -20],
+            y: [-10, 10, -10]
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/2 left-1/2 w-24 h-24 bg-white/10 rounded-full blur-xl"
+        />
       </div>
 
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-white">
         <div className="text-center">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true, amount: 0.1, margin: "0px 0px -200px 0px" }}
-            className="mb-6 sm:mb-8"
+            transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+            viewport={{ once: true }}
+            className="mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-4">
-              Join Our Growing Community
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="inline-block px-6 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white/90 font-semibold text-sm mb-8"
+            >
+              🚀 Join the Movement
+            </motion.div>
+            
+            <h2 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
+              <span className="block bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                Join Our Growing
+              </span>
+              <span className="block bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent">
+                Community
+              </span>
             </h2>
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-blue-100 max-w-3xl mx-auto leading-relaxed px-4">
+            <p className="text-xl md:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed">
               Connect with your neighbors, discover local opportunities, and stay 
               informed about everything happening in Wetaskiwin
             </p>

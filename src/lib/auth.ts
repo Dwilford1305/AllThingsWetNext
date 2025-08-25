@@ -13,27 +13,35 @@ const JWT_REFRESH_SECRET = RAW_JWT_REFRESH_SECRET || 'fallback-refresh-secret-ch
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h'
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d'
 
-// Ensure JWT secrets are strings
-if (!JWT_SECRET || typeof JWT_SECRET !== 'string') {
-  throw new Error('JWT_SECRET must be defined as a string')
-}
-if (!JWT_REFRESH_SECRET || typeof JWT_REFRESH_SECRET !== 'string') {
-  throw new Error('JWT_REFRESH_SECRET must be defined as a string')
-}
-// Treat true production differently from Vercel preview builds.
-// Vercel sets NODE_ENV=production for preview & prod, but exposes VERCEL_ENV ("preview" | "production" | "development").
-const isRealProduction = process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV !== 'preview'
-if (isRealProduction) {
-  if (JWT_SECRET.includes('fallback-secret')) {
-    throw new Error('Insecure fallback JWT_SECRET detected in production')
+// Enhanced environment detection for Vercel builds
+const isBuildTime = process.env.NODE_ENV === 'production' && !process.env.VERCEL_URL && !process.env.JWT_SECRET
+const isVercelPreview = process.env.VERCEL_ENV === 'preview'
+const isVercelProduction = process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production'
+const isRuntimeEnvironment = typeof window === 'undefined' && process.env.VERCEL_URL
+
+// Only validate JWT secrets at runtime, not during build
+if (!isBuildTime) {
+  // Ensure JWT secrets are strings
+  if (!JWT_SECRET || typeof JWT_SECRET !== 'string') {
+    throw new Error('JWT_SECRET must be defined as a string')
   }
-  if (JWT_REFRESH_SECRET.includes('fallback-refresh-secret')) {
-    throw new Error('Insecure fallback JWT_REFRESH_SECRET detected in production')
+  if (!JWT_REFRESH_SECRET || typeof JWT_REFRESH_SECRET !== 'string') {
+    throw new Error('JWT_REFRESH_SECRET must be defined as a string')
   }
-} else if (process.env.VERCEL_ENV === 'preview') {
-  if (JWT_SECRET.includes('fallback-secret') || JWT_REFRESH_SECRET.includes('fallback-refresh-secret')) {
-    // Soft warning to encourage setting preview secrets without blocking build
-    console.warn('[auth] Using fallback JWT secrets on preview build. Set JWT_SECRET & JWT_REFRESH_SECRET in Vercel for stronger security.')
+  
+  // Check for secure secrets in true production runtime
+  if (isVercelProduction && isRuntimeEnvironment) {
+    if (JWT_SECRET.includes('fallback-secret')) {
+      throw new Error('Insecure fallback JWT_SECRET detected in production')
+    }
+    if (JWT_REFRESH_SECRET.includes('fallback-refresh-secret')) {
+      throw new Error('Insecure fallback JWT_REFRESH_SECRET detected in production')
+    }
+  } else if (isVercelPreview && isRuntimeEnvironment) {
+    if (JWT_SECRET.includes('fallback-secret') || JWT_REFRESH_SECRET.includes('fallback-refresh-secret')) {
+      // Soft warning to encourage setting preview secrets without blocking build
+      console.warn('[auth] Using fallback JWT secrets on preview build. Set JWT_SECRET & JWT_REFRESH_SECRET in Vercel for stronger security.')
+    }
   }
 }
 

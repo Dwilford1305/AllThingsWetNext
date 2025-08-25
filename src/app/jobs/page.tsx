@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import AdPlaceholder from '@/components/AdPlaceholder';
 import { Briefcase, MapPin, DollarSign, Clock, Building, ArrowLeft, Search, Filter, ExternalLink } from 'lucide-react';
+import AnimatedSection from '@/components/AnimatedSection';
+import { motion } from 'framer-motion';
 import type { JobPosting } from '@/types';
 
 const JobsPage = () => {
@@ -71,8 +73,8 @@ const JobsPage = () => {
     return (
       <>
         <Navigation />
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="min-h-screen bg-gradient-to-br from-slate-800 via-blue-800 to-slate-800 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
         </div>
       </>
     );
@@ -81,61 +83,82 @@ const JobsPage = () => {
   return (
     <FoldableLayout>
       <Navigation />
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center space-x-4 mb-4">
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Home
-                </Link>
-              </Button>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Briefcase className="h-8 w-8 text-purple-600" />
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Job Opportunities</h1>
-                <p className="text-gray-600">Find your next career opportunity in Wetaskiwin</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-800 via-blue-800 to-slate-800 relative">
+        {/* Modern Background Effects */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-3xl animate-pulse-slow" />
+          <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-br from-purple-400/10 to-blue-400/10 rounded-full blur-3xl animate-float" />
+        </div>
+        
+        {/* Modern Hero Header - Dark theme */}
+        <AnimatedSection>
+          <div className="relative bg-white/10 backdrop-blur-lg border-b border-white/20 z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <div className="flex items-center space-x-4 mb-6">
+                <Button asChild variant="ghost" size="sm" className="text-white hover:text-blue-200 hover:bg-white/10">
+                  <Link href="/">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Home
+                  </Link>
+                </Button>
+              </div>
+              <div className="text-center">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="flex items-center justify-center space-x-4 mb-6"
+                >
+                  <Briefcase className="h-12 w-12 text-purple-400" />
+                  <div>
+                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                      Jobs
+                    </h1>
+                    <p className="text-xl text-blue-200 mt-2">
+                      Find your next career opportunity in Wetaskiwin
+                    </p>
+                  </div>
+                </motion.div>
               </div>
             </div>
           </div>
-        </div>
+        </AnimatedSection>
 
         {/* Top Ad - Google AdSense Leaderboard */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <AdPlaceholder 
-            type="google" 
-            size="leaderboard" 
-            className="w-full max-w-4xl mx-auto" 
-          />
-        </div>
+        <AnimatedSection delay={0.1}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <AdPlaceholder 
+              type="google" 
+              size="leaderboard" 
+              className="w-full max-w-4xl mx-auto" 
+            />
+          </div>
+        </AnimatedSection>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
           {/* Search and Filter */}
-          <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
+          <div className="bg-white/10 backdrop-blur-lg p-6 rounded-lg shadow-lg mb-8 border border-white/20">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-blue-200" />
                 <input
                   type="text"
                   placeholder="Search jobs..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent text-white placeholder-blue-200 backdrop-blur-sm"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <div className="flex items-center space-x-2">
-                <Filter className="h-4 w-4 text-gray-400" />
+                <Filter className="h-4 w-4 text-blue-200" />
                 <select
                   aria-label="Filter jobs by type"
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent text-white backdrop-blur-sm"
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
                 >
                   {jobTypes.map(type => (
-                    <option key={type} value={type}>
+                    <option key={type} value={type} className="bg-slate-800 text-white">
                       {type === 'all' ? 'All Job Types' : type.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                     </option>
                   ))}
@@ -147,8 +170,8 @@ const JobsPage = () => {
           {/* Job Spotlight - Hiring Partners */}
           <div className="mb-8">
             <div className="text-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Featured Employers</h3>
-              <p className="text-sm text-gray-600">Top companies hiring in Wetaskiwin</p>
+              <h3 className="text-lg font-semibold text-white mb-2">Featured Employers</h3>
+              <p className="text-sm text-blue-200">Top companies hiring in Wetaskiwin</p>
             </div>
             <div className="flex justify-center">
               <AdPlaceholder 
@@ -163,15 +186,15 @@ const JobsPage = () => {
           {filteredJobs.length > 0 ? (
             <div className="space-y-6">
               {filteredJobs.map((job) => (
-                <Card key={job.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card key={job.id} className="bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg hover:bg-white/15 hover:shadow-xl transition-all duration-300">
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="text-xl font-bold text-gray-900">
+                          <h3 className="text-xl font-bold text-white">
                             {job.title}
                           </h3>
-                          <Badge variant="primary">
+                          <Badge variant="primary" className="bg-blue-500 text-white">
                             {job.type.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                           </Badge>
                           {job.featured && (
@@ -181,12 +204,12 @@ const JobsPage = () => {
                           )}
                         </div>
                         
-                        <div className="flex items-center text-gray-600 mb-2">
+                        <div className="flex items-center text-blue-200 mb-2">
                           <Building className="h-4 w-4 mr-2" />
                           <span className="font-medium">{job.company}</span>
                         </div>
                         
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-4">
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-blue-300 mb-4">
                           <div className="flex items-center">
                             <MapPin className="h-4 w-4 mr-1" />
                             {job.location}
@@ -203,21 +226,21 @@ const JobsPage = () => {
                       </div>
                     </div>
                     
-                    <p className="text-gray-600 mb-4 line-clamp-3">
+                    <p className="text-blue-100 mb-4 line-clamp-3">
                       {job.description}
                     </p>
                     
                     {job.requirements && job.requirements.length > 0 && (
                       <div className="mb-4">
-                        <h4 className="font-semibold text-gray-900 mb-2">Key Requirements:</h4>
+                        <h4 className="font-semibold text-white mb-2">Key Requirements:</h4>
                         <div className="flex flex-wrap gap-1">
                           {job.requirements.slice(0, 5).map((requirement, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
+                            <Badge key={index} variant="outline" className="text-xs bg-white/10 text-blue-200 border-white/20">
                               {requirement}
                             </Badge>
                           ))}
                           {job.requirements.length > 5 && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs bg-white/10 text-blue-200 border-white/20">
                               +{job.requirements.length - 5} more
                             </Badge>
                           )}
@@ -225,8 +248,8 @@ const JobsPage = () => {
                       </div>
                     )}
                     
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                      <div className="flex items-center text-sm text-gray-500">
+                    <div className="flex items-center justify-between pt-4 border-t border-white/20">
+                      <div className="flex items-center text-sm text-blue-300">
                         {job.contactEmail && (
                           <span>Contact: {job.contactEmail}</span>
                         )}
@@ -234,7 +257,7 @@ const JobsPage = () => {
                       
                       <div className="flex gap-2">
                         {job.applicationUrl && (
-                          <Button asChild size="sm">
+                          <Button asChild size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
                             <a href={job.applicationUrl} target="_blank" rel="noopener noreferrer">
                               <ExternalLink className="h-4 w-4 mr-2" />
                               Apply Now
@@ -242,7 +265,7 @@ const JobsPage = () => {
                           </Button>
                         )}
                         {job.contactEmail && !job.applicationUrl && (
-                          <Button asChild size="sm">
+                          <Button asChild size="sm" className="bg-purple-500 hover:bg-purple-600 text-white">
                             <a href={`mailto:${job.contactEmail}?subject=Application for ${job.title}&body=Dear Hiring Manager,%0D%0A%0D%0AI am interested in applying for the ${job.title} position at ${job.company}.%0D%0A%0D%0ABest regards`}>
                               Apply via Email
                             </a>
@@ -255,10 +278,10 @@ const JobsPage = () => {
               ))}
             </div>
           ) : (
-            <Card className="p-12 text-center">
-              <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No jobs found</h3>
-              <p className="text-gray-600">
+            <Card className="p-12 text-center bg-white/10 backdrop-blur-lg border border-white/20">
+              <Briefcase className="h-12 w-12 text-blue-200 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-white mb-2">No jobs found</h3>
+              <p className="text-blue-200">
                 {searchTerm || selectedType !== 'all' 
                   ? 'Try adjusting your search or filter criteria.' 
                   : 'No job postings are currently available.'}
@@ -267,10 +290,10 @@ const JobsPage = () => {
           )}
 
           {/* Bottom Career Services Section */}
-          <div className="mt-12 pt-8 border-t border-gray-200">
+          <div className="mt-12 pt-8 border-t border-white/20">
             <div className="text-center mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Career Development Partners</h3>
-              <p className="text-sm text-gray-600">Supporting career growth in our community</p>
+              <h3 className="text-lg font-semibold text-white mb-2">Career Development Partners</h3>
+              <p className="text-sm text-blue-200">Supporting career growth in our community</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mb-6">
               <AdPlaceholder type="gold" size="square" />

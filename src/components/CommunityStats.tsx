@@ -12,6 +12,16 @@ const CommunityStats = () => {
     members: 1250 // Simulated community members
   })
 
+  const getFeatureGradient = (index: number) => {
+    const gradients = [
+      'from-blue-500 to-blue-600',
+      'from-green-500 to-green-600', 
+      'from-purple-500 to-purple-600',
+      'from-orange-500 to-orange-600'
+    ]
+    return gradients[index % gradients.length]
+  }
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -61,74 +71,101 @@ const CommunityStats = () => {
   ]
 
   return (
-    <section className="relative py-12 sm:py-16 bg-gray-50 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 overflow-hidden">
-        {/* Stats Section */}
+    <section className="relative py-20 md:py-32">
+      {/* Lighter Dark Theme Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-blue-800 to-slate-800" />
+      <div className="absolute inset-0">
+        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-blue-400/15 to-purple-400/15 rounded-full blur-3xl animate-pulse-slow" />
+        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-br from-purple-400/15 to-blue-400/15 rounded-full blur-3xl animate-float" />
+      </div>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Enhanced Stats Section - Remove overflow containers */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
           viewport={{ once: true }}
-          className="text-center mb-12 sm:mb-16"
+          className="text-center mb-16 md:mb-20"
         >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-4">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            whileInView={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            viewport={{ once: true }}
+            className="inline-block px-6 py-2 bg-gradient-to-r from-white/15 to-blue-200/15 backdrop-blur-sm rounded-full text-blue-200 font-semibold text-sm mb-6"
+          >
+            📊 Community Insights
+          </motion.div>
+          
+          <h2 className="text-4xl md:text-6xl font-bold leading-tight mb-6 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
             Your Community at a Glance
           </h2>
-          <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto mb-8 sm:mb-12 px-4">
+          <p className="text-xl md:text-2xl text-blue-100 leading-relaxed max-w-3xl mx-auto mb-12">
             Join thousands of Wetaskiwin residents who stay connected through our community hub
           </p>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 w-full overflow-hidden">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 w-full">
             {[
-              { value: stats.events, label: 'Active Events', icon: Calendar, color: 'text-blue-600' },
-              { value: stats.businesses, label: 'Local Businesses', icon: Building, color: 'text-green-600' },
-              { value: stats.jobs, label: 'Job Listings', icon: Briefcase, color: 'text-purple-600' },
-              { value: stats.members, label: 'Community Members', icon: Users, color: 'text-orange-600' }
+              { value: stats.events, label: 'Active Events', icon: Calendar, gradient: 'from-blue-500 to-blue-600' },
+              { value: stats.businesses, label: 'Local Businesses', icon: Building, gradient: 'from-green-500 to-green-600' },
+              { value: stats.jobs, label: 'Job Listings', icon: Briefcase, gradient: 'from-purple-500 to-purple-600' },
+              { value: stats.members, label: 'Community Members', icon: Users, gradient: 'from-orange-500 to-orange-600' }
             ].map((stat, index) => (
               <motion.div
                 key={stat.label}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1, ease: [0.4, 0, 0.2, 1] }}
                 viewport={{ once: true }}
-                whileHover={{ scale: 1.05 }}
-                className="bg-white rounded-lg shadow-lg p-4 sm:p-6 border-2 border-transparent hover:border-blue-200 transition-all duration-300 w-full min-w-0"
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="group"
               >
-                <stat.icon className={`h-6 w-6 sm:h-8 sm:w-8 ${stat.color} mx-auto mb-2 sm:mb-3`} />
-                <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{stat.value.toLocaleString()}</div>
-                <div className="text-xs sm:text-sm text-gray-600 leading-tight">{stat.label}</div>
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 lg:p-8 border border-white/20 shadow-lg transition-all duration-300 hover:bg-white/15 hover:border-white/30 relative">
+                  <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${stat.gradient}`} />
+                  <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${stat.gradient} rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                    <stat.icon className="h-8 w-8 text-white" />
+                  </div>
+                  <div className="text-3xl lg:text-4xl font-bold text-white mb-2 group-hover:text-blue-200 transition-colors duration-300">
+                    {stat.value.toLocaleString()}
+                  </div>
+                  <div className="text-sm font-medium text-blue-200 leading-tight">{stat.label}</div>
+                </div>
               </motion.div>
             ))}
           </div>
         </motion.div>
 
-        {/* Features Section */}
+        {/* Features Section - Lighter Dark Theme */}
+        {/* Enhanced Features Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          viewport={{ once: true, amount: 0.2, margin: "0px 0px -100px 0px" }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-full overflow-hidden"
+          transition={{ duration: 0.8, delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
+          viewport={{ once: true }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-20 w-full"
         >
           {features.map((feature, index) => (
             <motion.div
               key={feature.title}
-              initial={{ opacity: 0, x: index % 2 === 0 ? -40 : 40 }}
+              initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
               whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 * index, ease: "easeOut" }}
-              viewport={{ once: true, amount: 0.2, margin: "0px 0px -100px 0px" }}
-              whileHover={{ y: -3 }}
-              className="bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 hover:shadow-xl transition-all duration-300 w-full min-w-0"
+              transition={{ duration: 0.8, delay: 0.1 * index, ease: [0.4, 0, 0.2, 1] }}
+              viewport={{ once: true }}
+              whileHover={{ y: -8, scale: 1.02 }}
+              className="group bg-white/10 backdrop-blur-lg rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 border border-white/20 shadow-lg relative"
             >
-              <div className="flex items-start space-x-3 sm:space-x-4">
-                <div className={`p-2 sm:p-3 rounded-lg bg-gray-50 ${feature.color} flex-shrink-0`}>
-                  <feature.icon className="h-5 w-5 sm:h-6 sm:w-6" />
+              <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${getFeatureGradient(index)} opacity-10 rounded-full -translate-y-16 translate-x-16`} />
+              
+              <div className="flex items-start space-x-6 relative z-10">
+                <div className={`p-4 rounded-2xl bg-gradient-to-br ${getFeatureGradient(index)} flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
+                  <feature.icon className="h-8 w-8 text-white" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3">
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-blue-200 transition-colors duration-300">
                     {feature.title}
                   </h3>
-                  <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                  <p className="text-blue-100 leading-relaxed text-lg">
                     {feature.description}
                   </p>
                 </div>
@@ -137,7 +174,7 @@ const CommunityStats = () => {
           ))}
         </motion.div>
 
-        {/* Location Highlight */}
+        {/* Location Highlight - Updated styling */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -145,10 +182,10 @@ const CommunityStats = () => {
           viewport={{ once: true }}
           className="mt-12 sm:mt-16 text-center"
         >
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 sm:p-8 text-white">
-            <MapPin className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-blue-200" />
+          <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl p-6 sm:p-8 text-white shadow-xl">
+            <MapPin className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-white/90" />
             <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Proudly Serving Wetaskiwin</h3>
-            <p className="text-base sm:text-lg text-blue-100 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg text-white/90 max-w-2xl mx-auto leading-relaxed">
               Located in the heart of Alberta, Wetaskiwin is a vibrant community rich in history, 
               culture, and opportunity. We&apos;re here to help you discover all it has to offer.
             </p>

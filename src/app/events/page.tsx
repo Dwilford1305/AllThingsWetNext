@@ -5,11 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Navigation from '@/components/ui/Navigation';
 import FoldableLayout from '@/components/FoldableLayout';
+import AnimatedSection from '@/components/AnimatedSection';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import AdPlaceholder from '@/components/AdPlaceholder';
 import NewBadge from '@/components/NewBadge';
+import { motion } from 'framer-motion';
 import { Calendar, Clock, MapPin, Users, ArrowLeft, Search, Filter } from 'lucide-react';
 import type { Event } from '@/types';
 
@@ -78,283 +80,322 @@ const EventsPage = () => {
 
   if (loading) {
     return (
-      <>
+      <FoldableLayout>
         <Navigation />
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="min-h-screen bg-gradient-to-br from-slate-800 via-blue-800 to-slate-800 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+            <p className="text-blue-200">Loading events...</p>
+          </div>
         </div>
-      </>
+      </FoldableLayout>
     );
   }
 
   return (
     <FoldableLayout>
       <Navigation />
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center space-x-4 mb-4">
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Home
-                </Link>
-              </Button>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Calendar className="h-8 w-8 text-blue-600" />
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Events</h1>
-                <p className="text-gray-600">                  Discover what&apos;s happening in Wetaskiwin</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-800 via-blue-800 to-slate-800 relative">
+        {/* Modern Background Effects */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-3xl animate-pulse-slow" />
+          <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-br from-purple-400/10 to-blue-400/10 rounded-full blur-3xl animate-float" />
+        </div>
+        
+        {/* Modern Hero Header - Dark theme */}
+        <AnimatedSection>
+          <div className="relative bg-white/10 backdrop-blur-lg border-b border-white/20 z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <div className="flex items-center space-x-4 mb-6">
+                <Button asChild variant="ghost" size="sm" className="text-white hover:text-gray-900 hover:bg-white/20 backdrop-blur-sm">
+                  <Link href="/">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Home
+                  </Link>
+                </Button>
+              </div>
+              <div className="text-center">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="flex items-center justify-center space-x-4 mb-6"
+                >
+                  <Calendar className="h-12 w-12 text-blue-400" />
+                  <div>
+                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                      Events
+                    </h1>
+                    <p className="text-xl text-blue-200 mt-2">
+                      Discover what&apos;s happening in Wetaskiwin
+                    </p>
+                  </div>
+                </motion.div>
               </div>
             </div>
           </div>
-        </div>
+        </AnimatedSection>
 
         {/* Top Ad - Google AdSense Leaderboard */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <AdPlaceholder 
-            type="google" 
-            size="leaderboard" 
-            className="w-full max-w-4xl mx-auto" 
-          />
-        </div>
+        <AnimatedSection delay={0.1}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <AdPlaceholder 
+              type="google" 
+              size="leaderboard" 
+              className="w-full max-w-4xl mx-auto" 
+            />
+          </div>
+        </AnimatedSection>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Search and Filter */}
-          <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search events..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Filter className="h-4 w-4 text-gray-400" />
-                <select
-                  aria-label="Filter events by category"
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                  {categories.map(category => (
-                    <option key={category} value={category}>
-                      {category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1)}
-                    </option>
-                  ))}
-                </select>
+          {/* Modern Search and Filter */}
+          <AnimatedSection delay={0.15}>
+            <div className="card-glass p-6 rounded-2xl mb-8">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-white" />
+                  <input
+                    type="text"
+                    placeholder="Search events..."
+                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent text-white placeholder-gray-300 backdrop-blur-sm"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Filter className="h-4 w-4 text-white" />
+                  <select
+                    aria-label="Filter events by category"
+                    className="px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent text-white backdrop-blur-sm"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                  >
+                    {categories.map(category => (
+                      <option key={category} value={category} className="bg-slate-800 text-white">
+                        {category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
+          </AnimatedSection>
 
           {/* Platinum Business Spotlight */}
-          <div className="mb-8">
-            <div className="text-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Event Sponsors</h3>
-              <p className="text-sm text-gray-600">Supporting our community events</p>
+          <AnimatedSection delay={0.2}>
+            <div className="mb-8">
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-semibold text-white mb-2">Event Sponsors</h3>
+                <p className="text-sm text-white">Supporting our community events</p>
+              </div>
+              <div className="flex justify-center">
+                <AdPlaceholder 
+                  type="platinum" 
+                  size="large" 
+                  className="w-full max-w-md" 
+                />
+              </div>
             </div>
-            <div className="flex justify-center">
-              <AdPlaceholder 
-                type="platinum" 
-                size="large" 
-                className="w-full max-w-md" 
-              />
-            </div>
-          </div>
+          </AnimatedSection>
 
           {/* Events Grid */}
           {filteredEvents.length > 0 ? (
             <>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {filteredEvents.slice(0, 6).map((event) => (
-                <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow bg-white">
-                  {event.imageUrl && (
-                    <div className="h-48 bg-gray-200 relative">
-                      <Image
-                        src={event.imageUrl}
-                        alt={event.title}
-                        fill
-                        className="object-cover"
-                      />
+              <AnimatedSection delay={0.25}>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                  {filteredEvents.slice(0, 6).map((event) => (
+                  <Card key={event.id} className="card-glass overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-white/5 border-white/10">
+                    {event.imageUrl && (
+                      <div className="h-48 bg-gray-700/50/50 relative">
+                        <Image
+                          src={event.imageUrl}
+                          alt={event.title}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="p-6 relative z-10">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center space-x-2">
+                          <Badge variant={event.featured ? 'default' : 'secondary'} className="bg-blue-600/20 text-blue-300 border-blue-400/30">
+                            {event.category}
+                          </Badge>
+                          <NewBadge addedAt={event.addedAt} />
+                        </div>
+                        {event.featured && (
+                          <Badge variant="default" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-black border-0">
+                            Featured
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <h3 className="text-xl font-bold text-white mb-2">
+                        {event.title}
+                      </h3>
+                      
+                      <p className="text-white mb-4 line-clamp-3">
+                        {event.description}
+                      </p>
+                      
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center text-sm text-white">
+                          <Calendar className="h-4 w-4 mr-2 text-blue-400" />
+                          {formatDate(event.date)}
+                        </div>
+                        <div className="flex items-center text-sm text-white">
+                          <Clock className="h-4 w-4 mr-2 text-green-400" />
+                          {formatTime(event.time)}
+                        </div>
+                        <div className="flex items-center text-sm text-white">
+                          <MapPin className="h-4 w-4 mr-2 text-red-400" />
+                          {event.location}
+                        </div>
+                        <div className="flex items-center text-sm text-white">
+                          <Users className="h-4 w-4 mr-2 text-purple-400" />
+                          {event.organizer}
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2">
+                        {event.website && (
+                          <Button asChild size="sm" variant="outline" className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900">
+                            <a href={event.website} target="_blank" rel="noopener noreferrer">
+                              Website
+                            </a>
+                          </Button>
+                        )}
+                        {event.ticketUrl && (
+                          <Button asChild size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0 text-white">
+                            <a href={event.ticketUrl} target="_blank" rel="noopener noreferrer">
+                              Get Tickets
+                            </a>
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  )}
-                  <div className="p-6 bg-white relative z-10">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center space-x-2">
-                        <Badge variant={event.featured ? 'default' : 'secondary'}>
-                          {event.category}
-                        </Badge>
-                        <NewBadge addedAt={event.addedAt} />
-                      </div>
-                      {event.featured && (
-                        <Badge variant="default" className="bg-yellow-500 text-black">
-                          Featured
-                        </Badge>
-                      )}
-                    </div>
-                    
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      {event.title}
-                    </h3>
-                    
-                    <p className="text-gray-600 mb-4 line-clamp-3">
-                      {event.description}
-                    </p>
-                    
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        {formatDate(event.date)}
-                      </div>
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Clock className="h-4 w-4 mr-2" />
-                        {formatTime(event.time)}
-                      </div>
-                      <div className="flex items-center text-sm text-gray-500">
-                        <MapPin className="h-4 w-4 mr-2" />
-                        {event.location}
-                      </div>
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Users className="h-4 w-4 mr-2" />
-                        {event.organizer}
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2">
-                      {event.website && (
-                        <Button asChild size="sm" variant="outline">
-                          <a href={event.website} target="_blank" rel="noopener noreferrer">
-                            Website
-                          </a>
-                        </Button>
-                      )}
-                      {event.ticketUrl && (
-                        <Button asChild size="sm">
-                          <a href={event.ticketUrl} target="_blank" rel="noopener noreferrer">
-                            Get Tickets
-                          </a>
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              ))}
-              </div>
+                  </Card>
+                ))}
+                </div>
+              </AnimatedSection>
 
               {/* Mid-page Ad */}
               {filteredEvents.length > 6 && (
-                <div className="mb-8">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mb-6">
-                    <AdPlaceholder type="gold" size="square" />
-                    <AdPlaceholder type="silver" size="square" />
+                <AnimatedSection delay={0.3}>
+                  <div className="mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mb-6">
+                      <AdPlaceholder type="gold" size="square" />
+                      <AdPlaceholder type="silver" size="square" />
+                    </div>
+                    <div className="flex justify-center">
+                      <AdPlaceholder 
+                        type="google" 
+                        size="banner" 
+                        className="w-full max-w-2xl mx-auto" 
+                      />
+                    </div>
                   </div>
-                  <div className="flex justify-center">
-                    <AdPlaceholder 
-                      type="google" 
-                      size="banner" 
-                      className="w-full max-w-2xl mx-auto" 
-                    />
-                  </div>
-                </div>
+                </AnimatedSection>
               )}
 
               {/* Remaining Events */}
               {filteredEvents.length > 6 && (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredEvents.slice(6).map((event) => (
-                    <Card key={event.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                      {event.imageUrl && (
-                        <div className="h-48 bg-gray-200 relative">
-                          <Image 
-                            src={event.imageUrl} 
-                            alt={event.title}
-                            fill
-                            className="object-cover"
-                          />
+                <AnimatedSection delay={0.35}>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredEvents.slice(6).map((event) => (
+                      <Card key={event.id} className="card-glass overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-white/5 border-white/10">
+                        {event.imageUrl && (
+                          <div className="h-48 bg-gray-700/50/50 relative">
+                            <Image 
+                              src={event.imageUrl} 
+                              alt={event.title}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="p-6">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center space-x-2">
+                              <Badge variant="secondary" className="bg-blue-600/20 text-blue-300 border-blue-400/30">{event.category}</Badge>
+                              <NewBadge addedAt={event.addedAt} />
+                            </div>
+                            {event.featured && <Badge variant="default" className="bg-gradient-to-r from-yellow-400 to-orange-400 text-black border-0">Featured</Badge>}
+                          </div>
+                          <h3 className="text-xl font-semibold text-white mb-2">{event.title}</h3>
+                          <p className="text-white mb-4 line-clamp-2">{event.description}</p>
+                          
+                          <div className="space-y-2 mb-4">
+                            <div className="flex items-center text-sm text-white">
+                              <Calendar className="h-4 w-4 mr-2 text-blue-400" />
+                              {formatDate(event.date)}
+                            </div>
+                            <div className="flex items-center text-sm text-white">
+                              <Clock className="h-4 w-4 mr-2 text-green-400" />
+                              {formatTime(event.time)}
+                            </div>
+                            <div className="flex items-center text-sm text-white">
+                              <MapPin className="h-4 w-4 mr-2 text-red-400" />
+                              {event.location}
+                            </div>
+                            <div className="flex items-center text-sm text-white">
+                              <Users className="h-4 w-4 mr-2 text-purple-400" />
+                              {event.organizer}
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-2">
+                            {event.website && (
+                              <Button asChild size="sm" variant="outline" className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900">
+                                <a href={event.website} target="_blank" rel="noopener noreferrer">
+                                  Website
+                                </a>
+                              </Button>
+                            )}
+                            {event.ticketUrl && (
+                              <Button asChild size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0 text-white">
+                                <a href={event.ticketUrl} target="_blank" rel="noopener noreferrer">
+                                  Get Tickets
+                                </a>
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                      )}
-                      <div className="p-6">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center space-x-2">
-                            <Badge variant="secondary">{event.category}</Badge>
-                            <NewBadge addedAt={event.addedAt} />
-                          </div>
-                          {event.featured && <Badge variant="default">Featured</Badge>}
-                        </div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">{event.title}</h3>
-                        <p className="text-gray-600 mb-4 line-clamp-2">{event.description}</p>
-                        
-                        <div className="space-y-2 mb-4">
-                          <div className="flex items-center text-sm text-gray-500">
-                            <Calendar className="h-4 w-4 mr-2" />
-                            {formatDate(event.date)}
-                          </div>
-                          <div className="flex items-center text-sm text-gray-500">
-                            <Clock className="h-4 w-4 mr-2" />
-                            {formatTime(event.time)}
-                          </div>
-                          <div className="flex items-center text-sm text-gray-500">
-                            <MapPin className="h-4 w-4 mr-2" />
-                            {event.location}
-                          </div>
-                          <div className="flex items-center text-sm text-gray-500">
-                            <Users className="h-4 w-4 mr-2" />
-                            {event.organizer}
-                          </div>
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-2">
-                          {event.website && (
-                            <Button asChild size="sm" variant="outline">
-                              <a href={event.website} target="_blank" rel="noopener noreferrer">
-                                Website
-                              </a>
-                            </Button>
-                          )}
-                          {event.ticketUrl && (
-                            <Button asChild size="sm">
-                              <a href={event.ticketUrl} target="_blank" rel="noopener noreferrer">
-                                Get Tickets
-                              </a>
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
+                      </Card>
+                    ))}
+                  </div>
+                </AnimatedSection>
               )}
             </>
           ) : (
-            <Card className="p-12 text-center">
-              <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No events found</h3>
-              <p className="text-gray-600">                  {searchTerm || selectedCategory !== 'all' 
+            <AnimatedSection delay={0.25}>
+              <Card className="card-glass p-12 text-center bg-white/5 border-white/10">
+                <Calendar className="h-12 w-12 text-white mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-white mb-2">No events found</h3>
+                <p className="text-white">
+                  {searchTerm || selectedCategory !== 'all' 
                     ? 'Try adjusting your search or filter criteria.' 
                     : 'No events are currently available.'}
-              </p>
-            </Card>
+                </p>
+              </Card>
+            </AnimatedSection>
           )}
 
           {/* Bottom Ad Section */}
-          <div className="mt-12 pt-8 border-t border-gray-200">
-            <div className="text-center mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Community Partners</h3>
-              <p className="text-sm text-gray-600">Supporting events in Wetaskiwin</p>
+          <AnimatedSection delay={0.4}>
+            <div className="mt-12 pt-8 border-t border-white/20">
+              <div className="text-center mb-6">
+                <h3 className="text-lg font-semibold text-white mb-2">Community Partners</h3>
+                <p className="text-sm text-white">Supporting events in Wetaskiwin</p>
+              </div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <AdPlaceholder type="silver" size="square" />
+                <AdPlaceholder type="gold" size="square" />
+                <AdPlaceholder type="silver" size="square" />
+                <AdPlaceholder type="gold" size="square" />
+              </div>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <AdPlaceholder type="silver" size="square" />
-              <AdPlaceholder type="gold" size="square" />
-              <AdPlaceholder type="silver" size="square" />
-              <AdPlaceholder type="gold" size="square" />
-            </div>
-          </div>
+          </AnimatedSection>
         </div>
       </div>
     </FoldableLayout>

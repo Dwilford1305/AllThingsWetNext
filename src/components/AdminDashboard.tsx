@@ -715,17 +715,17 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-6 admin-dashboard">
       {/* Tab Navigation - Mobile Friendly */}
-      <Card className="p-2 md:p-4">
+      <Card className="p-2 md:p-4 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
         {/* Mobile Dropdown for small screens */}
         <div className="block md:hidden">
           <select
             value={activeTab}
             onChange={(e) => setActiveTab(e.target.value as typeof activeTab)}
-            className="w-full px-3 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 text-sm font-medium text-white bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent backdrop-blur-sm"
             title="Select admin dashboard tab"
           >
             {tabs.map((tab) => (
-              <option key={tab.id} value={tab.id}>
+              <option key={tab.id} value={tab.id} className="bg-slate-800 text-white">
                 {tab.label}
               </option>
             ))}
@@ -743,7 +743,7 @@ const AdminDashboard = () => {
                 className={`flex items-center px-3 lg:px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors min-w-0 ${
                   activeTab === tab.id
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-transparent hover:border-gray-200'
+                    : 'text-blue-200 hover:text-white hover:bg-white/20 border border-transparent hover:border-white/20 backdrop-blur-sm'
                 }`}
               >
                 <Icon className="h-4 w-4 mr-1 lg:mr-2 flex-shrink-0" />
@@ -775,32 +775,32 @@ const AdminDashboard = () => {
       {activeTab === 'overview' && data && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Business Categories */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Business Categories</h3>
+          <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
+            <h3 className="text-lg font-semibold text-white mb-4">Business Categories</h3>
             <div className="space-y-3">
               {Array.isArray(data.categoryStats) ? data.categoryStats.slice(0, 8).map((category) => (
                 <div key={category._id} className="flex items-center justify-between">
                   <div>
-                    <span className="font-medium text-gray-900">{category._id}</span>
-                    <div className="text-sm text-gray-700">
+                    <span className="font-medium text-white">{category._id}</span>
+                    <div className="text-sm text-blue-200">
                       {category.claimed} claimed • {category.premium} premium
                     </div>
                   </div>
-                  <Badge variant="secondary">{category.total}</Badge>
+                  <Badge variant="secondary" className="bg-white/20 text-blue-200 border-white/20">{category.total}</Badge>
                 </div>
               )) : null}
             </div>
           </Card>
 
           {/* Recent Claims */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Business Claims</h3>
+          <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
+            <h3 className="text-lg font-semibold text-white mb-4">Recent Business Claims</h3>
             <div className="space-y-3">
               {Array.isArray(data.recentClaims) ? data.recentClaims.slice(0, 5).map((business) => (
                 <div key={business.id} className="flex items-center justify-between">
                   <div>
-                    <span className="font-medium text-gray-900">{business.name}</span>
-                    <div className="text-sm text-gray-700">
+                    <span className="font-medium text-white">{business.name}</span>
+                    <div className="text-sm text-blue-200">
                       {business.category} • Claimed {business.claimedAt ? new Date(business.claimedAt).toLocaleDateString() : 'Recently'}
                     </div>
                   </div>
@@ -822,18 +822,18 @@ const AdminDashboard = () => {
       {activeTab === 'businesses' && !loading && data && (
         <div className="space-y-6">
           {/* Business Management Header */}
-          <Card className="p-6">
+          <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Business Management</h3>
-                <p className="text-sm text-gray-600">Manage all businesses, subscriptions, and premium features</p>
+                <h3 className="text-lg font-semibold text-white">Business Management</h3>
+                <p className="text-sm text-blue-200">Manage all businesses, subscriptions, and premium features</p>
               </div>
               <div className="flex space-x-3">
-                <Button size="sm" variant="outline" onClick={refreshBusinessData}>
+                <Button size="sm" variant="outline" onClick={refreshBusinessData} className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900">
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Refresh
                 </Button>
-                <Button size="sm" variant="outline" onClick={exportBusinessData}>
+                <Button size="sm" variant="outline" onClick={exportBusinessData} className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900">
                   Export Data
                 </Button>
               </div>
@@ -841,20 +841,20 @@ const AdminDashboard = () => {
             
             {/* Business Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">
+              <div className="bg-blue-500/20 p-4 rounded-lg backdrop-blur-sm border border-blue-400/20">
+                <div className="text-2xl font-bold text-blue-300">
                   {Array.isArray(data.businesses) ? data.businesses.filter(b => b.isClaimed).length : 0}
                 </div>
-                <div className="text-sm text-blue-800">Claimed Businesses</div>
+                <div className="text-sm text-blue-200">Claimed Businesses</div>
               </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">
+              <div className="bg-green-500/20 p-4 rounded-lg backdrop-blur-sm border border-green-400/20">
+                <div className="text-2xl font-bold text-green-300">
                   {Array.isArray(data.businesses) ? data.businesses.filter(b => b.subscriptionTier && b.subscriptionTier !== 'free').length : 0}
                 </div>
-                <div className="text-sm text-green-800">Premium Subscribers</div>
+                <div className="text-sm text-green-200">Premium Subscribers</div>
               </div>
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-purple-600">
+              <div className="bg-purple-500/20 p-4 rounded-lg backdrop-blur-sm border border-purple-400/20">
+                <div className="text-2xl font-bold text-purple-300">
                   $
                   {Array.isArray(data.businesses) ? data.businesses
                     .filter(b => b.subscriptionTier && b.subscriptionTier !== 'free')
@@ -864,9 +864,9 @@ const AdminDashboard = () => {
                     }, 0)
                     .toFixed(2) : '0.00'}
                 </div>
-                <div className="text-sm text-purple-800">Monthly Revenue</div>
+                <div className="text-sm text-purple-200">Monthly Revenue</div>
               </div>
-              <div className="bg-yellow-50 p-4 rounded-lg">
+              <div className="bg-yellow-500/20 p-4 rounded-lg backdrop-blur-sm border border-yellow-400/20">
                 <div className="text-2xl font-bold text-yellow-600">
                   {Array.isArray(data.businesses) ? data.businesses.filter(b => !b.isClaimed).length : 0}
                 </div>
@@ -909,22 +909,22 @@ const AdminDashboard = () => {
             {/* Business Cards Grid */}
             <div className="space-y-4">
               {getFilteredBusinesses().slice(0, 20).map((business) => (
-                <Card key={business.id} className="p-6 hover:shadow-md transition-shadow">
+                <Card key={business.id} className="p-6 hover:shadow-md transition-shadow bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
                   <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     
                     {/* Business Details */}
                     <div className="lg:col-span-1">
                       <div className="flex items-start space-x-3">
                         <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900 text-lg mb-1">{business.name}</h4>
-                          <p className="text-sm text-gray-600 mb-2">{business.category}</p>
-                          <p className="text-xs text-gray-500 mb-3">{business.address}</p>
+                          <h4 className="font-semibold text-white text-lg mb-1">{business.name}</h4>
+                          <p className="text-sm text-blue-200 mb-2">{business.category}</p>
+                          <p className="text-xs text-blue-300 mb-3">{business.address}</p>
                           <div className="flex flex-wrap gap-1">
                             {business.verified && (
-                              <Badge className="bg-blue-100 text-blue-800 text-xs">✓ Verified</Badge>
+                              <Badge className="bg-blue-500/20 text-blue-200 text-xs border border-blue-400/30">✓ Verified</Badge>
                             )}
                             {business.featured && (
-                              <Badge className="bg-yellow-100 text-yellow-800 text-xs">⭐ Featured</Badge>
+                              <Badge className="bg-yellow-500/20 text-yellow-200 text-xs border border-yellow-400/30">⭐ Featured</Badge>
                             )}
                           </div>
                         </div>
@@ -941,14 +941,14 @@ const AdminDashboard = () => {
                         </div>
                         {business.claimedBy && (
                           <div>
-                            <p className="text-xs text-gray-500">Owner:</p>
-                            <p className="text-sm text-gray-700 font-medium">{business.claimedBy}</p>
+                            <p className="text-xs text-blue-300">Owner:</p>
+                            <p className="text-sm text-white font-medium">{business.claimedBy}</p>
                           </div>
                         )}
                         {business.claimedAt && (
                           <div>
-                            <p className="text-xs text-gray-500">Claimed:</p>
-                            <p className="text-sm text-gray-700">{new Date(business.claimedAt).toLocaleDateString()}</p>
+                            <p className="text-xs text-blue-300">Claimed:</p>
+                            <p className="text-sm text-blue-200">{new Date(business.claimedAt).toLocaleDateString()}</p>
                           </div>
                         )}
                       </div>
@@ -996,7 +996,7 @@ const AdminDashboard = () => {
                             size="sm"
                             variant="outline"
                             onClick={() => viewBusinessDetails(business)}
-                            className="text-xs"
+                            className="text-xs bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900"
                           >
                             Edit
                           </Button>
@@ -1006,7 +1006,7 @@ const AdminDashboard = () => {
                               size="sm"
                               variant="outline"
                               onClick={() => editBusinessSubscription(business)}
-                              className="text-xs"
+                              className="text-xs bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900"
                             >
                               Subscription
                             </Button>
@@ -1016,7 +1016,9 @@ const AdminDashboard = () => {
                             size="sm"
                             variant={business.featured ? "default" : "outline"}
                             onClick={() => toggleBusinessFeature(business.id, 'featured')}
-                            className="text-xs"
+                            className={`text-xs ${business.featured ? 
+                              'bg-yellow-500 text-black' : 
+                              'bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900'}`}
                           >
                             {business.featured ? 'Unfeature' : 'Feature'}
                           </Button>
@@ -1117,8 +1119,8 @@ const AdminDashboard = () => {
       {activeTab === 'content' && data && (
         <div className="space-y-6">
           {/* Events */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
               <Calendar className="h-5 w-5 mr-2" />
               Recent Events
             </h3>
@@ -1145,8 +1147,8 @@ const AdminDashboard = () => {
           </Card>
 
           {/* News */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
               <Newspaper className="h-5 w-5 mr-2" />
               Recent News
             </h3>
@@ -1183,14 +1185,15 @@ const AdminDashboard = () => {
       )}
 
       {activeTab === 'settings' && (
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">System Settings</h3>
+        <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
+          <h3 className="text-lg font-semibold text-white mb-4">System Settings</h3>
           <div className="space-y-6">
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">Scraper Configuration</h4>
+              <h4 className="font-medium text-white mb-2">Scraper Configuration</h4>
               <div className="space-y-2">
                 <label className="flex items-center">
                   <input type="checkbox" className="mr-2" defaultChecked />
+                  <span className="text-blue-200">Enable automated news scraping</span>
                   <span className="text-sm text-gray-800">Auto-run news scraper every 6 hours</span>
                 </label>
                 <label className="flex items-center">
@@ -1248,8 +1251,8 @@ const AdminDashboard = () => {
       {activeTab === 'scrapers' && (
         <div className="space-y-6">
           {/* Scraper Status Overview */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
               <Activity className="h-5 w-5 mr-2" />
               Scraper Status Overview
             </h3>
@@ -1420,8 +1423,8 @@ const AdminDashboard = () => {
           </Card>
 
           {/* Manual Scraper Controls */}
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
               <Settings className="h-5 w-5 mr-2" />
               Manual Controls & Configuration
             </h3>

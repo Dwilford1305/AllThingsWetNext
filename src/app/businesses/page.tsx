@@ -5,11 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Navigation from '@/components/ui/Navigation';
 import FoldableLayout from '@/components/FoldableLayout';
+import AnimatedSection from '@/components/AnimatedSection';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import AdPlaceholder from '@/components/AdPlaceholder';
 import ComingSoonModal from '@/components/ComingSoonModal';
+import { motion } from 'framer-motion';
 import { Building, Phone, Mail, Globe, MapPin, Clock, ArrowLeft, Search, Filter, Star, Shield, Award } from 'lucide-react';
 import type { Business } from '@/types';
 
@@ -109,7 +111,7 @@ const BusinessesPage = () => {
     
     switch (tier) {
       case 'silver':
-        return <Badge variant="secondary" className="bg-gray-400 text-white"><Shield className="h-3 w-3 mr-1" />Silver</Badge>;
+        return <Badge variant="secondary" className="bg-gray-700/50 text-white"><Shield className="h-3 w-3 mr-1" />Silver</Badge>;
       case 'gold':
         return <Badge variant="secondary" className="bg-yellow-500 text-black"><Star className="h-3 w-3 mr-1" />Gold</Badge>;
       case 'platinum':
@@ -123,8 +125,8 @@ const BusinessesPage = () => {
     return (
       <>
         <Navigation />
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="min-h-screen bg-gradient-to-br from-slate-800 via-green-800 to-slate-800 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-400"></div>
         </div>
       </>
     );
@@ -133,27 +135,45 @@ const BusinessesPage = () => {
   return (
     <FoldableLayout>
       <Navigation />
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center space-x-4 mb-4">
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Home
-                </Link>
-              </Button>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Building className="h-8 w-8 text-green-600" />
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Local Businesses</h1>
-                <p className="text-gray-600">Discover and support Wetaskiwin businesses</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-800 via-green-800 to-slate-800 relative">
+        {/* Modern Background Effects */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-green-400/10 to-blue-400/10 rounded-full blur-3xl animate-pulse-slow" />
+          <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-br from-blue-400/10 to-green-400/10 rounded-full blur-3xl animate-float" />
+        </div>
+        {/* Modern Hero Header - Dark theme */}
+        <AnimatedSection>
+          <div className="relative bg-white/10 backdrop-blur-lg border-b border-white/20 z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <div className="flex items-center space-x-4 mb-6">
+                <Button asChild variant="ghost" size="sm" className="text-white hover:text-gray-900 hover:bg-white/20 backdrop-blur-sm">
+                  <Link href="/">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Home
+                  </Link>
+                </Button>
+              </div>
+              <div className="text-center">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="flex items-center justify-center space-x-4 mb-6"
+                >
+                  <Building className="h-12 w-12 text-green-400" />
+                  <div>
+                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white to-green-200 bg-clip-text text-transparent">
+                      Businesses
+                    </h1>
+                    <p className="text-xl text-white mt-2">
+                      Discover and support Wetaskiwin businesses
+                    </p>
+                  </div>
+                </motion.div>
               </div>
             </div>
           </div>
-        </div>
+        </AnimatedSection>
 
         {/* Top Ad - Google AdSense Leaderboard */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -165,16 +185,16 @@ const BusinessesPage = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Search and Filter */}
-          <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
+          {/* Search and Filter - Modern light glassmorphism design */}
+          <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl mb-8 border border-white/20 shadow-lg">
             <div className="space-y-4">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-white" />
                 <input
                   type="text"
                   placeholder="Search businesses..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 bg-white/10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-white placeholder-gray-500"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -183,10 +203,10 @@ const BusinessesPage = () => {
               {/* Filters Row */}
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex items-center space-x-2">
-                  <Filter className="h-4 w-4 text-gray-400" />
+                  <Filter className="h-4 w-4 text-white" />
                   <select
                     aria-label="Filter businesses by category"
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="px-4 py-2 bg-white/10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-white"
                     value={selectedCategory}
                     onChange={(e) => {
                       setSelectedCategory(e.target.value);
@@ -194,7 +214,7 @@ const BusinessesPage = () => {
                     }}
                   >
                     {categories.map(category => (
-                      <option key={category} value={category}>
+                      <option key={category} value={category} className="bg-white text-white">
                         {category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1)}
                       </option>
                     ))}
@@ -202,23 +222,23 @@ const BusinessesPage = () => {
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600">Sort:</span>
+                  <span className="text-sm text-white">Sort:</span>
                   <select
                     aria-label="Sort businesses"
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="px-4 py-2 bg-white/10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-white"
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                   >
-                    <option value="name">Alphabetical</option>
-                    <option value="featured">Featured First</option>
-                    <option value="rating">Rating</option>
-                    <option value="newest">Newest</option>
+                    <option value="name" className="bg-white text-white">Alphabetical</option>
+                    <option value="featured" className="bg-white text-white">Featured First</option>
+                    <option value="rating" className="bg-white text-white">Rating</option>
+                    <option value="newest" className="bg-white text-white">Newest</option>
                   </select>
                 </div>
               </div>
 
               {/* Alphabetical Navigation */}
-              <div className="border-t pt-4">
+              <div className="border-t border-gray-200/50 pt-4">
                 <div className="flex flex-wrap gap-1">
                   <button
                     onClick={() => {
@@ -227,8 +247,8 @@ const BusinessesPage = () => {
                     }}
                     className={`px-3 py-1 text-sm rounded ${
                       selectedLetter === 'all' 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-gray-700/50 text-white hover:bg-gray-700/50'
                     }`}
                   >
                     All
@@ -242,8 +262,8 @@ const BusinessesPage = () => {
                       }}
                       className={`px-3 py-1 text-sm rounded ${
                         selectedLetter === letter 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          ? 'bg-green-600 text-white' 
+                          : 'bg-white/10 text-green-200 hover:bg-white/20'
                       }`}
                     >
                       {letter}
@@ -253,7 +273,7 @@ const BusinessesPage = () => {
               </div>
 
               {/* Results Summary */}
-              <div className="flex flex-wrap gap-4 text-sm text-gray-600 pt-2 border-t">
+              <div className="flex flex-wrap gap-4 text-sm text-green-200 pt-2 border-t border-white/20">
                 <span>Total: {summary.total}</span>
                 <span>Showing: {pagination.totalCount} results</span>
               </div>
@@ -263,8 +283,8 @@ const BusinessesPage = () => {
           {/* Premium Business Showcase */}
           <div className="mb-8">
             <div className="text-center mb-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Premium Business Directory</h3>
-              <p className="text-sm text-gray-600">Featuring our most valued business partners</p>
+              <h3 className="text-xl font-semibold text-white mb-2">Premium Business Directory</h3>
+              <p className="text-sm text-green-200">Featuring our most valued business partners</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
               <AdPlaceholder 
@@ -282,9 +302,9 @@ const BusinessesPage = () => {
             <>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 {businesses.map((business) => (
-                  <Card key={business.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <Card key={business.id} className="overflow-hidden hover:shadow-lg transition-shadow glass-card border-white/10">
                     {business.imageUrl && (
-                      <div className="h-48 bg-gray-200 relative">
+                      <div className="h-48 bg-gray-700/50 relative">
                         <Image
                           src={business.imageUrl}
                           alt={business.name}
@@ -296,7 +316,7 @@ const BusinessesPage = () => {
                     <div className="p-6">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex flex-wrap gap-2">
-                          <Badge variant="secondary">
+                          <Badge variant="secondary" className="bg-white/20 text-white border-white/20">
                             {business.category}
                           </Badge>
                           {getSubscriptionBadge(business.subscriptionTier || 'free', business.isClaimed || false)}
@@ -308,26 +328,26 @@ const BusinessesPage = () => {
                         )}
                       </div>
                       
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">
+                      <h3 className="text-xl font-bold text-white mb-2">
                         {business.name}
                       </h3>
                       
-                      <p className="text-gray-600 mb-4 line-clamp-3">
+                      <p className="text-green-100 mb-4 line-clamp-3">
                         {business.description}
                       </p>
                       
                       <div className="space-y-2 mb-4">
-                        <div className="flex items-center text-sm text-gray-500">
+                        <div className="flex items-center text-sm text-green-200">
                           <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
                           <span className="truncate">{business.address}</span>
                         </div>
                         
                         {business.phone && (
-                          <div className="flex items-center text-sm text-gray-500">
+                          <div className="flex items-center text-sm text-green-200">
                             <Phone className="h-4 w-4 mr-2 flex-shrink-0" />
                             <a 
                               href={`tel:${business.phone}`}
-                              className="hover:text-blue-600 transition-colors"
+                              className="hover:text-green-100 transition-colors"
                             >
                               {business.phone}
                             </a>
@@ -335,11 +355,11 @@ const BusinessesPage = () => {
                         )}
                         
                         {business.email && (
-                          <div className="flex items-center text-sm text-gray-500">
+                          <div className="flex items-center text-sm text-green-200">
                             <Mail className="h-4 w-4 mr-2 flex-shrink-0" />
                             <a 
                               href={`mailto:${business.email}`}
-                              className="hover:text-blue-600 transition-colors truncate"
+                              className="hover:text-green-100 transition-colors truncate"
                             >
                               {business.email}
                             </a>
@@ -347,7 +367,7 @@ const BusinessesPage = () => {
                         )}
                         
                         {business.hours && (
-                          <div className="flex items-center text-sm text-gray-500">
+                          <div className="flex items-center text-sm text-green-200">
                             <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
                             <span>Today: {formatHours(business.hours)}</span>
                           </div>
@@ -356,7 +376,7 @@ const BusinessesPage = () => {
                       
                       <div className="flex flex-wrap gap-2">
                         {business.website && (
-                          <Button asChild size="sm" variant="outline">
+                          <Button asChild size="sm" variant="outline" className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900">
                             <a href={business.website} target="_blank" rel="noopener noreferrer">
                               <Globe className="h-4 w-4 mr-2" />
                               Website
@@ -364,7 +384,7 @@ const BusinessesPage = () => {
                           </Button>
                         )}
                         {business.phone && (
-                          <Button asChild size="sm" variant="primary">
+                          <Button asChild size="sm" className="bg-green-600 hover:bg-green-700 text-white">
                             <a href={`tel:${business.phone}`}>
                               <Phone className="h-4 w-4 mr-2" />
                               Call
@@ -372,7 +392,7 @@ const BusinessesPage = () => {
                           </Button>
                         )}
                         {business.isClaimed ? (
-                          <Button asChild size="sm" variant="outline" className="border-green-500 text-green-600 hover:bg-green-50">
+                          <Button asChild size="sm" variant="outline" className="bg-green-600/20 backdrop-blur-sm border-green-400/50 text-white hover:bg-green-600/30 hover:text-gray-900">
                             <Link href={`/businesses/manage?id=${business.id}`}>
                               Manage Listing
                             </Link>
@@ -381,7 +401,7 @@ const BusinessesPage = () => {
                           <Button 
                             size="sm" 
                             variant="outline"
-                            className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                            className="bg-orange-600/20 backdrop-blur-sm border-orange-400/50 text-white hover:bg-orange-600/30 hover:text-gray-900"
                             onClick={() => handleClaimBusiness(business)}
                           >
                             Claim This Business
@@ -395,9 +415,9 @@ const BusinessesPage = () => {
 
               {/* Pagination Controls */}
               {pagination.totalPages > 1 && (
-                <div className="bg-white p-6 rounded-lg shadow-sm">
+                <div className="glass-card p-6 rounded-2xl border-white/10">
                   <div className="flex items-center justify-between">
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-green-200">
                       Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to {Math.min(pagination.currentPage * pagination.limit, pagination.totalCount)} of {pagination.totalCount} results
                     </div>
                     
@@ -405,6 +425,7 @@ const BusinessesPage = () => {
                       <Button
                         variant="outline"
                         size="sm"
+                        className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900"
                         onClick={() => handlePageChange(pagination.currentPage - 1)}
                         disabled={!pagination.hasPrevPage}
                       >
@@ -423,10 +444,10 @@ const BusinessesPage = () => {
                             <button
                               key={pageNum}
                               onClick={() => handlePageChange(pageNum)}
-                              className={`px-3 py-1 text-sm rounded ${
+                              className={`px-3 py-1 text-sm rounded backdrop-blur-sm ${
                                 pageNum === pagination.currentPage
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                  ? 'bg-green-600 text-white'
+                                  : 'bg-white/20 text-white hover:bg-white/30 hover:text-gray-900'
                               }`}
                             >
                               {pageNum}
@@ -438,6 +459,7 @@ const BusinessesPage = () => {
                       <Button
                         variant="outline"
                         size="sm"
+                        className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900"
                         onClick={() => handlePageChange(pagination.currentPage + 1)}
                         disabled={!pagination.hasNextPage}
                       >
@@ -452,10 +474,10 @@ const BusinessesPage = () => {
 
           {/* Empty State */}
           {!loading && businesses.length === 0 && (
-            <Card className="p-12 text-center">
-              <Building className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No businesses found</h3>
-              <p className="text-gray-600">
+            <Card className="p-12 text-center glass-card border-white/10">
+              <Building className="h-12 w-12 text-green-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-white mb-2">No businesses found</h3>
+              <p className="text-green-200">
                 {searchTerm || selectedCategory !== 'all' || selectedLetter !== 'all'
                   ? 'Try adjusting your search or filter criteria.' 
                   : 'No businesses are currently listed.'}
@@ -464,10 +486,10 @@ const BusinessesPage = () => {
           )}
 
           {/* Bottom Business Partners Section */}
-          <div className="mt-12 pt-8 border-t border-gray-200">
+          <div className="mt-12 pt-8 border-t border-white/20">
             <div className="text-center mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Business Community Partners</h3>
-              <p className="text-sm text-gray-600">Join our thriving business directory</p>
+              <h3 className="text-lg font-semibold text-white mb-2">Business Community Partners</h3>
+              <p className="text-sm text-green-200">Join our thriving business directory</p>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <AdPlaceholder type="silver" size="square" />
