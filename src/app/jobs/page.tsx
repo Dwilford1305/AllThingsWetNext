@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import AdPlaceholder from '@/components/AdPlaceholder';
 import { Briefcase, MapPin, DollarSign, Clock, Building, ArrowLeft, Search, Filter, ExternalLink } from 'lucide-react';
+import AnimatedSection from '@/components/AnimatedSection';
+import { motion } from 'framer-motion';
 import type { JobPosting } from '@/types';
 
 const JobsPage = () => {
@@ -88,35 +90,50 @@ const JobsPage = () => {
           <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-br from-purple-400/10 to-blue-400/10 rounded-full blur-3xl animate-float" />
         </div>
         
-        {/* Header */}
-        <div className="bg-white/10 backdrop-blur-lg shadow-lg border-b border-white/20 relative z-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center space-x-4 mb-4">
-              <Button asChild variant="ghost" size="sm" className="text-white hover:text-blue-200 hover:bg-white/10">
-                <Link href="/">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Home
-                </Link>
-              </Button>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Briefcase className="h-8 w-8 text-purple-400" />
-              <div>
-                <h1 className="text-3xl font-bold text-white">Job Opportunities</h1>
-                <p className="text-blue-200">Find your next career opportunity in Wetaskiwin</p>
+        {/* Modern Hero Header - Dark theme */}
+        <AnimatedSection>
+          <div className="relative bg-white/10 backdrop-blur-lg border-b border-white/20 z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <div className="flex items-center space-x-4 mb-6">
+                <Button asChild variant="ghost" size="sm" className="text-white hover:text-blue-200 hover:bg-white/10">
+                  <Link href="/">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Home
+                  </Link>
+                </Button>
+              </div>
+              <div className="text-center">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="flex items-center justify-center space-x-4 mb-6"
+                >
+                  <Briefcase className="h-12 w-12 text-purple-400" />
+                  <div>
+                    <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                      Jobs
+                    </h1>
+                    <p className="text-xl text-blue-200 mt-2">
+                      Find your next career opportunity in Wetaskiwin
+                    </p>
+                  </div>
+                </motion.div>
               </div>
             </div>
           </div>
-        </div>
+        </AnimatedSection>
 
         {/* Top Ad - Google AdSense Leaderboard */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <AdPlaceholder 
-            type="google" 
-            size="leaderboard" 
-            className="w-full max-w-4xl mx-auto" 
-          />
-        </div>
+        <AnimatedSection delay={0.1}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <AdPlaceholder 
+              type="google" 
+              size="leaderboard" 
+              className="w-full max-w-4xl mx-auto" 
+            />
+          </div>
+        </AnimatedSection>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
           {/* Search and Filter */}
