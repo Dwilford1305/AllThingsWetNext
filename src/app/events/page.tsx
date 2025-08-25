@@ -107,7 +107,7 @@ const EventsPage = () => {
           <div className="relative bg-white/10 backdrop-blur-lg border-b border-white/20 z-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <div className="flex items-center space-x-4 mb-6">
-                <Button asChild variant="ghost" size="sm" className="text-white hover:text-blue-200 hover:bg-white/10">
+                <Button asChild variant="ghost" size="sm" className="text-white hover:text-gray-900 hover:bg-white/20 backdrop-blur-sm">
                   <Link href="/">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Home
@@ -259,14 +259,14 @@ const EventsPage = () => {
                       
                       <div className="flex flex-wrap gap-2">
                         {event.website && (
-                          <Button asChild size="sm" variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                          <Button asChild size="sm" variant="outline" className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900">
                             <a href={event.website} target="_blank" rel="noopener noreferrer">
                               Website
                             </a>
                           </Button>
                         )}
                         {event.ticketUrl && (
-                          <Button asChild size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0">
+                          <Button asChild size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0 text-white">
                             <a href={event.ticketUrl} target="_blank" rel="noopener noreferrer">
                               Get Tickets
                             </a>
@@ -346,14 +346,14 @@ const EventsPage = () => {
                           
                           <div className="flex flex-wrap gap-2">
                             {event.website && (
-                              <Button asChild size="sm" variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                              <Button asChild size="sm" variant="outline" className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900">
                                 <a href={event.website} target="_blank" rel="noopener noreferrer">
                                   Website
                                 </a>
                               </Button>
                             )}
                             {event.ticketUrl && (
-                              <Button asChild size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0">
+                              <Button asChild size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0 text-white">
                                 <a href={event.ticketUrl} target="_blank" rel="noopener noreferrer">
                                   Get Tickets
                                 </a>

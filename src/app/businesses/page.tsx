@@ -146,7 +146,7 @@ const BusinessesPage = () => {
           <div className="relative bg-white/10 backdrop-blur-lg border-b border-white/20 z-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <div className="flex items-center space-x-4 mb-6">
-                <Button asChild variant="ghost" size="sm" className="text-white hover:bg-gray-700/50">
+                <Button asChild variant="ghost" size="sm" className="text-white hover:text-gray-900 hover:bg-white/20 backdrop-blur-sm">
                   <Link href="/">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to Home
@@ -376,7 +376,7 @@ const BusinessesPage = () => {
                       
                       <div className="flex flex-wrap gap-2">
                         {business.website && (
-                          <Button asChild size="sm" variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                          <Button asChild size="sm" variant="outline" className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900">
                             <a href={business.website} target="_blank" rel="noopener noreferrer">
                               <Globe className="h-4 w-4 mr-2" />
                               Website
@@ -392,7 +392,7 @@ const BusinessesPage = () => {
                           </Button>
                         )}
                         {business.isClaimed ? (
-                          <Button asChild size="sm" variant="outline" className="border-green-400 text-green-300 hover:bg-green-900/20">
+                          <Button asChild size="sm" variant="outline" className="bg-green-600/20 backdrop-blur-sm border-green-400/50 text-white hover:bg-green-600/30 hover:text-gray-900">
                             <Link href={`/businesses/manage?id=${business.id}`}>
                               Manage Listing
                             </Link>
@@ -401,7 +401,7 @@ const BusinessesPage = () => {
                           <Button 
                             size="sm" 
                             variant="outline"
-                            className="border-orange-400 text-orange-300 hover:bg-orange-900/20"
+                            className="bg-orange-600/20 backdrop-blur-sm border-orange-400/50 text-white hover:bg-orange-600/30 hover:text-gray-900"
                             onClick={() => handleClaimBusiness(business)}
                           >
                             Claim This Business
@@ -425,7 +425,7 @@ const BusinessesPage = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="border-white/20 text-white hover:bg-white/10"
+                        className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900"
                         onClick={() => handlePageChange(pagination.currentPage - 1)}
                         disabled={!pagination.hasPrevPage}
                       >
@@ -444,10 +444,10 @@ const BusinessesPage = () => {
                             <button
                               key={pageNum}
                               onClick={() => handlePageChange(pageNum)}
-                              className={`px-3 py-1 text-sm rounded ${
+                              className={`px-3 py-1 text-sm rounded backdrop-blur-sm ${
                                 pageNum === pagination.currentPage
                                   ? 'bg-green-600 text-white'
-                                  : 'bg-white/10 text-green-200 hover:bg-white/20'
+                                  : 'bg-white/20 text-white hover:bg-white/30 hover:text-gray-900'
                               }`}
                             >
                               {pageNum}
@@ -459,7 +459,7 @@ const BusinessesPage = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="border-white/20 text-white hover:bg-white/10"
+                        className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900"
                         onClick={() => handlePageChange(pagination.currentPage + 1)}
                         disabled={!pagination.hasNextPage}
                       >
