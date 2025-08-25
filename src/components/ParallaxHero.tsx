@@ -43,7 +43,7 @@ const ParallaxHero = () => {
       <motion.div
         style={{ 
           y, 
-          opacity: useTransform(opacity, [1, 0.2], [0.25, 0.03]), // Even lighter opacity for better text readability
+          opacity: useTransform(opacity, [1, 0.2], [0.15, 0.02]), // Much lighter opacity for better text readability
           scale,
           backgroundImage: "url('/WaterTower.png')",
           backgroundPosition: 'center center',
@@ -52,9 +52,9 @@ const ParallaxHero = () => {
         className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
       />
       
-      {/* Lighter Professional Overlay for better text contrast */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/30" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-black/10" />
+      {/* Much lighter professional overlay for better text contrast */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/5 to-black/20" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/5 via-transparent to-black/5" />
       
       {/* Subtle Floating Elements */}
       <motion.div

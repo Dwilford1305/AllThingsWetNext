@@ -721,7 +721,7 @@ const AdminDashboard = () => {
           <select
             value={activeTab}
             onChange={(e) => setActiveTab(e.target.value as typeof activeTab)}
-            className="w-full px-3 py-2 text-sm font-medium text-white bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent backdrop-blur-sm"
+            className="w-full px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-primary-500/20 to-secondary-500/20 border border-white/20 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent backdrop-blur-sm"
             title="Select admin dashboard tab"
           >
             {tabs.map((tab) => (
@@ -740,10 +740,10 @@ const AdminDashboard = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center px-3 lg:px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors min-w-0 ${
+                className={`flex items-center px-3 lg:px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 min-w-0 ${
                   activeTab === tab.id
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-blue-200 hover:text-white hover:bg-white/20 border border-transparent hover:border-white/20 backdrop-blur-sm'
+                    ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md'
+                    : 'text-blue-200 hover:text-white hover:bg-white/20 border border-transparent hover:border-white/20 backdrop-blur-sm hover:bg-gradient-to-r hover:from-primary-400/20 hover:to-secondary-400/20'
                 }`}
               >
                 <Icon className="h-4 w-4 mr-1 lg:mr-2 flex-shrink-0" />
@@ -761,7 +761,7 @@ const AdminDashboard = () => {
               const currentTab = tabs.find(t => t.id === activeTab);
               const Icon = currentTab?.icon;
               return (
-                <div className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg">
+                <div className="flex items-center px-3 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg shadow-md">
                   {Icon && <Icon className="h-4 w-4 mr-2" />}
                   <span className="text-sm font-medium">{currentTab?.label}</span>
                 </div>
