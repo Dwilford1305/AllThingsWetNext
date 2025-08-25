@@ -721,18 +721,16 @@ nav button[class*="text-gray-"] {
   color: white !important; /* Ensure icons are also white on active state */
 }
 
-/* Mobile responsive improvements for profile page */
+/* Mobile responsive improvements for profile page - simplified selectors */
 @media (max-width: 1024px) {
-  .profile-page .grid-cols-1.lg\\:grid-cols-4 {
-    grid-template-columns: 1fr;
+  .profile-page .grid {
+    grid-template-columns: 1fr !important;
     gap: 1rem;
   }
-  
-  .profile-page .lg\\:col-span-1,
-  .profile-page .lg\\:col-span-3 {
-    grid-column: span 1;
-  }
-  
+}
+
+/* Mobile responsive improvements for profile page */
+@media (max-width: 767px) {
   /* Make profile tabs horizontal on mobile */
   .profile-page nav.space-y-1 {
     display: flex;
