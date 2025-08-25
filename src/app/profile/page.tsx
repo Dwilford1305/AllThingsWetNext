@@ -80,19 +80,17 @@ export default function ProfilePage() {
   const isFoldableUnfolded = () => {
     if (viewportWidth === 0) return false;
     
-    // Primary detection based on known foldable widths - more precise ranges, exclude standard tablet sizes
     const isDefinitelyFoldable = (
-      (viewportWidth >= 650 && viewportWidth <= 690) || // Pixel Fold, OnePlus Open, Honor Magic V, Motorola Razr+
-      (viewportWidth >= 715 && viewportWidth <= 735) || // Surface Duo range
-      (viewportWidth >= 740 && viewportWidth <= 765) || // Samsung Z Fold series, Xiaomi, Huawei (exclude 768)
-      (viewportWidth >= 840 && viewportWidth <= 860)    // Pixel 9 Pro Fold (851px)
+      (viewportWidth >= 650 && viewportWidth <= 690) || 
+      (viewportWidth >= 715 && viewportWidth <= 735) || 
+      (viewportWidth >= 740 && viewportWidth <= 785) || 
+      (viewportWidth >= 840 && viewportWidth <= 860)    
     );
     
     const aspectRatioDetection = () => {
       if (typeof window === 'undefined') return false;
       const aspectRatio = window.innerWidth / window.innerHeight;
-      // More strict aspect ratio detection - exclude regular tablets
-      return aspectRatio > 1.15 && aspectRatio < 1.5 && viewportWidth >= 640 && viewportWidth <= 900;
+      return aspectRatio > 1.15 && aspectRatio < 2.1 && viewportWidth >= 640 && viewportWidth <= 900;
     };
     
     return isDefinitelyFoldable || aspectRatioDetection();
@@ -264,7 +262,7 @@ export default function ProfilePage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Sidebar */}
-            <div className="lg:col-span-1 order-2 lg:order-1">
+            <div className="lg:col-span-1">
               <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg ring-1 ring-primary-100">
                 {/* Profile Summary */}
                 <div className="text-center mb-6">
@@ -291,56 +289,30 @@ export default function ProfilePage() {
                 </div>
 
                 {/* Navigation */}
-                <nav className="space-y-1 md:space-y-1">
-                  {/* Mobile: Horizontal scrollable tabs */}
-                  <div className="block md:hidden mb-4 -mx-6">
-                    <div className="flex space-x-2 px-6 py-2 overflow-x-auto scrollbar-hide">
-                      {tabs.map((tab) => {
-                        const Icon = tab.icon;
-                        return (
-                          <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`flex-shrink-0 flex flex-col items-center justify-center w-16 h-16 rounded-lg text-xs font-medium transition-all duration-200 ${
-                              activeTab === tab.id
-                                ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md'
-                                : 'text-gray-600 hover:bg-primary-50 hover:text-primary-700'
-                            }`}
-                          >
-                            <Icon size={18} className="mb-1" />
-                            <span className="leading-tight">{tab.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  
-                  {/* Desktop: Vertical tabs */}
-                  <div className="hidden md:block">
-                    {tabs.map((tab) => {
-                      const Icon = tab.icon;
-                      return (
-                        <button
-                          key={tab.id}
-                          onClick={() => setActiveTab(tab.id)}
-                          className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 profile-tab-button ${
-                            activeTab === tab.id
-                              ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md profile-tab-active'
-                              : 'hover:bg-primary-50 text-gray-700 hover:text-primary-700 profile-tab-inactive'
-                          }`}
-                        >
-                          <Icon size={16} />
-                          <span>{tab.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                <nav className="space-y-1">
+                  {tabs.map((tab) => {
+                    const Icon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 profile-tab-button ${
+                          activeTab === tab.id
+                            ? 'bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-md profile-tab-active'
+                            : 'hover:bg-primary-50 text-gray-700 hover:text-primary-700 profile-tab-inactive'
+                        }`}
+                      >
+                        <Icon size={16} />
+                        <span>{tab.label}</span>
+                      </button>
+                    );
+                  })}
                 </nav>
               </Card>
             </div>
 
             {/* Main Content */}
-            <div className="lg:col-span-3 order-1 lg:order-2">
+            <div className="lg:col-span-3">
               <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg ring-1 ring-primary-100">
                 {activeTab === 'profile' && (
                   <ProfileTab 
