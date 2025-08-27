@@ -35,6 +35,7 @@ interface ScraperLogsProps {
 const ScraperLogs = ({ type, isOpen, onClose }: ScraperLogsProps) => {
   const [logs, setLogs] = useState<ScraperLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewportWidth, setViewportWidth] = useState(0);
 
   const refreshLogs = async () => {
     try {
@@ -51,6 +52,47 @@ const ScraperLogs = ({ type, isOpen, onClose }: ScraperLogsProps) => {
       setLoading(false);
     }
   };
+
+  // Detect if device is likely a foldable in unfolded state (reusing logic from FoldableLayout)
+  const isFoldableUnfolded = () => {
+    if (viewportWidth === 0) return false;
+    
+    // Primary detection based on known foldable widths
+    const isDefinitelyFoldable = (
+      (viewportWidth >= 650 && viewportWidth <= 690) || // Pixel Fold, OnePlus Open, Honor Magic V, Motorola Razr+ (expanded range)
+      (viewportWidth >= 715 && viewportWidth <= 735) || // Surface Duo range (expanded)
+      (viewportWidth >= 740 && viewportWidth <= 785) || // Samsung Z Fold series, Xiaomi, Huawei (expanded)
+      (viewportWidth >= 840 && viewportWidth <= 860)    // Pixel 9 Pro Fold (851px)
+    );
+    
+    // Secondary detection: aspect ratio-based for unfolded devices
+    const aspectRatioDetection = () => {
+      if (typeof window === 'undefined') return false;
+      const aspectRatio = window.innerWidth / window.innerHeight;
+      return aspectRatio > 1.15 && aspectRatio < 2.1 && viewportWidth >= 640 && viewportWidth <= 900;
+    };
+    
+    return isDefinitelyFoldable || aspectRatioDetection();
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      setViewportWidth(window.innerWidth);
+    };
+
+    // Set initial viewport width
+    if (typeof window !== 'undefined') {
+      setViewportWidth(window.innerWidth);
+    }
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -127,7 +169,7 @@ const ScraperLogs = ({ type, isOpen, onClose }: ScraperLogsProps) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] flex flex-col">
+      <div className={`bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] flex flex-col ${isFoldableUnfolded() ? 'ml-24' : ''}`}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center">
