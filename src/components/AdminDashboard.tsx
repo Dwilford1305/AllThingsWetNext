@@ -172,6 +172,21 @@ const AdminDashboard = () => {
       
       if (result.success) {
         setScraperConfigs(result.configs);
+        
+        // Sync scraper states with database isActive status
+        setScraperStates(prev => {
+          const newStates = { ...prev };
+          result.configs.forEach((config: ScraperConfig) => {
+            if (config.type === 'news' || config.type === 'events' || config.type === 'businesses') {
+              newStates[config.type] = {
+                ...prev[config.type],
+                status: config.isActive ? 'running' : 'idle',
+                lastRun: config.lastRun || prev[config.type].lastRun
+              };
+            }
+          });
+          return newStates;
+        });
       }
     } catch (_error) {
       console.error('Error fetching scraper configs:', _error);
