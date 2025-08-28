@@ -1,0 +1,30 @@
+# robots.txt for All Things Wetaskiwin
+# https://allthingswetaskiwin.com
+
+User-agent: *
+
+# Allow crawling of all public pages
+Allow: /
+Allow: /events
+Allow: /businesses
+Allow: /news
+Allow: /jobs
+Allow: /classifieds
+Allow: /privacy-policy
+Allow: /terms-of-service
+Allow: /accessibility
+
+# Block admin and debug routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /auth-test
+Disallow: /setup/
+Disallow: /scraper
+Disallow: /profile
+
+# Block development and test files
+Disallow: /_next/
+Disallow: /static/
+
+# Sitemap location
+Sitemap: https://allthingswetaskiwin.com/sitemap.xml
