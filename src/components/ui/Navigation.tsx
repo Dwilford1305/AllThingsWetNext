@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useUser } from '@auth0/nextjs-auth0/client';
-import { Menu, X, Home, Calendar, Newspaper, Building, Briefcase, ShoppingBag, Shield, LogIn, UserPlus, LogOut, User } from 'lucide-react';
+import { Menu, X, Home, Calendar, Newspaper, Building, Briefcase, ShoppingBag, Info, Shield, LogIn, UserPlus, LogOut, User } from 'lucide-react';
 
 type UiUser = {
   firstName?: string
@@ -102,6 +102,7 @@ const Navigation = () => {
     { href: '/businesses', label: 'Businesses', icon: Building },
     { href: '/jobs', label: 'Jobs', icon: Briefcase },
     { href: '/classifieds', label: 'Classifieds', icon: ShoppingBag },
+    { href: '/about', label: 'About', icon: Info },
     // Only show admin link for super admins
     ...(isSuperAdmin ? [{ href: '/admin', label: 'Admin', icon: Shield }] : []),
   ];
