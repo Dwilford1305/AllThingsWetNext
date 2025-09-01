@@ -263,9 +263,44 @@ export default function ProfilePage() {
             </div>
           )}
 
+          {/* Mobile Tab Navigation - Hidden on Desktop */}
+          <div className="block lg:hidden mb-6">
+            <Card className="p-4 bg-white/80 backdrop-blur-sm border-0 shadow-lg ring-1 ring-primary-100">
+              {/* Mobile Dropdown */}
+              <div className="mb-3">
+                <select
+                  value={activeTab}
+                  onChange={(e) => setActiveTab(e.target.value)}
+                  className="w-full px-3 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
+                  title="Select profile tab"
+                >
+                  {tabs.map((tab) => (
+                    <option key={tab.id} value={tab.id}>
+                      {tab.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Mobile Tab Indicator */}
+              <div className="flex items-center justify-center">
+                {(() => {
+                  const currentTab = tabs.find(t => t.id === activeTab);
+                  const Icon = currentTab?.icon;
+                  return (
+                    <div className="flex items-center px-3 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg shadow-md">
+                      {Icon && <Icon className="h-4 w-4 mr-2" />}
+                      <span className="text-sm font-medium">{currentTab?.label}</span>
+                    </div>
+                  );
+                })()}
+              </div>
+            </Card>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Sidebar */}
-            <div className="lg:col-span-1">
+            {/* Sidebar - Hidden on Mobile */}
+            <div className="hidden lg:block lg:col-span-1">
               <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg ring-1 ring-primary-100">
                 {/* Profile Summary */}
                 <div className="text-center mb-6">
@@ -291,7 +326,7 @@ export default function ProfilePage() {
                   </p>
                 </div>
 
-                {/* Navigation */}
+                {/* Desktop Navigation */}
                 <nav className="space-y-1">
                   {tabs.map((tab) => {
                     const Icon = tab.icon;
@@ -315,7 +350,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Main Content */}
-            <div className="lg:col-span-3">
+            <div className="col-span-1 lg:col-span-3">
               <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg ring-1 ring-primary-100">
                 {activeTab === 'profile' && (
                   <ProfileTab 
