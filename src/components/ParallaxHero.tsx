@@ -24,6 +24,9 @@ const ParallaxHero = () => {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      // Disable mouse parallax on mobile devices to prevent scroll interference
+      if (window.innerWidth <= 768) return;
+      
       const { clientX, clientY } = e
       const centerX = window.innerWidth / 2
       const centerY = window.innerHeight / 2
@@ -33,12 +36,16 @@ const ParallaxHero = () => {
       })
     }
 
-    window.addEventListener('mousemove', handleMouseMove)
+    // Only add mouse event listeners on desktop
+    if (window.innerWidth > 768) {
+      window.addEventListener('mousemove', handleMouseMove)
+    }
+    
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
 
   return (
-    <div ref={ref} className="relative h-screen overflow-hidden" style={{ willChange: 'transform' }}>
+    <div ref={ref} className="relative h-screen" style={{ willChange: 'transform' }}>
       {/* Water Tower Background - Balanced visibility and readability */}
       <motion.div
         style={{ 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
-import { Event, NewsArticle, Business, JobPosting, Classified } from '@/models'
+import { Event, NewsArticle, Business, JobPosting, MarketplaceListing } from '@/models'
 import type { ApiResponse } from '@/types'
 
 export async function POST() {
@@ -80,12 +80,12 @@ export async function GET() {
     await connectDB()
 
     // Get counts of all collections
-    const [eventsCount, newsCount, businessesCount, jobsCount, classifiedsCount] = await Promise.all([
+    const [eventsCount, newsCount, businessesCount, jobsCount, marketplaceCount] = await Promise.all([
       Event.countDocuments(),
       NewsArticle.countDocuments(),
       Business.countDocuments(),
       JobPosting.countDocuments(),
-      Classified.countDocuments()
+      MarketplaceListing.countDocuments()
     ])
 
     const response: ApiResponse<{
@@ -93,7 +93,7 @@ export async function GET() {
       news: number;
       businesses: number;
       jobs: number;
-      classifieds: number;
+      marketplace: number;
       total: number;
     }> = {
       success: true,
@@ -102,8 +102,8 @@ export async function GET() {
         news: newsCount,
         businesses: businessesCount,
         jobs: jobsCount,
-        classifieds: classifiedsCount,
-        total: eventsCount + newsCount + businessesCount + jobsCount + classifiedsCount
+        marketplace: marketplaceCount,
+        total: eventsCount + newsCount + businessesCount + jobsCount + marketplaceCount
       }
     }
 

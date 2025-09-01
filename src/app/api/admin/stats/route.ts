@@ -16,7 +16,7 @@ interface AdminStatsResponse {
     events: number;
     news: number;
     jobs: number;
-    classifieds: number;
+    marketplace: number;
   };
   scrapers: {
     lastRun: string;
@@ -90,7 +90,7 @@ async function getStats(request: AuthenticatedRequest) {
         events: eventsCount,
         news: newsCount,
         jobs: 0, // Placeholder - implement if you have jobs model
-        classifieds: 0 // Placeholder - implement if you have classifieds model
+        marketplace: 0 // Placeholder - implement if you have marketplace model
       },
       scrapers: {
         lastRun: lastScraperRun ? lastScraperRun.createdAt.toISOString() : new Date().toISOString(),

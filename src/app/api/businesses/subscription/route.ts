@@ -151,6 +151,17 @@ export async function POST(request: NextRequest) {
     // Set final subscription end date
     subscriptionEnd.setMonth(subscriptionEnd.getMonth() + actualDuration)
 
+    // Calculate job posting quota based on tier
+    const jobQuotas = {
+      free: 0,
+      silver: 2,
+      gold: 5,
+      platinum: -1 // Unlimited
+    }
+    
+    const jobQuota = jobQuotas[subscriptionTier as keyof typeof jobQuotas] || 0
+    const nextMonthReset = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+
     // Update business subscription
     const updatedBusiness = await Business.findOneAndUpdate(
       { id: businessId },
@@ -160,6 +171,11 @@ export async function POST(request: NextRequest) {
         subscriptionStart: now,
         subscriptionEnd,
         featured: subscriptionTier !== 'free', // Premium tiers get featured placement
+        jobPostingQuota: {
+          monthly: jobQuota === -1 ? 9999 : jobQuota, // Use large number for unlimited
+          used: business.jobPostingQuota?.used || 0,
+          resetDate: nextMonthReset
+        },
         updatedAt: now
       },
       { new: true }
@@ -234,15 +250,15 @@ export async function GET() {
     subscriptionTiers: {
       silver: {
         price: '$19.99/month or $199.99/year',
-        features: ['Enhanced listing', 'Contact form', 'Basic analytics', 'Business hours']
+        features: ['Enhanced listing', 'Contact form', 'Basic analytics', 'Business hours', '2 job postings per month']
       },
       gold: {
         price: '$39.99/month or $399.99/year',
-        features: ['Everything in Silver', 'Photo gallery', 'Social media links', 'Special offers', 'Featured placement']
+        features: ['Everything in Silver', 'Photo gallery', 'Social media links', 'Special offers', 'Featured placement', '5 job postings per month']
       },
       platinum: {
         price: '$79.99/month or $799.99/year',
-        features: ['Everything in Gold', 'Logo upload', 'Advanced analytics', 'Priority support', 'Custom description']
+        features: ['Everything in Gold', 'Logo upload', 'Advanced analytics', 'Priority support', 'Custom description', 'Unlimited job postings']
       }
     },
     requiredFields: ['businessId', 'subscriptionTier'],

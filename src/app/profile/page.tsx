@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import Navigation from '@/components/ui/Navigation';
 import FoldableLayout from '@/components/FoldableLayout';
 import RequireAuth from '@/components/RequireAuth';
+import MarketplaceSubscription from '@/components/marketplace/MarketplaceSubscription';
 import { 
   User, 
   Settings, 
@@ -17,6 +18,7 @@ import {
   Package, 
   Briefcase, 
   Shield, 
+  CreditCard,
   Moon, 
   Sun, 
   Monitor,
@@ -230,6 +232,7 @@ export default function ProfilePage() {
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'preferences', label: 'Preferences', icon: Settings },
+    { id: 'subscription', label: 'Subscription', icon: CreditCard },
     { id: 'business', label: 'Business', icon: Building },
     { id: 'listings', label: 'My Listings', icon: Package },
     { id: 'security', label: 'Security', icon: Shield },
@@ -328,6 +331,15 @@ export default function ProfilePage() {
                     onUpdate={(prefs) => updateProfile({ preferences: prefs })} 
                     isSaving={isSaving} 
                   />
+                )}
+                
+                {activeTab === 'subscription' && (
+                  <div>
+                    <h2 className="text-xl font-semibold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-6">
+                      Marketplace Subscription
+                    </h2>
+                    <MarketplaceSubscription />
+                  </div>
                 )}
                 
                 {activeTab === 'business' && (
@@ -782,7 +794,7 @@ function BusinessTab({ userId: _userId }: { userId: string }) {
 
 // Listings Tab Component
 function ListingsTab({ userId: _userId }: { userId: string }) {
-  const [activeListingTab, setActiveListingTab] = useState('classifieds');
+  const [activeListingTab, setActiveListingTab] = useState('marketplace');
   
   return (
     <div>
@@ -794,7 +806,7 @@ function ListingsTab({ userId: _userId }: { userId: string }) {
       <div className="border-b border-gray-200 mb-6">
         <nav className="flex space-x-8">
           {[
-            { id: 'classifieds', label: 'Classified Ads', icon: Package },
+            { id: 'marketplace', label: 'Marketplace Listings', icon: Package },
             { id: 'jobs', label: 'Job Postings', icon: Briefcase },
           ].map((tab) => {
             const Icon = tab.icon;
@@ -816,16 +828,16 @@ function ListingsTab({ userId: _userId }: { userId: string }) {
         </nav>
       </div>
       
-      {activeListingTab === 'classifieds' && (
+      {activeListingTab === 'marketplace' && (
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Classified Ads</h3>
+            <h3 className="text-lg font-medium text-gray-900">Marketplace Listings</h3>
             <Button>
               <Package className="h-4 w-4 mr-2" />
-              Post New Ad
+              Post New Listing
             </Button>
           </div>
-          <p className="text-gray-600">No classified ads posted yet.</p>
+          <p className="text-gray-600">No marketplace listings posted yet.</p>
         </div>
       )}
       

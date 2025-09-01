@@ -30,6 +30,9 @@ export interface User {
   verificationStatus: 'pending' | 'verified' | 'rejected'
   verificationDocuments?: string[]
   
+  // Marketplace subscription
+  marketplaceSubscription?: UserMarketplaceSubscription
+  
   // Admin relationships
   permissions?: AdminPermission[]
   departmentAccess?: string[]
@@ -39,6 +42,33 @@ export interface User {
 }
 
 export type UserRole = 'user' | 'business_owner' | 'admin' | 'super_admin'
+
+export type MarketplaceSubscriptionTier = 'free' | 'silver' | 'gold' | 'platinum'
+export type MarketplaceSubscriptionStatus = 'active' | 'inactive' | 'trial' | 'cancelled' | 'past_due'
+
+export interface UserMarketplaceSubscription {
+  tier: MarketplaceSubscriptionTier
+  status: MarketplaceSubscriptionStatus
+  subscriptionStart?: Date
+  subscriptionEnd?: Date
+  paypalSubscriptionId?: string
+  
+  // Quota management
+  adQuota: {
+    monthly: number // How many ads per month
+    used: number // How many used this month
+    resetDate: Date // When quota resets (next month)
+  }
+  
+  // Premium features
+  features: {
+    featuredAds: boolean // Can create featured ads
+    analytics: boolean // Access to ad analytics
+    prioritySupport: boolean // Priority customer support
+    photoLimit: number // Max photos per ad
+    adDuration: number // How long ads stay active (days)
+  }
+}
 
 export interface UserPreferences {
   notifications: {

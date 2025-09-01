@@ -12,7 +12,7 @@ const Footer = () => {
     { href: '/news', label: 'News', icon: Newspaper },
     { href: '/businesses', label: 'Businesses', icon: Building },
     { href: '/jobs', label: 'Jobs', icon: Briefcase },
-    { href: '/classifieds', label: 'Classifieds', icon: ShoppingBag },
+    { href: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
   ]
 
   const communityLinks = [

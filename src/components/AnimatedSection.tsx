@@ -23,8 +23,8 @@ const AnimatedSection = ({
   const ref = useRef(null)
   const isInView = useInView(ref, { 
     once: true, 
-    margin: "0px 0px -50px 0px", // Larger margin for earlier triggering  
-    amount: 0.05 // Very low threshold to minimize scroll blocking
+    margin: "0px 0px 0px 0px", // Remove margins that could interfere with mobile scroll
+    amount: 0.01 // Ultra-low threshold to prevent scroll interference on mobile
   })
 
   const variants: Variants = {

@@ -9,10 +9,10 @@ A modern, full-stack community hub application built with Next.js 15, TypeScript
 - **News**: Stay updated with the latest local news and announcements
 - **Businesses**: Directory of local businesses with contact information and hours
 - **Jobs**: Find career opportunities and job postings in the area
-- **Classifieds**: Buy, sell, and trade items locally
+- **Marketplace**: Buy, sell, and trade items locally with subscription tiers
 - **Ethical Scrapers**: Automated data collection from official community sources
 - **Progressive Web App (PWA)**: Add to home screen for native app-like experience with push notifications
-- **Monetization Ready**: Google AdSense integration and premium business directory advertising
+- **Monetization Ready**: Subscription-based marketplace with PayPal integration and premium business directory advertising
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 - **Modern UI**: Clean, accessible interface built with Tailwind CSS
 
@@ -128,11 +128,17 @@ The application features a sophisticated hybrid business directory that combines
 4. **Premium Subscriptions**: Claimed businesses can upgrade to Silver, Gold, or Platinum tiers
 5. **Self-Service Management**: Business dashboard for managing listings, analytics, and subscriptions
 
-### 💎 Subscription Tiers
+### 💎 Business Subscription Tiers
 - **Free (Default)**: Basic scraped information, claim capability
-- **Silver ($19.99/mo)**: Enhanced listing, contact forms, basic analytics, business hours
-- **Gold ($39.99/mo)**: Everything in Silver + photo gallery, social media, featured placement, special offers
-- **Platinum ($79.99/mo)**: Everything in Gold + logo upload, advanced analytics, priority support
+- **Silver ($19.99/mo)**: Enhanced listing, contact forms, basic analytics, business hours, 2 job postings/month
+- **Gold ($39.99/mo)**: Everything in Silver + photo gallery, social media, featured placement, special offers, 5 job postings/month
+- **Platinum ($79.99/mo)**: Everything in Gold + logo upload, advanced analytics, priority support, unlimited job postings
+
+### 💳 Marketplace User Subscription Tiers
+- **Free (Default)**: 1 marketplace ad per month, 1 photo per ad, 30-day ad duration, basic support
+- **Silver ($9.99/mo)**: 5 ads per month, 5 photos per ad, 45-day duration, basic analytics, email support
+- **Gold ($19.99/mo)**: 15 ads per month, 10 photos per ad, 60-day duration, featured ads, analytics dashboard, priority support
+- **Platinum ($39.99/mo)**: Unlimited ads, 20 photos per ad, 90-day duration, featured ads, advanced analytics, priority + phone support
 
 ### 🏗️ Technical Implementation
 - **Automated Scraping**: `WetaskiwinBusinessScraper` with smart categorization and deduplication
@@ -142,11 +148,12 @@ The application features a sophisticated hybrid business directory that combines
 - **Analytics Tracking**: View counts, click tracking, conversion metrics
 
 ### 📈 Revenue Opportunities
-- Monthly/annual subscription fees (Silver: $240/year, Gold: $480/year, Platinum: $960/year)
-- Featured placement upgrades
-- Premium directory advertising
-- Business verification services
-- Enhanced analytics and reporting
+- **Business Subscriptions**: Monthly/annual fees (Silver: $240/year, Gold: $480/year, Platinum: $960/year)
+- **User Marketplace Subscriptions**: Individual user subscriptions (Silver: $120/year, Gold: $240/year, Platinum: $480/year)
+- **Job Posting Fees**: Business tiers include job posting limits, driving subscription upgrades
+- **Featured Placement**: Premium positioning for both business listings and marketplace ads
+- **Premium Directory Advertising**: Enhanced visibility and analytics
+- **PayPal Integration**: Secure payment processing for all subscription tiers
 
 ## �🛠 Tech Stack
 
@@ -167,13 +174,13 @@ src/
 │   │   ├── news/          # News API
 │   │   ├── businesses/    # Businesses API
 │   │   ├── jobs/          # Jobs API
-│   │   ├── classifieds/   # Classifieds API
+│   │   ├── marketplace/   # Marketplace API with subscriptions
 │   │   └── seed/          # Database seeding
 │   ├── events/            # Events page
 │   ├── news/              # News page
 │   ├── businesses/        # Businesses page
 │   ├── jobs/              # Jobs page
-│   ├── classifieds/       # Classifieds page
+│   ├── marketplace/       # Marketplace page
 │   ├── globals.css        # Global styles
 │   ├── layout.tsx         # Root layout
 │   └── page.tsx           # Homepage
@@ -272,11 +279,15 @@ src/
 - Salary information and requirements
 - Direct application links and contact details
 
-### Classifieds (`/classifieds`)
-- Buy, sell, and trade marketplace
-- Image galleries for listings
-- Price filtering and condition indicators
-- Contact sellers directly
+### Marketplace (`/marketplace`)
+- **Subscription-Based Platform**: Free, Silver, Gold, and Platinum tiers with PayPal integration
+- **User Subscriptions**: Individual users can upgrade for more ad postings and premium features
+- **Business Integration**: Businesses can post jobs based on their subscription tier
+- **Quota Management**: Monthly ad limits with automatic reset and usage tracking
+- **Premium Features**: Featured ads, analytics, extended ad duration, and priority support
+- **Buy, Sell & Trade**: Community marketplace for local transactions
+- **Image Galleries**: Multiple photos per listing (tier-dependent limits)
+- **Advanced Filtering**: Search by category, price, condition, and location
 
 ## 🔧 API Endpoints
 
@@ -286,7 +297,11 @@ All API endpoints support GET requests and return JSON responses:
 - `GET /api/news` - Retrieve news articles
 - `GET /api/businesses` - Retrieve business listings
 - `GET /api/jobs` - Retrieve job postings
-- `GET /api/classifieds` - Retrieve classified listings
+- `GET /api/marketplace` - Retrieve marketplace listings
+- `GET /api/marketplace/subscription` - Get user subscription info and tiers
+- `GET /api/marketplace/quota` - Check user's monthly ad quota
+- `POST /api/marketplace/subscription` - Upgrade user subscription
+- `POST /api/marketplace/quota` - Use one ad quota slot
 - `GET /api/seed` - Seed database and get statistics
 
 Query parameters:
@@ -327,9 +342,9 @@ The application uses MongoDB with Mongoose for the following collections:
 
 - **Events**: Community events and activities
 - **News**: Local news articles and updates
-- **Businesses**: Local business directory
+- **Businesses**: Local business directory with subscription tiers
 - **Jobs**: Job postings and opportunities
-- **Classifieds**: Marketplace listings
+- **Marketplace**: Subscription-based marketplace listings with user tiers
 
 Each collection includes common fields like:
 - Unique ID and title
