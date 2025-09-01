@@ -1,38 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { User } from '@/models/auth'
-import { hash } from 'bcryptjs'
-import { v4 as uuidv4 } from 'uuid'
-
-// Password validation
-function validatePassword(password: string): { isValid: boolean; errors: string[] } {
-  const errors: string[] = []
-
-  if (password.length < 8) {
-    errors.push('Password must be at least 8 characters long')
-  }
-
-  if (!/(?=.*[a-z])/.test(password)) {
-    errors.push('Password must contain at least one lowercase letter')
-  }
-
-  if (!/(?=.*[A-Z])/.test(password)) {
-    errors.push('Password must contain at least one uppercase letter')
-  }
-
-  if (!/(?=.*\d)/.test(password)) {
-    errors.push('Password must contain at least one number')
-  }
-
-  if (!/(?=.*[@$!%*?&])/.test(password)) {
-    errors.push('Password must contain at least one special character (@$!%*?&)')
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors
-  }
-}
+import { AuthService } from '@/lib/auth'
 
 // One-time super admin setup endpoint
 // This should be disabled in production after initial setup
@@ -67,10 +36,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate password strength
-    const passwordValidation = validatePassword(password)
-    if (!passwordValidation.isValid) {
+    if (!AuthService.validatePassword(password)) {
       return NextResponse.json({
-        error: 'Password validation failed: ' + passwordValidation.errors.join(', ')
+        error: 'Password must be at least 8 characters with uppercase, lowercase, number, and special character'
       }, { status: 400 })
     }
 
@@ -83,8 +51,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Create super admin user
-    const userId = `user_${uuidv4()}`
-    const passwordHash = await hash(password, 12)
+    const userId = AuthService.generateUserId()
+    const passwordHash = await AuthService.hashPassword(password)
 
     const superAdmin = new User({
       id: userId,
@@ -105,22 +73,6 @@ export async function POST(request: NextRequest) {
         'system_settings',
         'super_admin'
       ],
-      marketplaceSubscription: {
-        tier: 'unlimited',
-        status: 'active',
-        adQuota: {
-          monthly: 9999,
-          used: 0,
-          resetDate: new Date()
-        },
-        features: {
-          featuredAds: true,
-          analytics: true,
-          prioritySupport: true,
-          photoLimit: 99,
-          adDuration: 365
-        }
-      },
       isActive: true,
       createdAt: new Date(),
       updatedAt: new Date()

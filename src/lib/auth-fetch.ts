@@ -1,14 +1,37 @@
+import { getCsrfToken } from './csrf';
+
 /**
- * Make authenticated API requests using Auth0 session cookies
- * Auth0 handles session security, so we just need to include credentials
+ * Make authenticated API requests that work with both Auth0 and JWT token authentication
+ * For Auth0 users, uses cookies automatically sent by browser
+ * For JWT users, adds Authorization header
  */
 export async function authenticatedFetch(
   url: string,
   options: RequestInit = {}
 ): Promise<Response> {
-  // Always include credentials to send Auth0 session cookies
+  const headers = new Headers(options.headers);
+
+  // Add CSRF token for state-changing requests
+  const method = (options.method || 'GET').toUpperCase();
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      headers.set('X-CSRF-Token', csrfToken);
+    }
+  }
+
+  // Add JWT token if available
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+  }
+
+  // Always include credentials to send cookies (for Auth0)
   const fetchOptions: RequestInit = {
     ...options,
+    headers,
     credentials: 'include',
   };
 

@@ -39,16 +39,24 @@ const Navigation = () => {
   const displayPicture = profPic || fallbackPic
 
   useEffect(() => {
-    // Since we're using Auth0 only, we'll extract user info directly from Auth0 user object
-    // Super admin status will be determined by email matching ADMIN_EMAIL
-    const auth0User = user as any // Auth0 user object has email but TypeScript definitions may not include it
-    if (auth0User) {
-      setProfFirst(auth0User.given_name || (auth0User.name ? String(auth0User.name).split(' ')[0] : ''))
-      setProfLast(auth0User.family_name || (auth0User.name ? String(auth0User.name).split(' ').slice(1).join(' ') : ''))
-      setProfPic(auth0User.picture || '')
-      // Note: Super admin status would need to be determined server-side
-      // For now, we'll just use the fallback data from Auth0
+    // Fetch enriched profile (role, names, picture) when logged in
+    let cancelled = false
+    const load = async () => {
+      try {
+        if (!user) return
+        const res = await fetch('/api/auth/profile', { credentials: 'include' })
+        if (!res.ok) return
+        const data = await res.json()
+        const d = data?.data || {}
+        if (cancelled) return
+        if (d.firstName) setProfFirst(String(d.firstName))
+        if (d.lastName) setProfLast(String(d.lastName))
+        if (d.profileImage) setProfPic(String(d.profileImage))
+        if (d.role === 'super_admin') setIsSuperAdmin(true)
+      } catch { /* noop */ }
     }
+    load()
+    return () => { cancelled = true }
   }, [user])
 
   useEffect(() => {

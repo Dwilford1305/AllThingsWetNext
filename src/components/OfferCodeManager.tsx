@@ -18,7 +18,7 @@ import {
   X
 } from 'lucide-react';
 import type { OfferCode, OfferType, SubscriptionTier } from '@/types';
-import { authenticatedFetch } from '@/lib/auth-fetch';
+import { csrfFetch } from '@/lib/csrf';
 
 interface OfferCodeManagerProps {
   className?: string;
@@ -87,7 +87,7 @@ const OfferCodeManager: React.FC<OfferCodeManagerProps> = () => {
         createdBy: 'admin' // TODO: Get actual admin user ID from auth context
       };
 
-      const response = await authenticatedFetch('/api/admin/offer-codes', {
+      const response = await csrfFetch('/api/admin/offer-codes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -133,7 +133,7 @@ const OfferCodeManager: React.FC<OfferCodeManagerProps> = () => {
     if (!confirm('Are you sure you want to delete this offer code?')) return;
     
     try {
-      const response = await authenticatedFetch(`/api/admin/offer-codes?id=${id}`, {
+      const response = await csrfFetch(`/api/admin/offer-codes?id=${id}`, {
         method: 'DELETE',
         credentials: 'include'
       });

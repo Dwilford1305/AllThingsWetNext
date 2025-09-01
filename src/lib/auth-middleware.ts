@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@auth0/nextjs-auth0/edge'
+import { AuthService } from '@/lib/auth'
 import { connectDB } from '@/lib/mongodb'
-import { User } from '@/models/auth'
+import { User, UserSession } from '@/models/auth'
 import type { User as UserType } from '@/types/auth'
 
 export interface AuthenticatedRequest extends NextRequest {
@@ -19,29 +20,61 @@ function isValidUserForBusiness(user: Partial<UserType> | undefined): user is Us
   return !!(user && user.id && user.role)
 }
 
-// Helper function to sanitize user data for client response (remove sensitive fields)
-function sanitizeUser(user: Record<string, unknown>): Partial<UserType> {
-  const {
-    passwordHash: _passwordHash,
-    passwordResetToken: _passwordResetToken,
-    passwordResetTokenExpires: _passwordResetTokenExpires,
-    emailVerificationToken: _emailVerificationToken,
-    emailVerificationTokenExpires: _emailVerificationTokenExpires,
-    twoFactorSecret: _twoFactorSecret,
-    loginAttempts: _loginAttempts,
-    lockUntil: _lockUntil,
-    ...sanitizedUser
-  } = user
-
-  return sanitizedUser as Partial<UserType>
-}
-
-// Middleware to authenticate requests using Auth0 only
+// Middleware to authenticate requests
 export async function authenticate(request: NextRequest) {
   try {
     await connectDB()
 
-    // Use Auth0 session from cookies (App Router)
+    // 1) Try our legacy JWT/session first (Authorization or accessToken cookie)
+    const authHeader = request.headers.get('authorization')
+    let token: string | undefined
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7)
+    } else {
+      token = request.cookies.get('accessToken')?.value
+    }
+
+    if (token) {
+      const tokenCameFromHeader = !!(authHeader && authHeader.startsWith('Bearer '))
+      try {
+        const decoded = AuthService.verifyAccessToken(token)
+        const session = await UserSession.findOne({
+          accessToken: token,
+          isActive: true,
+          expiresAt: { $gt: new Date() }
+        })
+
+        if (!session) {
+          // If token provided via header, hard fail; if via cookie, ignore and try Auth0 fallback
+          if (tokenCameFromHeader) {
+            return { error: 'Invalid or expired session', status: 401 }
+          }
+        } else {
+          const user = await User.findOne({ id: decoded.userId, isActive: true })
+          if (!user) {
+            if (tokenCameFromHeader) {
+              return { error: 'User not found or inactive', status: 401 }
+            }
+          } else {
+            await UserSession.updateOne(
+              { _id: session._id },
+              { lastUsedAt: new Date() }
+            )
+            return {
+              user: AuthService.sanitizeUser(user.toObject()),
+              session: session.toObject()
+            }
+          }
+        }
+      } catch (_e) {
+        // If token path fails unexpectedly, continue to Auth0 fallback
+        if (tokenCameFromHeader) {
+          return { error: 'Invalid or expired token', status: 401 }
+        }
+      }
+    }
+
+    // 2) Fallback: Auth0 session from cookies (App Router)
     try {
       const res = new NextResponse()
       const auth0 = await getSession(request, res)
@@ -63,7 +96,7 @@ export async function authenticate(request: NextRequest) {
       }
 
       return {
-        user: sanitizeUser(dbUser.toObject()),
+        user: AuthService.sanitizeUser(dbUser.toObject()),
         session: { provider: 'auth0' }
       }
     } catch (_e) {
@@ -74,34 +107,6 @@ export async function authenticate(request: NextRequest) {
     console.error('Authentication error:', error)
     return { error: 'Authentication failed', status: 401 }
   }
-}
-
-// Helper function to check if user has required permission
-function hasPermission(user: UserType, requiredPermission: string): boolean {
-  if (user.role === 'super_admin') {
-    return true // Super admin has all permissions
-  }
-
-  if (user.role === 'admin' && 'permissions' in user) {
-    const adminUser = user as UserType & { permissions?: string[] }
-    return adminUser.permissions?.includes(requiredPermission) || false
-  }
-
-  return false
-}
-
-// Helper function to check if user can access business
-function canAccessBusiness(user: UserType, businessId: string): boolean {
-  if (user.role === 'super_admin' || user.role === 'admin') {
-    return true
-  }
-
-  if (user.role === 'business_owner') {
-    const businessUser = user as UserType & { businessIds?: string[] }
-    return businessUser.businessIds?.includes(businessId) || false
-  }
-
-  return false
 }
 
 // Middleware to check user role permissions
@@ -137,7 +142,7 @@ export async function authorizePermission(
 
   const { user } = authResult
 
-  if (!isValidUserForPermissions(user) || !hasPermission(user, requiredPermission)) {
+  if (!isValidUserForPermissions(user) || !AuthService.hasPermission(user, requiredPermission)) {
     return { error: 'Insufficient permissions', status: 403 }
   }
 
@@ -157,7 +162,7 @@ export async function authorizeBusiness(
 
   const { user } = authResult
 
-  if (!isValidUserForBusiness(user) || !canAccessBusiness(user, businessId)) {
+  if (!isValidUserForBusiness(user) || !AuthService.canAccessBusiness(user, businessId)) {
     return { error: 'Access denied to this business', status: 403 }
   }
 
@@ -175,6 +180,10 @@ export function handleAuthError(error: { error?: string; status?: number }) {
 // Wrapper for API routes that require authentication
 export function withAuth(handler: (request: AuthenticatedRequest, context?: Record<string, unknown>) => Promise<Response>) {
   return async (request: NextRequest, context?: Record<string, unknown>) => {
+    if (['POST','PUT','PATCH','DELETE'].includes(request.method.toUpperCase())) {
+      const csrfError = _checkCsrf(request)
+      if (csrfError) return handleAuthError(csrfError)
+    }
     const authResult = await authenticate(request)
     
     if (authResult.error) {
@@ -189,9 +198,25 @@ export function withAuth(handler: (request: AuthenticatedRequest, context?: Reco
   }
 }
 
+// Basic CSRF check placeholder (double-submit cookie pattern to be enforced later)
+function _checkCsrf(request: NextRequest) {
+  const method = request.method.toUpperCase()
+  if (!['POST','PUT','PATCH','DELETE'].includes(method)) return null
+  const headerToken = request.headers.get('x-csrf-token')
+  const cookieToken = request.cookies.get('csrfToken')?.value
+  if (!headerToken || !cookieToken || headerToken !== cookieToken) {
+    return { error: 'Invalid or missing CSRF token', status: 403 }
+  }
+  return null
+}
+
 // Wrapper for API routes that require specific roles
 export function withRole(allowedRoles: string[], handler: (request: AuthenticatedRequest, context?: Record<string, unknown>) => Promise<Response>) {
   return async (request: NextRequest, context?: Record<string, unknown>) => {
+    if (['POST','PUT','PATCH','DELETE'].includes(request.method.toUpperCase())) {
+      const csrfError = _checkCsrf(request)
+      if (csrfError) return handleAuthError(csrfError)
+    }
     const authResult = await authorizeRole(request, allowedRoles)
     
     if (authResult.error) {
@@ -208,6 +233,10 @@ export function withRole(allowedRoles: string[], handler: (request: Authenticate
 // Wrapper for API routes that require specific permissions
 export function withPermission(requiredPermission: string, handler: (request: AuthenticatedRequest, context?: Record<string, unknown>) => Promise<Response>) {
   return async (request: NextRequest, context?: Record<string, unknown>) => {
+    if (['POST','PUT','PATCH','DELETE'].includes(request.method.toUpperCase())) {
+      const csrfError = _checkCsrf(request)
+      if (csrfError) return handleAuthError(csrfError)
+    }
     const authResult = await authorizePermission(request, requiredPermission)
     
     if (authResult.error) {

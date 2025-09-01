@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import type { Business, Event, NewsArticle, BusinessCategory, SubscriptionTier } from '@/types';
 import ScraperLogs from './ScraperLogs';
-import { authenticatedFetch } from '@/lib/auth-fetch';
+import { csrfFetch } from '@/lib/csrf';
 
 interface ContentStats {
   businesses: Business[];
@@ -650,7 +650,7 @@ const AdminDashboard = () => {
       if (clearOldData) params.append('clearOldData', 'true');
       if (forceRefresh) params.append('forceRefresh', 'true');
       
-      const response = await authenticatedFetch(`/api/scraper/comprehensive?${params.toString()}`, {
+      const response = await csrfFetch(`/api/scraper/comprehensive?${params.toString()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
@@ -684,7 +684,7 @@ const AdminDashboard = () => {
     }
     
     try {
-      const response = await authenticatedFetch('/api/scraper/comprehensive', {
+      const response = await csrfFetch('/api/scraper/comprehensive', {
         method: 'DELETE',
         credentials: 'include'
       });
@@ -1762,7 +1762,7 @@ const BusinessManagementModal: React.FC<BusinessManagementModalProps> = ({
     setSaving(true);
 
     try {
-      const response = await authenticatedFetch(`/api/businesses/${business.id}`, {
+      const response = await csrfFetch(`/api/businesses/${business.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -1938,7 +1938,7 @@ const SubscriptionManagementModal: React.FC<SubscriptionManagementModalProps> = 
     setSaving(true);
 
     try {
-      const response = await authenticatedFetch(`/api/admin/businesses/${business.id}/subscription`, {
+      const response = await csrfFetch(`/api/admin/businesses/${business.id}/subscription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
