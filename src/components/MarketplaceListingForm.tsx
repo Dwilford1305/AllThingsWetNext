@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { X, Upload, AlertCircle } from 'lucide-react'
+import { X, AlertCircle } from 'lucide-react'
 import type { MarketplaceListing, MarketplaceCategory, MarketplaceCondition } from '@/types'
+import { useAuth } from '@/hooks/useAuth'
+import { authenticatedFetch } from '@/lib/auth-fetch'
 
 interface MarketplaceListingFormProps {
   isOpen: boolean
@@ -43,6 +45,7 @@ const conditions: { value: MarketplaceCondition; label: string }[] = [
 ]
 
 export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuccess }: MarketplaceListingFormProps) {
+  const { isAuthenticated } = useAuth();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -86,14 +89,9 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
 
   const checkQuota = async () => {
     try {
-      const token = localStorage.getItem('accessToken')
-      if (!token) return
+      if (!isAuthenticated) return;
 
-      const response = await fetch('/api/marketplace/quota', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
+      const response = await authenticatedFetch('/api/marketplace/quota');
 
       if (response.ok) {
         const result = await response.json()
@@ -112,8 +110,7 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
     setError('')
 
     try {
-      const token = localStorage.getItem('accessToken')
-      if (!token) {
+      if (!isAuthenticated) {
         setError('You must be logged in to create listings')
         setIsSubmitting(false)
         return
@@ -134,11 +131,10 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
         price: formData.price ? parseFloat(formData.price) : undefined
       }
 
-      const response = await fetch(url, {
+      const response = await authenticatedFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(submitData)
       })
