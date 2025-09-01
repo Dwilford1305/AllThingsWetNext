@@ -100,11 +100,21 @@ const MarketplaceSubscription = () => {
     try {
       const response = await fetch('/api/marketplace/subscription');
       const data = await response.json();
-      if (data.success) {
+      
+      // Handle successful response
+      if (data.success && data.currentSubscription) {
         setCurrentSubscription(data.currentSubscription);
+      } else if (response.status === 401) {
+        // User not authenticated - show default free tier
+        setCurrentSubscription(null);
+      } else {
+        console.error('Failed to fetch subscription info:', data.error || 'Unknown error');
+        setCurrentSubscription(null);
       }
     } catch (error) {
       console.error('Error fetching subscription info:', error);
+      // On error, don't show current subscription
+      setCurrentSubscription(null);
     } finally {
       setLoading(false);
     }
@@ -124,16 +134,22 @@ const MarketplaceSubscription = () => {
       });
       
       const data = await response.json();
+      
+      if (response.status === 401) {
+        alert('Please log in to upgrade your subscription.');
+        return;
+      }
+      
       if (data.success) {
         // TODO: Redirect to PayPal payment
         console.log('Subscription upgrade initiated:', data.message);
         await fetchSubscriptionInfo(); // Refresh data
       } else {
-        alert('Error upgrading subscription: ' + data.error);
+        alert('Error upgrading subscription: ' + (data.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error upgrading subscription:', error);
-      alert('Failed to upgrade subscription');
+      alert('Failed to upgrade subscription. Please try again later.');
     } finally {
       setUpgrading(null);
     }
@@ -163,6 +179,27 @@ const MarketplaceSubscription = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
+      {/* Authentication Notice */}
+      {!currentSubscription && !loading && (
+        <Card className="mb-8 p-4 bg-blue-50 border-blue-200">
+          <div className="flex items-start gap-3">
+            <div className="text-blue-600 mt-0.5">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-blue-900 mb-1">
+                Sign in to manage your subscription
+              </h3>
+              <p className="text-sm text-blue-700">
+                Log in to view your current subscription status and upgrade your marketplace features.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Current Subscription Status */}
       {currentSubscription && (
         <Card className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50">
