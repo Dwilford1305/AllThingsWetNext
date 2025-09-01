@@ -109,6 +109,7 @@ const MarketplaceSubscription = () => {
         setCurrentSubscription(null);
       } else {
         console.error('Failed to fetch subscription info:', data.error || 'Unknown error');
+        // Still show auth notice even on error
         setCurrentSubscription(null);
       }
     } catch (error) {
