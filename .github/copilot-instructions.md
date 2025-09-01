@@ -110,7 +110,7 @@ curl -I http://localhost:3000/events     # Events page
 curl -I http://localhost:3000/businesses # Business directory
 curl -I http://localhost:3000/news       # News page
 curl -I http://localhost:3000/jobs       # Jobs page
-curl -I http://localhost:3000/classifieds # Classifieds
+curl -I http://localhost:3000/marketplace # Marketplace
 ```
 
 #### 3. API Endpoints Functionality
@@ -141,7 +141,7 @@ curl http://localhost:3000/api/news       # News API
 - **Business Management**: `/businesses/manage` - Self-service business dashboard  
 - **News**: `/news` - Local news aggregation
 - **Jobs**: `/jobs` - Job postings and opportunities
-- **Classifieds**: `/classifieds` - Buy/sell/trade listings
+- **Marketplace**: `/marketplace` - Buy/sell/trade listings
 - **Authentication**: `/auth-test` - Test authentication flows
 - **Admin Dashboard**: `/admin` - Administrative interface
 - **Profile Management**: `/profile` - User account management
@@ -150,7 +150,7 @@ curl http://localhost:3000/api/news       # News API
 - **Health Check**: `/api/health` - System status and connectivity
 - **Authentication**: `/api/auth/*` - User login, signup, password reset
 - **Business Operations**: `/api/businesses/*` - CRUD, claiming, subscriptions
-- **Content APIs**: `/api/events`, `/api/news`, `/api/jobs`, `/api/classifieds`
+- **Content APIs**: `/api/events`, `/api/news`, `/api/jobs`, `/api/marketplace`
 - **Scraping System**: `/api/scraper/*` - Automated content collection
 - **Admin APIs**: `/api/admin/*` - Administrative functions
 - **Cron Jobs**: `/api/cron/scrape` - Scheduled scraping tasks

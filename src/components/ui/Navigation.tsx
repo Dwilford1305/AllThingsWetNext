@@ -102,7 +102,6 @@ const Navigation = () => {
     { href: '/businesses', label: 'Businesses', icon: Building },
     { href: '/jobs', label: 'Jobs', icon: Briefcase },
     { href: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
-    { href: '/classifieds', label: 'Classifieds', icon: ShoppingBag },
     { href: '/about', label: 'About', icon: Info },
     // Only show admin link for super admins
     ...(isSuperAdmin ? [{ href: '/admin', label: 'Admin', icon: Shield }] : []),
@@ -183,20 +182,20 @@ const Navigation = () => {
           </Link>
           
           {/* Navigation Items */}
-          <nav className="flex flex-col space-y-2 flex-1 min-h-0">
+          <nav className="flex flex-col space-y-1 flex-1 min-h-0 overflow-y-auto">
             {navItems.slice(1).map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
                 href={href}
-                className={`p-3 rounded-xl transition-all duration-300 hover-lift group relative flex flex-col items-center flex-shrink-0 ${
+                className={`p-2 rounded-xl transition-all duration-300 hover-lift group relative flex flex-col items-center flex-shrink-0 ${
                   pathname === href 
                     ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg' 
                     : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
                 }`}
                 title={label}
               >
-                <Icon size={20} className="mb-2 group-hover:scale-110 transition-transform duration-300" />
-                <span className={`text-xs font-semibold leading-tight text-center transition-colors duration-300 ${
+                <Icon size={18} className="mb-1 group-hover:scale-110 transition-transform duration-300" />
+                <span className={`text-xs font-semibold leading-tight text-center transition-colors duration-300 max-w-full truncate ${
                   pathname === href ? 'text-white' : 'text-gray-800 group-hover:text-blue-600'
                 }`}>
                   {label}
@@ -206,29 +205,29 @@ const Navigation = () => {
           </nav>
 
           {/* Authentication Section - Fixed at bottom */}
-          <div className="mt-auto pt-4 border-t border-gray-200/50 flex flex-col space-y-3 flex-shrink-0">
+          <div className="mt-auto pt-4 border-t border-gray-200/50 flex flex-col space-y-2 flex-shrink-0">
       {user ? (
               <>
                 {/* User Profile - Clickable */}
                 <Link
                   href="/profile"
-                  className="p-3 rounded-xl bg-blue-50/80 hover:bg-blue-100 flex flex-col items-center text-center flex-shrink-0 transition-all duration-300 hover-lift group"
+                  className="p-2 rounded-xl bg-blue-50/80 hover:bg-blue-100 flex flex-col items-center text-center flex-shrink-0 transition-all duration-300 hover-lift group"
                   title="Profile Settings"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-300">
           {displayPicture ? (
                       <Image
             src={displayPicture}
             alt={`${displayFirst} ${displayLast}`}
-                        width={32}
-                        height={32}
-                        className="w-8 h-8 rounded-full object-cover"
+                        width={28}
+                        height={28}
+                        className="w-7 h-7 rounded-full object-cover"
                       />
                     ) : (
-                      <User size={16} className="text-white" />
+                      <User size={14} className="text-white" />
                     )}
                   </div>
-                  <span className="text-xs font-semibold text-gray-800 leading-tight text-center group-hover:text-blue-600 transition-colors duration-300">
+                  <span className="text-xs font-semibold text-gray-800 leading-tight text-center group-hover:text-blue-600 transition-colors duration-300 max-w-full truncate">
           {displayFirst}
                   </span>
                 </Link>
@@ -239,7 +238,7 @@ const Navigation = () => {
                   className="p-2 rounded-lg transition-colors group relative flex flex-col items-center flex-shrink-0 text-gray-700 hover:bg-red-50 hover:text-red-600"
                   title="Logout"
                 >
-                  <LogOut size={18} className="mb-1" />
+                  <LogOut size={16} className="mb-1" />
                   <span className="text-xs font-medium leading-tight text-center text-gray-800">
                     Logout
                   </span>
@@ -253,7 +252,7 @@ const Navigation = () => {
                   className="p-2 rounded-lg transition-colors group relative flex flex-col items-center flex-shrink-0 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
                   title="Login"
                 >
-                  <LogIn size={18} className="mb-1 text-gray-800" />
+                  <LogIn size={16} className="mb-1 text-gray-800" />
                   <span className="text-xs font-medium leading-tight text-center text-gray-800">
                     Login
                   </span>
@@ -265,7 +264,7 @@ const Navigation = () => {
                   className="p-2 rounded-lg transition-colors group relative flex flex-col items-center flex-shrink-0 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
                   title="Register"
                 >
-                  <UserPlus size={18} className="mb-1 text-gray-800" />
+                  <UserPlus size={16} className="mb-1 text-gray-800" />
                   <span className="text-xs font-medium leading-tight text-center text-gray-800">
                     Register
                   </span>

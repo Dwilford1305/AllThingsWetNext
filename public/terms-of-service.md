@@ -16,7 +16,7 @@ All Things Wetaskiwin is a community platform that provides:
 - Community event listings and calendar
 - Local news aggregation
 - Job postings and opportunities  
-- Classified advertisements
+- Marketplace listings
 - Community information and resources
 
 ## 3. Eligibility and User Accounts
@@ -45,7 +45,7 @@ You may use our Service for:
 - Accessing and viewing community information
 - Posting legitimate business listings (if authorized)
 - Submitting community events and news
-- Posting classified advertisements
+- Posting marketplace listings
 - Engaging with community content appropriately
 
 ### 4.2 Prohibited Uses
