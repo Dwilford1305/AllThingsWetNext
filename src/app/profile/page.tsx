@@ -40,6 +40,7 @@ import {
 import type { User as UserType, UserPreferences, MarketplaceListing } from '@/types';
 import BusinessRequestForm from '@/components/BusinessRequestForm';
 import MarketplaceListingForm from '@/components/MarketplaceListingForm';
+import { authenticatedFetch } from '@/lib/auth-fetch';
 
 interface ProfileData extends UserType {
   preferences: UserPreferences;
@@ -851,14 +852,8 @@ function ListingsTab({ userId: _userId }: { userId: string }) {
   const fetchUserListings = async () => {
     try {
       setIsLoadingListings(true);
-      const token = localStorage.getItem('accessToken');
-      if (!token) return;
-
-      const response = await fetch('/api/user/marketplace-listings', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      
+      const response = await authenticatedFetch('/api/user/marketplace-listings');
 
       if (response.ok) {
         const result = await response.json();
@@ -877,14 +872,8 @@ function ListingsTab({ userId: _userId }: { userId: string }) {
     if (!confirm('Are you sure you want to delete this listing?')) return;
 
     try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) return;
-
-      const response = await fetch(`/api/marketplace/${listingId}`, {
+      const response = await authenticatedFetch(`/api/marketplace/${listingId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
       });
 
       if (response.ok) {

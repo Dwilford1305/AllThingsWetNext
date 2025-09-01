@@ -15,19 +15,20 @@ import { ShoppingBag, MapPin, User, Phone, Mail, Search, Filter, Image as ImageI
 import AnimatedSection from '@/components/AnimatedSection';
 import { motion } from 'framer-motion';
 import type { MarketplaceListing, ReportReason } from '@/types';
+import { useAuth } from '@/hooks/useAuth';
+import { authenticatedFetch } from '@/lib/auth-fetch';
 
 const MarketplacePage = () => {
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated } = useAuth();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
   const [reportingListingId, setReportingListingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchListings();
-    checkAuthentication();
   }, []);
 
   const fetchListings = async () => {
@@ -42,26 +43,14 @@ const MarketplacePage = () => {
     }
   };
 
-  const checkAuthentication = () => {
-    const token = localStorage.getItem('accessToken');
-    setIsAuthenticated(!!token);
-  };
-
   const handleReportListing = async (reason: ReportReason, description: string) => {
     if (!reportingListingId) return;
 
     try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        alert('You must be logged in to report listings');
-        return;
-      }
-
-      const response = await fetch(`/api/marketplace/${reportingListingId}/report`, {
+      const response = await authenticatedFetch(`/api/marketplace/${reportingListingId}/report`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ reason, description })
       });
