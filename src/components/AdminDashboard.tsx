@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { computeNextScheduledRun, formatCountdown } from '@/lib/scheduling';
+import { authenticatedFetch } from '@/lib/auth-fetch';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
@@ -25,7 +26,6 @@ import {
 } from 'lucide-react';
 import type { Business, Event, NewsArticle, BusinessCategory, SubscriptionTier } from '@/types';
 import ScraperLogs from './ScraperLogs';
-import { authenticatedFetch } from '@/lib/auth-fetch';
 
 interface ContentStats {
   businesses: Business[];
@@ -213,11 +213,9 @@ const AdminDashboard = () => {
         ...updates
       };
 
-      const csrf = document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1];
-      const response = await fetch('/api/admin/scraper-config', {
+      const response = await authenticatedFetch('/api/admin/scraper-config', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf || '' },
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       
@@ -242,11 +240,9 @@ const AdminDashboard = () => {
 
   const updateScraperStatus = async (type: 'news' | 'events' | 'businesses', isActive: boolean, lastRun?: string) => {
     try {
-      const csrf = document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1];
-      const response = await fetch('/api/admin/scraper-config', {
+      const response = await authenticatedFetch('/api/admin/scraper-config', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf || '' },
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type, isActive, lastRun })
       });
       
@@ -269,11 +265,9 @@ const AdminDashboard = () => {
 
   const _handleBusinessAction = async (businessId: string, action: 'approve' | 'reject' | 'feature') => {
     try {
-      const csrf = document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1];
-      const response = await fetch('/api/admin/businesses', {
+      const response = await authenticatedFetch('/api/admin/businesses', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf || '' },
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ businessId, action })
       });
 
@@ -376,11 +370,9 @@ const AdminDashboard = () => {
 
   const toggleBusinessFeature = async (businessId: string, feature: 'featured' | 'verified') => {
     try {
-      const csrf = document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1];
-      const response = await fetch(`/api/admin/businesses/${businessId}`, {
+      const response = await authenticatedFetch(`/api/admin/businesses/${businessId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf || '' },
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: `toggle_${feature}` })
       });
 
@@ -410,11 +402,8 @@ const AdminDashboard = () => {
     }
 
     try {
-      const csrf = document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1];
-      const response = await fetch(`/api/admin/businesses/${businessId}`, {
+      const response = await authenticatedFetch(`/api/admin/businesses/${businessId}`, {
         method: 'DELETE',
-        headers: { 'X-CSRF-Token': csrf || '' },
-        credentials: 'include'
       });
 
       const result = await response.json();
@@ -445,11 +434,9 @@ const AdminDashboard = () => {
 
   const handleContentAction = async (type: 'event' | 'news', id: string, action: 'approve' | 'reject' | 'delete') => {
     try {
-      const csrf = document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1];
-      const response = await fetch(`/api/admin/${type}`, {
+      const response = await authenticatedFetch(`/api/admin/${type}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf || '' },
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, action })
       });
 
@@ -507,11 +494,9 @@ const AdminDashboard = () => {
     errors?: string[]
   ) => {
     try {
-      const csrf = document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1];
-      await fetch('/api/admin/scraper-logs', {
+      await authenticatedFetch('/api/admin/scraper-logs', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf || '' },
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type,
           status,
@@ -541,11 +526,8 @@ const AdminDashboard = () => {
       // Log scraper start
       await logScraperActivity(type, 'started', `${type} scraper initiated by admin`);
 
-      const csrf = document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1];
-      const response = await fetch(`/api/scraper/${type}`, {
+      const response = await authenticatedFetch(`/api/scraper/${type}`, {
         method: 'POST',
-        headers: { 'X-CSRF-Token': csrf || '' },
-        credentials: 'include'
       });
       
   const result = await response.json();

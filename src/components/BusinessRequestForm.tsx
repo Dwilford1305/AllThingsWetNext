@@ -98,7 +98,6 @@ export default function BusinessRequestForm() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-Token': (typeof document !== 'undefined' ? document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1] : '') || ''
         },
         credentials: 'include',
         body: JSON.stringify(formData)

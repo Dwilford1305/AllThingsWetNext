@@ -242,7 +242,6 @@ async function getUsers(request: NextRequest) {
 }
 
 // POST /api/admin/users - Create new user (admin only)
-// Requires X-CSRF-Token header matching csrfToken cookie
 async function createUser(request: NextRequest & { user?: { role?: string } }) {
   try {
     await connectDB()

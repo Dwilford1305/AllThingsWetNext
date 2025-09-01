@@ -3,6 +3,7 @@ import { getSession } from '@auth0/nextjs-auth0/edge'
 import { connectDB } from '@/lib/mongodb'
 import { User } from '@/models/auth'
 import type { User as UserType } from '@/types/auth'
+import crypto from 'crypto'
 
 export interface AuthenticatedRequest extends NextRequest {
   user?: Partial<UserType>
@@ -52,13 +53,91 @@ export async function authenticate(request: NextRequest) {
 
       const dbUser = await User.findOne({ email: auth0User.email, isActive: true })
       if (!dbUser) {
-        // Authenticated via Auth0 but no local user record: treat as basic user
-        return {
-          user: {
-            email: auth0User.email,
-            role: 'user'
-          } as Partial<UserType>,
-          session: { provider: 'auth0' }
+        // Authenticated via Auth0 but no local user record exists
+        // This could happen if the Auth0 callback hasn't run yet or failed
+        // We should create the user record here to avoid timing issues
+        try {
+          const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+          const role = (adminEmail && auth0User.email.toLowerCase() === adminEmail) ? 'super_admin' : 'user';
+          const permissions = role === 'super_admin' ? [
+            'manage_users',
+            'manage_businesses', 
+            'manage_content',
+            'manage_scrapers',
+            'view_analytics',
+            'manage_payments',
+            'system_settings',
+            'super_admin'
+          ] : [];
+          
+          // Create marketplace subscription with proper quota for role
+          const marketplaceSubscription = role === 'super_admin' ? {
+            tier: 'unlimited',
+            status: 'active',
+            adQuota: {
+              monthly: 9999, // Unlimited
+              used: 0,
+              resetDate: new Date()
+            },
+            features: {
+              featuredAds: true,
+              analytics: true,
+              prioritySupport: true,
+              photoLimit: 99, // Unlimited photos
+              adDuration: 365 // 1 year duration
+            }
+          } : {
+            tier: 'free',
+            status: 'inactive',
+            adQuota: {
+              monthly: 1,
+              used: 0,
+              resetDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)
+            },
+            features: {
+              featuredAds: false,
+              analytics: false,
+              prioritySupport: false,
+              photoLimit: 1,
+              adDuration: 30
+            }
+          };
+
+          const newUser = await User.create({
+            id: `user_${crypto.randomUUID()}`,
+            email: auth0User.email.toLowerCase(),
+            passwordHash: '',
+            firstName: 'User', // Will be updated by Auth0 callback
+            lastName: 'User',  // Will be updated by Auth0 callback
+            role,
+            permissions,
+            isEmailVerified: true, // Auth0 users are considered verified
+            isActive: true,
+            isSuspended: false,
+            preferences: {
+              notifications: {
+                email: true,
+                events: true,
+                news: true,
+                businessUpdates: true,
+                marketing: false,
+              },
+              privacy: {
+                profileVisible: true,
+                contactInfoVisible: false,
+              },
+              theme: 'system'
+            },
+            marketplaceSubscription
+          });
+
+          return {
+            user: sanitizeUser(newUser.toObject()),
+            session: { provider: 'auth0' }
+          }
+        } catch (createError) {
+          console.error('Failed to create user record during authentication:', createError)
+          return { error: 'Failed to create user account', status: 500 }
         }
       }
 

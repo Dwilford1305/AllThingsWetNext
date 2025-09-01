@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { authenticatedFetch } from '@/lib/auth-fetch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -96,13 +97,11 @@ export default function BusinessRequestManager() {
   const handleStatusUpdate = async (requestId: string, status: 'approved' | 'rejected') => {
     setIsSubmitting(true)
     try {
-      const response = await fetch('/api/admin/business-requests', {
+      const response = await authenticatedFetch('/api/admin/business-requests', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-Token': (typeof document !== 'undefined' ? document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1] : '') || ''
         },
-        credentials: 'include',
         body: JSON.stringify({
           requestId,
           status,
