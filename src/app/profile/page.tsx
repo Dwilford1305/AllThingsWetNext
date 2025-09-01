@@ -7,6 +7,7 @@ import { useUser } from '@auth0/nextjs-auth0/client';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
 import Navigation from '@/components/ui/Navigation';
 import FoldableLayout from '@/components/FoldableLayout';
 import RequireAuth from '@/components/RequireAuth';
@@ -29,10 +30,16 @@ import {
   Bell,
   Eye,
   Save,
-  Loader2
+  Loader2,
+  MapPin,
+  Calendar,
+  AlertTriangle,
+  Edit2,
+  Trash2
 } from 'lucide-react';
-import type { User as UserType, UserPreferences } from '@/types';
+import type { User as UserType, UserPreferences, MarketplaceListing } from '@/types';
 import BusinessRequestForm from '@/components/BusinessRequestForm';
+import MarketplaceListingForm from '@/components/MarketplaceListingForm';
 
 interface ProfileData extends UserType {
   preferences: UserPreferences;
@@ -830,6 +837,84 @@ function BusinessTab({ userId: _userId }: { userId: string }) {
 // Listings Tab Component
 function ListingsTab({ userId: _userId }: { userId: string }) {
   const [activeListingTab, setActiveListingTab] = useState('marketplace');
+  const [userListings, setUserListings] = useState<MarketplaceListing[]>([]);
+  const [isLoadingListings, setIsLoadingListings] = useState(true);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingListing, setEditingListing] = useState<MarketplaceListing | null>(null);
+
+  useEffect(() => {
+    if (activeListingTab === 'marketplace') {
+      fetchUserListings();
+    }
+  }, [activeListingTab]);
+
+  const fetchUserListings = async () => {
+    try {
+      setIsLoadingListings(true);
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const response = await fetch('/api/user/marketplace-listings', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setUserListings(result.data);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user listings:', error);
+    } finally {
+      setIsLoadingListings(false);
+    }
+  };
+
+  const handleDeleteListing = async (listingId: string) => {
+    if (!confirm('Are you sure you want to delete this listing?')) return;
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const response = await fetch(`/api/marketplace/${listingId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          // Remove from local state
+          setUserListings(prev => prev.filter(listing => listing.id !== listingId));
+          alert('Listing deleted successfully');
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      alert('Failed to delete listing');
+    }
+  };
+
+  const formatPrice = (price?: number) => {
+    if (price === undefined || price === null) return 'Price on request';
+    if (price === 0) return 'Free';
+    return `$${price.toLocaleString()}`;
+  };
+
+  const formatDate = (date: Date | string) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString('en-CA', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
   
   return (
     <div>
@@ -865,14 +950,120 @@ function ListingsTab({ userId: _userId }: { userId: string }) {
       
       {activeListingTab === 'marketplace' && (
         <div>
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-medium text-gray-900">Marketplace Listings</h3>
-            <Button>
+            <Button 
+              onClick={() => setShowCreateForm(true)}
+              className="bg-primary-600 hover:bg-primary-700"
+            >
               <Package className="h-4 w-4 mr-2" />
               Post New Listing
             </Button>
           </div>
-          <p className="text-gray-600">No marketplace listings posted yet.</p>
+          
+          {isLoadingListings ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3].map(i => (
+                <Card key={i} className="animate-pulse">
+                  <div className="h-32 bg-gray-200 rounded-t-lg"></div>
+                  <div className="p-4 space-y-3">
+                    <div className="h-4 bg-gray-200 rounded"></div>
+                    <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : userListings.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {userListings.map((listing) => (
+                <Card key={listing.id} className="overflow-hidden">
+                  <div className="h-32 bg-gray-100 relative">
+                    {listing.images && listing.images.length > 0 ? (
+                      <Image
+                        src={listing.images[0]}
+                        alt={listing.title}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <Package className="h-8 w-8 text-gray-400" />
+                      </div>
+                    )}
+                    <div className="absolute top-2 right-2">
+                      <Badge className={`text-xs ${
+                        listing.status === 'active' ? 'bg-green-100 text-green-800' :
+                        listing.status === 'sold' ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {listing.status.charAt(0).toUpperCase() + listing.status.slice(1)}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-semibold text-gray-900 truncate">{listing.title}</h4>
+                      <span className="font-bold text-primary-600 ml-2">
+                        {formatPrice(listing.price)}
+                      </span>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">{listing.description}</p>
+                    
+                    <div className="flex items-center text-xs text-gray-500 mb-3">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      <span className="truncate">{listing.location}</span>
+                    </div>
+                    
+                    <div className="flex items-center text-xs text-gray-500 mb-4">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      <span>Posted {formatDate(listing.createdAt)}</span>
+                    </div>
+                    
+                    {listing.isReported && (
+                      <div className="flex items-center text-xs text-orange-600 mb-3">
+                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        <span>This listing has been reported</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => setEditingListing(listing)}
+                        className="flex-1"
+                      >
+                        <Edit2 className="h-3 w-3 mr-1" />
+                        Edit
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleDeleteListing(listing.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Package className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 mb-4">No marketplace listings posted yet.</p>
+              <Button 
+                onClick={() => setShowCreateForm(true)}
+                className="bg-primary-600 hover:bg-primary-700"
+              >
+                Create Your First Listing
+              </Button>
+            </div>
+          )}
         </div>
       )}
       
@@ -885,9 +1076,27 @@ function ListingsTab({ userId: _userId }: { userId: string }) {
               Post New Job
             </Button>
           </div>
-          <p className="text-gray-600">No job postings created yet.</p>
+          <div className="text-center py-8">
+            <Briefcase className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500">No job postings created yet.</p>
+          </div>
         </div>
       )}
+
+      {/* Marketplace Listing Form Modal */}
+      <MarketplaceListingForm
+        isOpen={showCreateForm || editingListing !== null}
+        onClose={() => {
+          setShowCreateForm(false);
+          setEditingListing(null);
+        }}
+        listing={editingListing || undefined}
+        onSuccess={() => {
+          fetchUserListings();
+          setShowCreateForm(false);
+          setEditingListing(null);
+        }}
+      />
     </div>
   );
 }
