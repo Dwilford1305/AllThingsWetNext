@@ -2,7 +2,7 @@ import Navigation from '@/components/ui/Navigation';
 import ParallaxHero from '@/components/ParallaxHero';
 import Dashboard from '@/components/Dashboard';
 import CommunityStats from '@/components/CommunityStats';
-import CallToAction from '@/components/CallToAction';
+import SubscriptionShowcase from '@/components/SubscriptionShowcase';
 import Footer from '@/components/Footer';
 import AnimatedSection from '@/components/AnimatedSection';
 import AdPlaceholder from '@/components/AdPlaceholder';
@@ -83,7 +83,7 @@ export default function Home() {
       </AnimatedSection>
 
       <AnimatedSection delay={0.32}>
-        <CallToAction />
+        <SubscriptionShowcase />
       </AnimatedSection>
 
       {/* Silver Tier - Enhanced listings toward bottom */}
