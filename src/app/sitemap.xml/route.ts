@@ -41,7 +41,7 @@ export async function GET(_request: NextRequest) {
       lastmod: new Date().toISOString().split('T')[0]
     },
     {
-      url: '/classifieds',
+      url: '/marketplace',
       changefreq: 'daily',
       priority: '0.7',
       lastmod: new Date().toISOString().split('T')[0]

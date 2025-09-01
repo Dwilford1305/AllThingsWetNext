@@ -10,8 +10,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NODE_ENV === 'production' ? 'https://allthingswetaskiwin.com' : 'http://localhost:3000'),
   title: "All Things Wetaskiwin - Your Community Hub",
-  description: "Your comprehensive community hub for events, news, local businesses, jobs, and classifieds in Wetaskiwin, Alberta. Stay connected with your community.",
-  keywords: "Wetaskiwin, Alberta, community, events, businesses, jobs, classifieds, news, local, community hub, city information",
+  description: "Your comprehensive community hub for events, news, local businesses, jobs, and marketplace listings in Wetaskiwin, Alberta. Stay connected with your community.",
+  keywords: "Wetaskiwin, Alberta, community, events, businesses, jobs, marketplace, news, local, community hub, city information",
   authors: [{ name: "All Things Wetaskiwin" }],
   manifest: "/manifest.json",
   robots: {

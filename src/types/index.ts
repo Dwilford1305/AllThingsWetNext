@@ -190,26 +190,30 @@ export type JobType =
   | 'volunteer'
   | 'internship'
 
-export interface Classified {
+export interface MarketplaceListing {
   id: string
   title: string
   description: string
-  category: ClassifiedCategory
+  category: MarketplaceCategory
   price?: number
-  condition?: ClassifiedCondition
+  condition?: MarketplaceCondition
   location: string
   contactName: string
   contactEmail?: string
   contactPhone?: string
   images: string[]
   featured: boolean
-  status: ClassifiedStatus
+  status: MarketplaceStatus
   expiresAt: Date
   createdAt: Date
   updatedAt: Date
 }
 
-export type ClassifiedCategory = 
+// Keep old interface for backward compatibility during transition
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface Classified extends MarketplaceListing {}
+
+export type MarketplaceCategory = 
   | 'vehicles'
   | 'real-estate'
   | 'electronics'
@@ -222,18 +226,27 @@ export type ClassifiedCategory =
   | 'services'
   | 'other'
 
-export type ClassifiedCondition = 
+// Keep old type for backward compatibility during transition
+export type ClassifiedCategory = MarketplaceCategory
+
+export type MarketplaceCondition = 
   | 'new'
   | 'like-new'
   | 'good'
   | 'fair'
   | 'poor'
 
-export type ClassifiedStatus = 
+// Keep old type for backward compatibility during transition
+export type ClassifiedCondition = MarketplaceCondition
+
+export type MarketplaceStatus = 
   | 'active'
   | 'sold'
   | 'expired'
   | 'removed'
+
+// Keep old type for backward compatibility during transition
+export type ClassifiedStatus = MarketplaceStatus
 
 export interface ApiResponse<T> {
   success: boolean

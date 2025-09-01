@@ -101,7 +101,7 @@ const Navigation = () => {
     { href: '/news', label: 'News', icon: Newspaper },
     { href: '/businesses', label: 'Businesses', icon: Building },
     { href: '/jobs', label: 'Jobs', icon: Briefcase },
-    { href: '/classifieds', label: 'Classifieds', icon: ShoppingBag },
+    { href: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
     // Only show admin link for super admins
     ...(isSuperAdmin ? [{ href: '/admin', label: 'Admin', icon: Shield }] : []),
   ];

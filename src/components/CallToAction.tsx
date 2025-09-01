@@ -113,7 +113,7 @@ const CallToAction = () => {
               </motion.div>
               <h3 className="text-lg sm:text-xl font-semibold mb-2">Find Opportunities</h3>
               <p className="text-blue-100 text-sm sm:text-base">
-                Explore job openings, classifieds, and volunteer opportunities
+                Explore job openings, marketplace deals, and volunteer opportunities
               </p>
             </div>
           </motion.div>

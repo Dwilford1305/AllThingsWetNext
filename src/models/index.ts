@@ -164,8 +164,8 @@ const JobSchema = new Schema({
   updatedAt: { type: Date, default: Date.now }
 })
 
-// Classified Schema
-const ClassifiedSchema = new Schema({
+// Marketplace Listing Schema (formerly Classified)
+const MarketplaceListingSchema = new Schema({
   id: { type: String, required: true, unique: true },
   title: { type: String, required: true },
   description: { type: String, required: true },
@@ -194,6 +194,9 @@ const ClassifiedSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 })
+
+// Keep old schema name for backward compatibility
+const ClassifiedSchema = MarketplaceListingSchema
 
 // Scraper Log Schema
 // NOTE: Added 'comprehensive' to enum to align with ComprehensiveScraperService.saveScrapingSession
@@ -290,7 +293,8 @@ export const Event = models.Event || model('Event', EventSchema)
 export const NewsArticle = models.NewsArticle || model('NewsArticle', NewsSchema)
 export const Business = models.Business || model('Business', BusinessSchema)
 export const JobPosting = models.JobPosting || model('JobPosting', JobSchema)
-export const Classified = models.Classified || model('Classified', ClassifiedSchema)
+export const MarketplaceListing = models.MarketplaceListing || model('MarketplaceListing', MarketplaceListingSchema)
+export const Classified = models.Classified || model('Classified', ClassifiedSchema) // Backward compatibility
 export const ScraperLog = models.ScraperLog || model('ScraperLog', ScraperLogSchema)
 export const ScraperConfig = models.ScraperConfig || model('ScraperConfig', ScraperConfigSchema)
 export const OfferCode = models.OfferCode || model('OfferCode', OfferCodeSchema)

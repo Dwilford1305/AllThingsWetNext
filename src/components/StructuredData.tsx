@@ -174,7 +174,7 @@ export function WebsiteStructuredData() {
       type="WebSite"
       data={{
         name: 'All Things Wetaskiwin',
-        description: 'Your comprehensive community hub for events, news, local businesses, jobs, and classifieds in Wetaskiwin, Alberta.',
+        description: 'Your comprehensive community hub for events, news, local businesses, jobs, and marketplace listings in Wetaskiwin, Alberta.',
         url: 'https://allthingswetaskiwin.com',
         sameAs: []
       }}

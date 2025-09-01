@@ -28,7 +28,7 @@ interface AdminStats {
     events: number;
     news: number;
     jobs: number;
-    classifieds: number;
+    marketplace: number;
   };
   scrapers: {
     lastRun: string;
@@ -154,7 +154,7 @@ export default function AdminPage() {
                     <div className="ml-4">
                       <p className="text-sm font-medium text-blue-200">Content Items</p>
                       <p className="text-2xl font-bold text-white">
-                        {stats.content.events + stats.content.news + stats.content.jobs + stats.content.classifieds}
+                        {stats.content.events + stats.content.news + stats.content.jobs + stats.content.marketplace}
                       </p>
                     </div>
                   </div>
@@ -162,7 +162,7 @@ export default function AdminPage() {
                     <span>{stats.content.events} Events</span>
                     <span>{stats.content.news} News</span>
                     <span>{stats.content.jobs} Jobs</span>
-                    <span>{stats.content.classifieds} Classifieds</span>
+                    <span>{stats.content.marketplace} Marketplace</span>
                   </div>
                 </Card>
 
