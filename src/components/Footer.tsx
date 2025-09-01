@@ -173,6 +173,9 @@ const Footer = () => {
               transition={{ duration: 0.6, delay: 0.5 }}
               className="flex flex-wrap justify-center sm:justify-end gap-4 sm:gap-6 text-xs sm:text-sm"
             >
+              <Link href="/about" className="text-gray-400 hover:text-blue-300 transition-colors">
+                About
+              </Link>
               <Link href="/privacy-policy" className="text-gray-400 hover:text-blue-300 transition-colors">
                 Privacy Policy
               </Link>
