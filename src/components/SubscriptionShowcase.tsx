@@ -62,7 +62,7 @@ const SubscriptionShowcase = () => {
   };
 
   return (
-    <section className="relative py-20 md:py-32 overflow-hidden">
+    <section className="relative py-20 md:py-32">
       {/* Background with gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-700 via-purple-700 to-blue-800" />
       <div className="absolute inset-0 bg-gradient-to-tl from-purple-800/20 via-transparent to-blue-800/15" />
@@ -125,7 +125,7 @@ const SubscriptionShowcase = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            viewport={{ once: true, amount: 0.1 }}
+            viewport={{ once: true, margin: "0px 0px 0px 0px", amount: 0.01 }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
           >
             {SUBSCRIPTION_TIERS.map((tier, index) => {
@@ -186,7 +186,7 @@ const SubscriptionShowcase = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            viewport={{ once: true, amount: 0.1 }}
+            viewport={{ once: true, margin: "0px 0px 0px 0px", amount: 0.01 }}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md sm:max-w-none mx-auto"
           >
             <motion.div
@@ -222,7 +222,7 @@ const SubscriptionShowcase = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            viewport={{ once: true, amount: 0.1 }}
+            viewport={{ once: true, margin: "0px 0px 0px 0px", amount: 0.01 }}
             className="mt-16 bg-white/10 backdrop-blur-sm rounded-2xl p-6 lg:p-8 max-w-4xl mx-auto"
           >
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">

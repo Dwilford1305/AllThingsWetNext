@@ -38,7 +38,7 @@ const ParallaxHero = () => {
   }, [])
 
   return (
-    <div ref={ref} className="relative h-screen overflow-hidden" style={{ willChange: 'transform' }}>
+    <div ref={ref} className="relative h-screen" style={{ willChange: 'transform' }}>
       {/* Water Tower Background - Balanced visibility and readability */}
       <motion.div
         style={{ 
