@@ -8,31 +8,85 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import AdPlaceholder from '@/components/AdPlaceholder';
-import { ShoppingBag, MapPin, User, Phone, Mail, Search, Filter, Image as ImageIcon } from 'lucide-react';
+import MarketplaceListingForm from '@/components/MarketplaceListingForm';
+import Comments from '@/components/Comments';
+import ReportModal from '@/components/ReportModal';
+import { ShoppingBag, MapPin, User, Phone, Mail, Search, Filter, Image as ImageIcon, Plus, Flag, MessageCircle, X } from 'lucide-react';
 import AnimatedSection from '@/components/AnimatedSection';
 import { motion } from 'framer-motion';
-import type { MarketplaceListing } from '@/types';
+import type { MarketplaceListing, ReportReason } from '@/types';
 
 const MarketplacePage = () => {
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
+  const [reportingListingId, setReportingListingId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchListings = async () => {
-      try {
-        const response = await fetch('/api/marketplace');
-        const data = await response.json();
-        if (data.success) {
-          setListings(data.data);
-        }
-      } catch (error) {
-        console.error('Error fetching marketplace listings:', error);
-      }
-    };
-
     fetchListings();
+    checkAuthentication();
   }, []);
+
+  const fetchListings = async () => {
+    try {
+      const response = await fetch('/api/marketplace');
+      const data = await response.json();
+      if (data.success) {
+        setListings(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching marketplace listings:', error);
+    }
+  };
+
+  const checkAuthentication = () => {
+    const token = localStorage.getItem('accessToken');
+    setIsAuthenticated(!!token);
+  };
+
+  const handleReportListing = async (reason: ReportReason, description: string) => {
+    if (!reportingListingId) return;
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        alert('You must be logged in to report listings');
+        return;
+      }
+
+      const response = await fetch(`/api/marketplace/${reportingListingId}/report`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ reason, description })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Update the listing to show it's been reported
+        setListings(prev => 
+          prev.map(listing => 
+            listing.id === reportingListingId 
+              ? { ...listing, isReported: true, reportCount: listing.reportCount + 1 }
+              : listing
+          )
+        );
+        setReportingListingId(null);
+        alert('Report submitted successfully. Our team will review it shortly.');
+      } else {
+        alert(result.error || 'Failed to submit report');
+      }
+    } catch (error) {
+      alert('An error occurred while submitting the report');
+      console.error('Report submission error:', error);
+    }
+  };
 
   const formatPrice = (price?: number) => {
     if (price === undefined || price === null) return 'Price on request';
@@ -137,6 +191,15 @@ const MarketplacePage = () => {
                       ))}
                     </select>
                   </div>
+                  {isAuthenticated && (
+                    <Button
+                      onClick={() => setShowCreateForm(true)}
+                      className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 whitespace-nowrap"
+                    >
+                      <Plus className="h-5 w-5" />
+                      Create Listing
+                    </Button>
+                  )}
                 </div>
               </div>
             </AnimatedSection>
@@ -234,6 +297,26 @@ const MarketplacePage = () => {
                           {formatDate(listing.createdAt)}
                         </span>
                         <div className="flex items-center space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setSelectedListing(listing)}
+                            className="bg-white/10 hover:bg-white/20 border-white/30 text-white"
+                          >
+                            <MessageCircle className="h-4 w-4 mr-1" />
+                            View Details
+                          </Button>
+                          {isAuthenticated && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setReportingListingId(listing.id)}
+                              className="bg-red-600/20 hover:bg-red-600/30 border-red-400/30 text-red-200"
+                              title="Report listing"
+                            >
+                              <Flag className="h-4 w-4" />
+                            </Button>
+                          )}
                           {listing.contactPhone && (
                             <Button size="sm" className="bg-green-600 hover:bg-green-700">
                               <Phone className="h-4 w-4" />
@@ -283,6 +366,145 @@ const MarketplacePage = () => {
           </div>
         </div>
       </div>
+
+      {/* Listing Creation Form Modal */}
+      <MarketplaceListingForm
+        isOpen={showCreateForm}
+        onClose={() => setShowCreateForm(false)}
+        onSuccess={() => {
+          fetchListings();
+          setShowCreateForm(false);
+        }}
+      />
+
+      {/* Listing Detail Modal with Comments */}
+      {selectedListing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-lg">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">{selectedListing.title}</h2>
+                <button
+                  onClick={() => setSelectedListing(null)}
+                  className="text-gray-500 hover:text-gray-700 p-2"
+                  type="button"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <div>
+                  {selectedListing.images && selectedListing.images.length > 0 ? (
+                    <div className="aspect-square bg-gray-200 rounded-lg overflow-hidden">
+                      <Image
+                        src={selectedListing.images[0]}
+                        alt={selectedListing.title}
+                        width={400}
+                        height={400}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                  ) : (
+                    <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
+                      <ImageIcon className="h-16 w-16 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Badge className="bg-primary-100 text-primary-800">
+                      {selectedListing.category.split('-').map(word => 
+                        word.charAt(0).toUpperCase() + word.slice(1)
+                      ).join(' ')}
+                    </Badge>
+                    <div className="text-2xl font-bold text-gray-900">
+                      {formatPrice(selectedListing.price)}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-2">Description</h3>
+                    <p className="text-gray-700 whitespace-pre-wrap">{selectedListing.description}</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium text-gray-600">Location:</span>
+                      <div className="flex items-center mt-1">
+                        <MapPin className="h-4 w-4 text-gray-400 mr-1" />
+                        {selectedListing.location}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-600">Contact:</span>
+                      <div className="flex items-center mt-1">
+                        <User className="h-4 w-4 text-gray-400 mr-1" />
+                        {selectedListing.contactName}
+                      </div>
+                    </div>
+                    {selectedListing.condition && (
+                      <div>
+                        <span className="font-medium text-gray-600">Condition:</span>
+                        <div className="mt-1">
+                          {selectedListing.condition.split('-').map(word => 
+                            word.charAt(0).toUpperCase() + word.slice(1)
+                          ).join(' ')}
+                        </div>
+                      </div>
+                    )}
+                    <div>
+                      <span className="font-medium text-gray-600">Posted:</span>
+                      <div className="mt-1">{formatDate(selectedListing.createdAt)}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 pt-4">
+                    {selectedListing.contactPhone && (
+                      <Button className="bg-green-600 hover:bg-green-700">
+                        <Phone className="h-4 w-4 mr-2" />
+                        Call
+                      </Button>
+                    )}
+                    {selectedListing.contactEmail && (
+                      <Button className="bg-blue-600 hover:bg-blue-700">
+                        <Mail className="h-4 w-4 mr-2" />
+                        Email
+                      </Button>
+                    )}
+                    {isAuthenticated && (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setReportingListingId(selectedListing.id);
+                          setSelectedListing(null);
+                        }}
+                        className="border-red-300 text-red-600 hover:bg-red-50"
+                      >
+                        <Flag className="h-4 w-4 mr-2" />
+                        Report
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Comments Section */}
+              <Comments listingId={selectedListing.id} isAuthenticated={isAuthenticated} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Report Listing Modal */}
+      <ReportModal
+        isOpen={reportingListingId !== null}
+        onClose={() => setReportingListingId(null)}
+        onSubmit={handleReportListing}
+        title="Report Listing"
+        description="Help us maintain a safe marketplace by reporting inappropriate listings."
+      />
     </FoldableLayout>
   );
 };

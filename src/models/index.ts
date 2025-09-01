@@ -197,7 +197,69 @@ const MarketplaceListingSchema = new Schema({
     enum: ['active', 'sold', 'expired', 'removed'],
     default: 'active'
   },
+  
+  // User reference and ownership
+  userId: { type: String, required: true }, // Owner of the listing
+  
+  // Moderation
+  isReported: { type: Boolean, default: false },
+  reportCount: { type: Number, default: 0 },
+  
   expiresAt: { type: Date, required: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+})
+
+// Marketplace Comment Schema
+const MarketplaceCommentSchema = new Schema({
+  id: { type: String, required: true, unique: true },
+  listingId: { type: String, required: true }, // Reference to marketplace listing
+  userId: { type: String, required: true }, // User who posted the comment
+  userName: { type: String, required: true }, // Cache user name for display
+  content: { type: String, required: true },
+  
+  // Moderation
+  isReported: { type: Boolean, default: false },
+  reportCount: { type: Number, default: 0 },
+  isHidden: { type: Boolean, default: false },
+  
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+})
+
+// Report Schema (for both listings and comments)
+const ReportSchema = new Schema({
+  id: { type: String, required: true, unique: true },
+  reporterUserId: { type: String, required: true }, // User who submitted the report
+  reporterName: { type: String, required: true }, // Cache reporter name
+  
+  // Content being reported
+  reportType: { 
+    type: String, 
+    enum: ['listing', 'comment'],
+    required: true 
+  },
+  contentId: { type: String, required: true }, // ID of listing or comment
+  contentType: { type: String }, // Additional context
+  
+  // Report details
+  reason: { 
+    type: String, 
+    enum: ['spam', 'inappropriate', 'scam', 'harassment', 'copyright', 'other'],
+    required: true 
+  },
+  description: { type: String, required: true },
+  
+  // Admin handling
+  status: { 
+    type: String, 
+    enum: ['pending', 'under_review', 'resolved', 'dismissed'],
+    default: 'pending'
+  },
+  adminUserId: { type: String }, // Admin who handled the report
+  adminNotes: { type: String },
+  resolvedAt: { type: Date },
+  
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 })
@@ -298,6 +360,8 @@ export const NewsArticle = models.NewsArticle || model('NewsArticle', NewsSchema
 export const Business = models.Business || model('Business', BusinessSchema)
 export const JobPosting = models.JobPosting || model('JobPosting', JobSchema)
 export const MarketplaceListing = models.MarketplaceListing || model('MarketplaceListing', MarketplaceListingSchema)
+export const MarketplaceComment = models.MarketplaceComment || model('MarketplaceComment', MarketplaceCommentSchema)
+export const Report = models.Report || model('Report', ReportSchema)
 export const ScraperLog = models.ScraperLog || model('ScraperLog', ScraperLogSchema)
 export const ScraperConfig = models.ScraperConfig || model('ScraperConfig', ScraperConfigSchema)
 export const OfferCode = models.OfferCode || model('OfferCode', OfferCodeSchema)

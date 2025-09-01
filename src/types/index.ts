@@ -204,10 +204,72 @@ export interface MarketplaceListing {
   images: string[]
   featured: boolean
   status: MarketplaceStatus
+  
+  // User reference and ownership
+  userId: string
+  
+  // Moderation
+  isReported: boolean
+  reportCount: number
+  
   expiresAt: Date
   createdAt: Date
   updatedAt: Date
 }
+
+export interface MarketplaceComment {
+  id: string
+  listingId: string
+  userId: string
+  userName: string
+  content: string
+  
+  // Moderation
+  isReported: boolean
+  reportCount: number
+  isHidden: boolean
+  
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Report {
+  id: string
+  reporterUserId: string
+  reporterName: string
+  
+  // Content being reported
+  reportType: 'listing' | 'comment'
+  contentId: string
+  contentType?: string
+  
+  // Report details
+  reason: ReportReason
+  description: string
+  
+  // Admin handling
+  status: ReportStatus
+  adminUserId?: string
+  adminNotes?: string
+  resolvedAt?: Date
+  
+  createdAt: Date
+  updatedAt: Date
+}
+
+export type ReportReason = 
+  | 'spam'
+  | 'inappropriate'
+  | 'scam'
+  | 'harassment'
+  | 'copyright'
+  | 'other'
+
+export type ReportStatus = 
+  | 'pending'
+  | 'under_review'
+  | 'resolved'
+  | 'dismissed'
 
 export type MarketplaceCategory = 
   | 'vehicles'
