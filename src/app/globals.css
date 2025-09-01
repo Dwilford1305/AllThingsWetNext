@@ -235,33 +235,82 @@ body {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }
 
-/* Mobile responsive utilities */
+/* Mobile-specific scroll optimization for subscription section */
 @media (max-width: 768px) {
+  /* Subscription showcase section mobile optimization */
+  .subscription-card {
+    /* Prevent any transform/scale animations on mobile that might interfere with scroll */
+    transform: none !important;
+    /* Allow only vertical scrolling gestures, prevent horizontal pan */
+    touch-action: pan-y !important;
+    /* Disable pointer events that might capture scroll gestures */
+    pointer-events: auto;
+  }
+  
+  /* Ensure framer motion doesn't interfere with mobile scroll in subscription section */
+  section[class*="relative"] [data-framer-component],
+  section[class*="relative"] [data-projection-id] {
+    /* Force GPU acceleration for better performance */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    /* Prevent layout shifts during animation */
+    will-change: auto;
+    /* Allow vertical scrolling only */
+    touch-action: pan-y;
+  }
+  
+  /* Subscription section specific scroll fixes */
+  section[class*="py-20"] {
+    /* Ensure the section doesn't create its own scroll context */
+    overflow: visible !important;
+    /* Prevent fixed positioning issues */
+    position: relative !important;
+    /* Force proper stacking context */
+    z-index: auto !important;
+  }
+  
+  /* Disable problematic hover states on touch devices */
+  @media (hover: none) and (pointer: coarse) {
+    .subscription-card:hover {
+      transform: none !important;
+      scale: 1 !important;
+    }
+    
+    /* Disable all hover transforms on mobile */
+    *[class*="hover:"]:hover {
+      transform: none !important;
+    }
+  }
+}
+
+/* Additional mobile scroll performance optimizations */
+@media (max-width: 768px) {
+  /* Optimize scroll performance for iOS */
   html {
-    font-size: 14px;
-    /* Ensure smooth scrolling on mobile */
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
   }
   
   body {
-    /* Prevent momentum scrolling issues on iOS */
     -webkit-overflow-scrolling: touch;
-    /* Ensure smooth scrolling */
     scroll-behavior: smooth;
+    /* Prevent momentum scrolling issues */
+    overscroll-behavior-y: contain;
   }
   
   /* Prevent sections from interfering with main scroll */
   section {
     position: relative;
     /* Remove any overflow that might interfere */
-    overflow: visible;
+    overflow: visible !important;
+    /* Ensure proper scroll delegation */
+    overscroll-behavior: auto;
   }
   
   /* Ensure main content areas don't create independent scroll areas */
   .relative {
     position: relative;
-    overflow: visible;
+    overflow: visible !important;
   }
 }
 

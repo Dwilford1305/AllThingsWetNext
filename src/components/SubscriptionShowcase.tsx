@@ -62,13 +62,13 @@ const SubscriptionShowcase = () => {
   };
 
   return (
-    <section className="relative py-20 md:py-32">
+    <section className="relative py-20 md:py-32 touch-pan-y">
       {/* Background with gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-700 via-purple-700 to-blue-800" />
       <div className="absolute inset-0 bg-gradient-to-tl from-purple-800/20 via-transparent to-blue-800/15" />
       
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 opacity-20">
+      {/* Animated Background Elements - Disabled on mobile to prevent scroll interference */}
+      <div className="absolute inset-0 opacity-20 hidden md:block">
         <motion.div
           animate={{ 
             scale: [1, 1.2, 1],
@@ -136,9 +136,8 @@ const SubscriptionShowcase = () => {
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 * index }}
-                  viewport={{ once: true }}
-                  whileHover={{ y: -10, scale: 1.02 }}
-                  className={`relative p-6 bg-white/10 backdrop-blur-sm rounded-2xl ${
+                  viewport={{ once: true, margin: "0px 0px 0px 0px", amount: 0.01 }}
+                  className={`relative p-6 bg-white/10 backdrop-blur-sm rounded-2xl transition-shadow duration-300 subscription-card ${
                     tier.popular ? 'ring-2 ring-white/30 shadow-2xl' : ''
                   }`}
                 >
@@ -190,8 +189,6 @@ const SubscriptionShowcase = () => {
             className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md sm:max-w-none mx-auto"
           >
             <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               className="w-full sm:w-auto"
             >
               <Link
@@ -203,8 +200,6 @@ const SubscriptionShowcase = () => {
               </Link>
             </motion.div>
             <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               className="w-full sm:w-auto"
             >
               <Link
@@ -228,7 +223,6 @@ const SubscriptionShowcase = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div className="text-center">
                 <motion.div
-                  whileHover={{ scale: 1.1, rotate: 5 }}
                   className="inline-block p-4 bg-white/20 rounded-full mb-4"
                 >
                   <Users className="h-8 w-8" />
@@ -240,7 +234,6 @@ const SubscriptionShowcase = () => {
               </div>
               <div className="text-center">
                 <motion.div
-                  whileHover={{ scale: 1.1, rotate: -5 }}
                   className="inline-block p-4 bg-white/20 rounded-full mb-4"
                 >
                   <BarChart3 className="h-8 w-8" />
@@ -252,7 +245,6 @@ const SubscriptionShowcase = () => {
               </div>
               <div className="text-center">
                 <motion.div
-                  whileHover={{ scale: 1.1, rotate: 5 }}
                   className="inline-block p-4 bg-white/20 rounded-full mb-4"
                 >
                   <HeadphonesIcon className="h-8 w-8" />
