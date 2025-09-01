@@ -114,7 +114,10 @@ export async function ensureSuperAdminTestBusiness() {
     }
 
     // Add business to super admin's businessIds if not already there
-    if (!superAdmin.businessIds.includes(TEST_BUSINESS_ID)) {
+    const businessIds = superAdmin.businessIds || []
+    console.log(`📋 Super admin current businessIds: [${businessIds.join(', ')}]`)
+    
+    if (!businessIds.includes(TEST_BUSINESS_ID)) {
       await User.findOneAndUpdate(
         { id: superAdmin.id },
         { 
@@ -123,6 +126,8 @@ export async function ensureSuperAdminTestBusiness() {
         }
       )
       console.log(`🔗 Linked test business to super admin account`)
+    } else {
+      console.log(`✅ Test business already linked to super admin account`)
     }
 
     return testBusiness
