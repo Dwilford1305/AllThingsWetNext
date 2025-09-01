@@ -1,6 +1,6 @@
 # All Things Wetaskiwin
 
-A modern, full-stack community hub application built with Next.js 15, TypeScript, Tailwind CSS, and MongoDB Atlas. This application serves as a central platform for the Wetaskiwin community to discover events, news, local businesses, job opportunities, and classified listings.
+A modern, full-stack community hub application built with Next.js 15, TypeScript, Tailwind CSS, and MongoDB Atlas. This application serves as a central platform for the Wetaskiwin community to discover events, news, local businesses, job opportunities, and marketplace listings.
 
 ## 🚀 Features
 

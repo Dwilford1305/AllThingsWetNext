@@ -209,10 +209,6 @@ export interface MarketplaceListing {
   updatedAt: Date
 }
 
-// Keep old interface for backward compatibility during transition
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface Classified extends MarketplaceListing {}
-
 export type MarketplaceCategory = 
   | 'vehicles'
   | 'real-estate'
@@ -226,9 +222,6 @@ export type MarketplaceCategory =
   | 'services'
   | 'other'
 
-// Keep old type for backward compatibility during transition
-export type ClassifiedCategory = MarketplaceCategory
-
 export type MarketplaceCondition = 
   | 'new'
   | 'like-new'
@@ -236,17 +229,11 @@ export type MarketplaceCondition =
   | 'fair'
   | 'poor'
 
-// Keep old type for backward compatibility during transition
-export type ClassifiedCondition = MarketplaceCondition
-
 export type MarketplaceStatus = 
   | 'active'
   | 'sold'
   | 'expired'
   | 'removed'
-
-// Keep old type for backward compatibility during transition
-export type ClassifiedStatus = MarketplaceStatus
 
 export interface ApiResponse<T> {
   success: boolean
