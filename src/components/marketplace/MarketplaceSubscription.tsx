@@ -46,6 +46,26 @@ interface UserSubscription {
   };
 }
 
+// API response structure from /api/marketplace/subscription
+interface ApiSubscriptionResponse {
+  tier: string;
+  status: string;
+  subscriptionStart?: Date | string;
+  subscriptionEnd?: Date | string;
+  adQuota: {
+    monthly: number;
+    used: number;
+    resetDate: Date | string;
+  };
+  features: {
+    featuredAds: boolean;
+    analytics: boolean;
+    prioritySupport: boolean;
+    photoLimit: number;
+    adDuration: number;
+  };
+}
+
 const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
   {
     id: 'free',
@@ -92,9 +112,30 @@ const MarketplaceSubscription = () => {
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
 
+  // Transform API response to component format
+  const transformApiResponse = (apiData: ApiSubscriptionResponse): UserSubscription => {
+    const remaining = apiData.adQuota.monthly === -1 || apiData.adQuota.monthly === 9999 
+      ? -1 // Unlimited
+      : Math.max(0, apiData.adQuota.monthly - apiData.adQuota.used);
+
+    return {
+      tier: apiData.tier,
+      status: apiData.status,
+      quota: {
+        monthly: apiData.adQuota.monthly,
+        used: apiData.adQuota.used,
+        remaining,
+        resetDate: typeof apiData.adQuota.resetDate === 'string' 
+          ? apiData.adQuota.resetDate 
+          : apiData.adQuota.resetDate.toString()
+      },
+      features: apiData.features
+    };
+  };
+
   useEffect(() => {
     fetchSubscriptionInfo();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchSubscriptionInfo = async () => {
     try {
@@ -103,7 +144,9 @@ const MarketplaceSubscription = () => {
       
       // Handle successful response
       if (data.success && data.currentSubscription) {
-        setCurrentSubscription(data.currentSubscription);
+        // Transform API response to component format
+        const transformedSubscription = transformApiResponse(data.currentSubscription);
+        setCurrentSubscription(transformedSubscription);
       } else if (response.status === 401) {
         // User not authenticated - show default free tier
         setCurrentSubscription(null);
