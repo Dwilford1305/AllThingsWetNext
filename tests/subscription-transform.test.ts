@@ -148,4 +148,48 @@ describe('subscription data transformation', () => {
 
     expect(result.quota.remaining).toBe(0); // Should be 0, not negative
   });
+
+  it('should prevent client-side error that occurred before fix', () => {
+    // This simulates the exact API response that was causing the client-side error
+    const problematicApiResponse: ApiSubscriptionResponse = {
+      tier: 'platinum',
+      status: 'active',
+      adQuota: { // API returns 'adQuota', not 'quota'
+        monthly: 9999,
+        used: 0,
+        resetDate: new Date() // API returns Date object, not string
+        // No 'remaining' field returned by API
+      },
+      features: {
+        featuredAds: true,
+        analytics: true,
+        prioritySupport: true,
+        photoLimit: 20,
+        adDuration: 90
+      }
+    };
+
+    // Before our fix, this would cause: TypeError: Cannot read properties of undefined (reading 'remaining')
+    // Because the component would try to access apiResponse.quota.remaining
+    // But API returns apiResponse.adQuota (without remaining field)
+    
+    // Our fix transforms the data properly:
+    const transformed = transformApiResponse(problematicApiResponse);
+    
+    // These accesses should work without throwing errors:
+    expect(transformed.quota).toBeDefined();
+    expect(transformed.quota.remaining).toBeDefined();
+    expect(transformed.quota.monthly).toBe(9999);
+    expect(transformed.quota.used).toBe(0);
+    expect(transformed.quota.remaining).toBe(-1); // Unlimited
+    expect(typeof transformed.quota.resetDate).toBe('string');
+    
+    // The component can now safely access these properties without errors
+    expect(() => {
+      const remaining = transformed.quota.remaining;
+      const monthly = transformed.quota.monthly; 
+      const resetDate = new Date(transformed.quota.resetDate);
+      return { remaining, monthly, resetDate };
+    }).not.toThrow();
+  });
 });
