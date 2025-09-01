@@ -13,7 +13,16 @@ export async function GET(
   try {
     await connectDB()
     
-    const listingId = (context?.params as { id?: string } | undefined)?.id
+    // Next.js 15: params may be thenable; await if needed
+    type ParamsMaybe = { id?: string } | Promise<{ id: string }> | undefined
+    const rawParams = (context as { params?: ParamsMaybe } | undefined)?.params
+    let listingId: string | undefined
+    if (rawParams && typeof (rawParams as { then?: unknown }).then === 'function') {
+      const awaited = await (rawParams as Promise<{ id: string }>)
+      listingId = awaited.id
+    } else {
+      listingId = (rawParams as { id?: string } | undefined)?.id
+    }
     if (!listingId) {
       return NextResponse.json(
         { success: false, error: 'Listing ID missing' },
@@ -63,7 +72,16 @@ async function addComment(
   try {
     await connectDB()
     
-    const listingId = (context?.params as { id?: string } | undefined)?.id
+    // Next.js 15: params may be thenable; await if needed
+    type ParamsMaybe = { id?: string } | Promise<{ id: string }> | undefined
+    const rawParams = (context as { params?: ParamsMaybe } | undefined)?.params
+    let listingId: string | undefined
+    if (rawParams && typeof (rawParams as { then?: unknown }).then === 'function') {
+      const awaited = await (rawParams as Promise<{ id: string }>)
+      listingId = awaited.id
+    } else {
+      listingId = (rawParams as { id?: string } | undefined)?.id
+    }
     if (!listingId) {
       return NextResponse.json(
         { success: false, error: 'Listing ID missing' },
@@ -71,12 +89,24 @@ async function addComment(
       )
     }
     
-    const userId = request.user?.id
+  // Resolve user from id or email (supports Auth0 cookie sessions)
+  let userId = request.user?.id
     if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'User not authenticated' },
-        { status: 401 }
-      )
+      const email = (request.user as unknown as { email?: string } | undefined)?.email
+      if (!email) {
+        return NextResponse.json(
+          { success: false, error: 'User not authenticated' },
+          { status: 401 }
+        )
+      }
+  const userByEmail = await User.findOne({ email })
+  if (!userByEmail) {
+        return NextResponse.json(
+          { success: false, error: 'User not found' },
+          { status: 404 }
+        )
+      }
+  userId = userByEmail.id
     }
 
     // Verify listing exists
@@ -99,8 +129,8 @@ async function addComment(
     }
 
     // Get user info for display name
-    const user = await User.findOne({ id: userId })
-    if (!user) {
+  const user = await User.findOne({ id: userId })
+  if (!user) {
       return NextResponse.json(
         { success: false, error: 'User not found' },
         { status: 404 }

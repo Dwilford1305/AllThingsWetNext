@@ -12,7 +12,15 @@ async function reportComment(
   try {
     await connectDB()
     
-    const commentId = (context?.params as { id?: string } | undefined)?.id
+    type ParamsMaybe = { id?: string } | Promise<{ id: string }> | undefined
+    const rawParams = (context as { params?: ParamsMaybe } | undefined)?.params
+    let commentId: string | undefined
+    if (rawParams && typeof (rawParams as { then?: unknown }).then === 'function') {
+      const awaited = await (rawParams as Promise<{ id: string }>)
+      commentId = awaited.id
+    } else {
+      commentId = (rawParams as { id?: string } | undefined)?.id
+    }
     if (!commentId) {
       return NextResponse.json(
         { success: false, error: 'Comment ID missing' },

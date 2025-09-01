@@ -65,12 +65,18 @@ async function getSubscriptionInfo(request: AuthenticatedRequest) {
     }
 
     // Fetch the actual user data from database to get current subscription
-    const user = await User.findOne({ id: userId })
+    let user = await User.findOne({ id: userId })
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      )
+      const email = (request.user as unknown as { email?: string } | undefined)?.email
+      if (email) {
+        user = await User.findOne({ email })
+      }
+      if (!user) {
+        return NextResponse.json(
+          { success: false, error: 'User not found' },
+          { status: 404 }
+        )
+      }
     }
 
     // Get current subscription or default for new users

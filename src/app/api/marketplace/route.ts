@@ -69,12 +69,22 @@ async function createListing(request: AuthenticatedRequest) {
       )
     }
 
+    // Build base URL from the incoming request to preserve domain/cookies
+    const baseUrl = request.nextUrl.origin
+
+    // Forward cookies and auth/CSRF headers for internal calls
+    const forwardHeaders: Record<string, string> = {}
+    const authHeader = request.headers.get('authorization')
+    if (authHeader) forwardHeaders['Authorization'] = authHeader
+    const cookieHeader = request.headers.get('cookie')
+    if (cookieHeader) forwardHeaders['Cookie'] = cookieHeader
+    const csrfHeader = request.headers.get('x-csrf-token')
+    if (csrfHeader) forwardHeaders['X-CSRF-Token'] = csrfHeader
+
     // Check quota by calling the quota API internally
-    const quotaResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/marketplace/quota`, {
+    const quotaResponse = await fetch(`${baseUrl}/api/marketplace/quota`, {
       method: 'GET',
-      headers: {
-        'Authorization': request.headers.get('authorization') || '',
-      }
+      headers: forwardHeaders
     })
 
     if (!quotaResponse.ok) {
@@ -93,12 +103,9 @@ async function createListing(request: AuthenticatedRequest) {
     }
 
     // Use quota by calling the quota API internally
-    const useQuotaResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/marketplace/quota`, {
+  const useQuotaResponse = await fetch(`${baseUrl}/api/marketplace/quota`, {
       method: 'POST',
-      headers: {
-        'Authorization': request.headers.get('authorization') || '',
-        'Content-Type': 'application/json'
-      }
+      headers: { ...forwardHeaders, 'Content-Type': 'application/json' }
     })
 
     if (!useQuotaResponse.ok) {
@@ -108,7 +115,7 @@ async function createListing(request: AuthenticatedRequest) {
       )
     }
 
-    // Create the listing
+  // Create the listing
     const listingId = uuidv4()
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 30) // Default 30 days
@@ -133,12 +140,19 @@ async function createListing(request: AuthenticatedRequest) {
       reportCount: 0
     })
 
-    await listing.save()
+  await listing.save()
+
+  // Parse quota after usage to return updated info to client
+  const usedQuota = await useQuotaResponse.json().catch(() => null)
+  const updatedQuota = usedQuota?.data?.quota
 
     return NextResponse.json({
       success: true,
       message: 'Marketplace listing created successfully',
-      data: listing
+      data: {
+        listing,
+        quota: updatedQuota || null
+      }
     })
 
   } catch (error) {

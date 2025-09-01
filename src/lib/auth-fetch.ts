@@ -1,4 +1,4 @@
-import { getCsrfToken } from './csrf';
+import { getCsrfToken, ensureCsrfCookie } from './csrf';
 
 /**
  * Make authenticated API requests that work with both Auth0 and JWT token authentication
@@ -14,6 +14,8 @@ export async function authenticatedFetch(
   // Add CSRF token for state-changing requests
   const method = (options.method || 'GET').toUpperCase();
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+  // Ensure CSRF cookie exists before sending header
+  if (typeof window !== 'undefined') ensureCsrfCookie();
     const csrfToken = getCsrfToken();
     if (csrfToken) {
       headers.set('X-CSRF-Token', csrfToken);

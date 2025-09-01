@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card'
 import { X, AlertCircle } from 'lucide-react'
 import type { MarketplaceListing, MarketplaceCategory, MarketplaceCondition } from '@/types'
 import { useAuth } from '@/hooks/useAuth'
+import { ensureCsrfCookie } from '@/lib/csrf'
 import { authenticatedFetch } from '@/lib/auth-fetch'
 
 interface MarketplaceListingFormProps {
@@ -100,6 +101,8 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
 
   useEffect(() => {
     if (isOpen && !listing) {
+  // Ensure CSRF cookie exists for POST/PUT requests
+  if (typeof window !== 'undefined') ensureCsrfCookie()
       checkQuota()
     }
   }, [isOpen, listing, checkQuota])
@@ -139,11 +142,16 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
         body: JSON.stringify(submitData)
       })
 
-      const result = await response.json()
+  const result = await response.json()
 
       if (result.success) {
         onSuccess?.()
         onClose()
+        const q = result.data?.quota
+        if (q) {
+          // Basic success notice; integrate with your toast system if present
+          alert(`Listing created. Remaining this month: ${q.monthly === -1 ? 'Unlimited' : q.remaining}/${q.monthly === -1 ? 'Unlimited' : q.monthly}`)
+        }
         // Reset form for new listings
         if (!listing) {
           setFormData({
@@ -189,27 +197,28 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
             </button>
           </div>
 
-          {/* Quota info for new listings */}
-          {!listing && quota && (
+      {/* Quota info for new listings */}
+      {!listing && (
             <div className={`mb-6 p-4 rounded-lg border ${
-              quota.hasQuotaAvailable === true 
+        quota?.hasQuotaAvailable === true 
                 ? 'bg-green-50 border-green-200' 
                 : 'bg-red-50 border-red-200'
             }`}>
               <div className="flex items-center gap-2">
                 <AlertCircle className={`h-5 w-5 ${
-                  quota.hasQuotaAvailable === true ? 'text-green-600' : 'text-red-600'
+          quota?.hasQuotaAvailable === true ? 'text-green-600' : 'text-red-600'
                 }`} />
                 <div>
                   <p className={`font-medium ${
-                    quota.hasQuotaAvailable === true ? 'text-green-800' : 'text-red-800'
+          quota?.hasQuotaAvailable === true ? 'text-green-800' : 'text-red-800'
                   }`}>
-                    {quota.hasQuotaAvailable === true 
-                      ? `Listings Available: ${quota.remaining}/${quota.monthly === -1 ? 'Unlimited' : quota.monthly}`
-                      : 'Quota Exceeded'
-                    }
+          {quota
+            ? (quota.hasQuotaAvailable === true 
+              ? `Listings Available: ${quota.remaining}/${quota.monthly === -1 ? 'Unlimited' : quota.monthly}`
+              : 'Quota Exceeded')
+            : 'Checking your quota...'}
                   </p>
-                  {quota.hasQuotaAvailable === false && (
+          {quota?.hasQuotaAvailable === false && (
                     <p className="text-red-700 text-sm mt-1">
                       You&apos;ve used all your monthly listings. Upgrade your subscription for more.
                     </p>

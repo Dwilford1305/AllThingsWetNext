@@ -12,7 +12,15 @@ async function reportListing(
   try {
     await connectDB()
     
-    const listingId = (context?.params as { id?: string } | undefined)?.id
+    type ParamsMaybe = { id?: string } | Promise<{ id: string }> | undefined
+    const rawParams = (context as { params?: ParamsMaybe } | undefined)?.params
+    let listingId: string | undefined
+    if (rawParams && typeof (rawParams as { then?: unknown }).then === 'function') {
+      const awaited = await (rawParams as Promise<{ id: string }>)
+      listingId = awaited.id
+    } else {
+      listingId = (rawParams as { id?: string } | undefined)?.id
+    }
     if (!listingId) {
       return NextResponse.json(
         { success: false, error: 'Listing ID missing' },

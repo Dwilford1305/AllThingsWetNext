@@ -35,7 +35,6 @@ export async function authenticate(request: NextRequest) {
     }
 
     if (token) {
-      const tokenCameFromHeader = !!(authHeader && authHeader.startsWith('Bearer '))
       try {
         const decoded = AuthService.verifyAccessToken(token)
         const session = await UserSession.findOne({
@@ -44,18 +43,9 @@ export async function authenticate(request: NextRequest) {
           expiresAt: { $gt: new Date() }
         })
 
-        if (!session) {
-          // If token provided via header, hard fail; if via cookie, ignore and try Auth0 fallback
-          if (tokenCameFromHeader) {
-            return { error: 'Invalid or expired session', status: 401 }
-          }
-        } else {
+        if (session) {
           const user = await User.findOne({ id: decoded.userId, isActive: true })
-          if (!user) {
-            if (tokenCameFromHeader) {
-              return { error: 'User not found or inactive', status: 401 }
-            }
-          } else {
+          if (user) {
             await UserSession.updateOne(
               { _id: session._id },
               { lastUsedAt: new Date() }
@@ -66,11 +56,9 @@ export async function authenticate(request: NextRequest) {
             }
           }
         }
+        // If session or user not found, fall through to Auth0 cookie-based auth
       } catch (_e) {
-        // If token path fails unexpectedly, continue to Auth0 fallback
-        if (tokenCameFromHeader) {
-          return { error: 'Invalid or expired token', status: 401 }
-        }
+        // On token verification error, fall through to Auth0 cookie-based auth
       }
     }
 

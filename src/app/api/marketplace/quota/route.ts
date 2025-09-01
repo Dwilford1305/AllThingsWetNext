@@ -20,46 +20,78 @@ async function checkQuota(request: AuthenticatedRequest) {
     await connectDB()
     
     const userId = request.user?.id
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'User not authenticated' },
-        { status: 401 }
-      )
-    }
-
-    const user = await User.findOne({ id: userId })
+    let user = userId ? await User.findOne({ id: userId }) : null
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      )
+      // Try resolving by email when coming from Auth0 fallback in auth middleware
+      const email = (request.user as unknown as { email?: string } | undefined)?.email
+      if (!email) {
+        return NextResponse.json(
+          { success: false, error: 'User not authenticated' },
+          { status: 401 }
+        )
+      }
+      user = await User.findOne({ email })
+      if (!user) {
+        return NextResponse.json(
+          { success: false, error: 'User not found' },
+          { status: 404 }
+        )
+      }
     }
 
-    // Initialize marketplace subscription if it doesn't exist
+    // Ensure marketplace subscription exists; prime admin/super_admin users with higher quotas
     if (!user.marketplaceSubscription) {
       user.marketplaceSubscription = {
-        tier: 'free',
-        status: 'inactive',
+        tier: ['admin','super_admin'].includes(user.role) ? 'platinum' : 'free',
+        status: ['admin','super_admin'].includes(user.role) ? 'active' : 'inactive',
         adQuota: {
-          monthly: 1,
+          monthly: ['admin','super_admin'].includes(user.role) ? 9999 : 1,
           used: 0,
           resetDate: getNextResetDate()
         },
         features: {
-          featuredAds: false,
-          analytics: false,
-          prioritySupport: false,
-          photoLimit: 1,
-          adDuration: 30
+          featuredAds: ['admin','super_admin'].includes(user.role),
+          analytics: ['admin','super_admin'].includes(user.role),
+          prioritySupport: ['admin','super_admin'].includes(user.role),
+          photoLimit: ['admin','super_admin'].includes(user.role) ? 20 : 1,
+          adDuration: ['admin','super_admin'].includes(user.role) ? 90 : 30
         }
       }
       await user.save()
     }
 
     const subscription = user.marketplaceSubscription
+
+    // Sanitize invalid tier values (e.g., legacy 'unlimited') before any save
+    const allowedTiers = new Set(['free','silver','gold','platinum'])
+    if (!allowedTiers.has(subscription.tier as string)) {
+      subscription.tier = user.role === 'super_admin' ? 'platinum' : 'free'
+      subscription.status = subscription.status || (subscription.tier === 'platinum' ? 'active' : 'inactive')
+      if (!subscription.adQuota) {
+        subscription.adQuota = { monthly: subscription.tier === 'platinum' ? 9999 : 1, used: 0, resetDate: getNextResetDate() }
+      }
+      if (subscription.tier === 'platinum') {
+        subscription.adQuota.monthly = 9999
+      }
+  // Persist correction so subsequent saves don't fail validation
+  user.markModified('marketplaceSubscription')
+  await user.save()
+    }
+    // Force unlimited for super_admin regardless of stored values
+    if (user.role === 'super_admin') {
+      subscription.tier = 'platinum'
+      subscription.status = 'active'
+      subscription.adQuota.monthly = 9999
+      if (!subscription.features) subscription.features = { featuredAds: true, analytics: true, prioritySupport: true, photoLimit: 20, adDuration: 90 }
+      subscription.features.featuredAds = true
+      subscription.features.analytics = true
+      subscription.features.prioritySupport = true
+      subscription.features.photoLimit = 20
+      subscription.features.adDuration = 90
+    }
     let quotaReset = false
 
-    // Check if quota needs reset
+  // Check if quota needs reset
     if (shouldResetQuota(subscription.adQuota.resetDate)) {
       subscription.adQuota.used = 0
       subscription.adQuota.resetDate = getNextResetDate()
@@ -68,7 +100,7 @@ async function checkQuota(request: AuthenticatedRequest) {
     }
 
     const quota = subscription.adQuota
-    const hasQuotaAvailable = quota.monthly === 9999 || quota.used < quota.monthly // 9999 = unlimited
+  const hasQuotaAvailable = quota.monthly === 9999 || quota.used < quota.monthly // 9999 = unlimited
     
     return NextResponse.json({
       success: true,
@@ -106,17 +138,26 @@ async function useQuota(request: AuthenticatedRequest) {
     await connectDB()
     
     const userId = request.user?.id
-    if (!userId) {
+    let user = userId ? await User.findOne({ id: userId }) : null
+    if (!user) {
+      const email = (request.user as unknown as { email?: string } | undefined)?.email
+      if (!email) {
+        return NextResponse.json(
+          { success: false, error: 'User not authenticated' },
+          { status: 401 }
+        )
+      }
+      user = await User.findOne({ email })
+    }
+    if (!user) {
       return NextResponse.json(
-        { success: false, error: 'User not authenticated' },
-        { status: 401 }
+        { success: false, error: 'User not found' },
+        { status: 404 }
       )
     }
-
-    const user = await User.findOne({ id: userId })
-    if (!user || !user.marketplaceSubscription) {
+    if (!user.marketplaceSubscription) {
       return NextResponse.json(
-        { success: false, error: 'User or subscription not found' },
+        { success: false, error: 'Subscription not found' },
         { status: 404 }
       )
     }

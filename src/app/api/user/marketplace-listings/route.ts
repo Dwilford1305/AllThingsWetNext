@@ -10,20 +10,32 @@ async function getUserListings(request: AuthenticatedRequest) {
     await connectDB()
     
     const userId = request.user?.id
-    if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'User not authenticated' },
-        { status: 401 }
-      )
+    let effectiveUserId = userId
+    if (!effectiveUserId) {
+      const email = (request.user as unknown as { email?: string } | undefined)?.email
+      if (!email) {
+        return NextResponse.json(
+          { success: false, error: 'User not authenticated' },
+          { status: 401 }
+        )
+      }
+      // Load user by email to get their id
+      const { User } = await import('@/models/auth')
+      const dbUser = await User.findOne({ email })
+      if (!dbUser) {
+        return NextResponse.json(
+          { success: false, error: 'User not found' },
+          { status: 404 }
+        )
+      }
+      effectiveUserId = dbUser.id
     }
 
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status') || 'active'
     const limit = parseInt(searchParams.get('limit') || '50')
 
-    const query: Record<string, unknown> = {
-      userId: userId
-    }
+  const query: Record<string, unknown> = { userId: effectiveUserId }
 
     if (status !== 'all') {
       query.status = status

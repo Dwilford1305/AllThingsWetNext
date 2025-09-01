@@ -6,6 +6,8 @@ import { Card } from '@/components/ui/Card'
 import { MessageCircle, Flag, Send, AlertTriangle } from 'lucide-react'
 import type { MarketplaceComment } from '@/types'
 import ReportModal from './ReportModal'
+import { authenticatedFetch } from '@/lib/auth-fetch'
+import { ensureCsrfCookie } from '@/lib/csrf'
 
 interface CommentsProps {
   listingId: string
@@ -50,19 +52,12 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
     setError('')
 
     try {
-      const token = localStorage.getItem('accessToken')
-      if (!token) {
-        setError('You must be logged in to comment')
-        setIsSubmitting(false)
-        return
-      }
+      // Ensure CSRF cookie exists for double-submit protection
+      if (typeof window !== 'undefined') ensureCsrfCookie()
 
-      const response = await fetch(`/api/marketplace/${listingId}/comments`, {
+      const response = await authenticatedFetch(`/api/marketplace/${listingId}/comments`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: newComment.trim() })
       })
 
@@ -75,7 +70,7 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
         setError(result.error || 'Failed to add comment')
       }
     } catch (error) {
-      setError('An error occurred while adding the comment')
+  setError('An error occurred while adding the comment')
       console.error('Comment submission error:', error)
     } finally {
       setIsSubmitting(false)
@@ -86,18 +81,11 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
     if (!reportingCommentId) return
 
     try {
-      const token = localStorage.getItem('accessToken')
-      if (!token) {
-        setError('You must be logged in to report comments')
-        return
-      }
+      if (typeof window !== 'undefined') ensureCsrfCookie()
 
-      const response = await fetch(`/api/marketplace/comments/${reportingCommentId}/report`, {
+      const response = await authenticatedFetch(`/api/marketplace/comments/${reportingCommentId}/report`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason, description })
       })
 
@@ -191,7 +179,7 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
             <Button
               type="submit"
               disabled={isSubmitting || !newComment.trim()}
-              className="bg-primary-600 hover:bg-primary-700"
+              variant="primary"
               size="sm"
             >
               <Send className="h-4 w-4 mr-2" />
