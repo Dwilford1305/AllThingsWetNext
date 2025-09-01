@@ -1,76 +1,63 @@
 # About All Things Wetaskiwin
 
-**Your Community Hub for Wetaskiwin, Alberta**
+## Bringing Our Community Together
 
-All Things Wetaskiwin is your comprehensive digital gateway to everything happening in our vibrant community. We connect residents, businesses, and visitors with local events, news, business opportunities, job postings, and community resources all in one convenient location.
+All Things Wetaskiwin is all about making life easier for everyone in our community. Instead of checking multiple websites, social media pages, and bulletin boards to find out what's happening in town, you can come here to find everything in one place.
+
+Whether you're looking for local events, checking out businesses in town, hunting for a job, or wanting to sell something, we've got you covered.
 
 ## Our Mission
 
-Our mission is to strengthen community connections by providing a central hub where residents can:
+We're working to bring all of Wetaskiwin's information and resources together on one website so that:
 
-- **Discover Local Events**: From community festivals to sports activities, cultural events, and municipal meetings
-- **Stay Informed**: Access the latest local news and important community announcements  
-- **Support Local Business**: Find and connect with Wetaskiwin's diverse business community
-- **Find Opportunities**: Explore local job openings and career possibilities
-- **Connect & Trade**: Buy, sell, and trade items with fellow community members through our classifieds
+- You can easily find local events and activities
+- You can discover and support our amazing local businesses
+- You can find job opportunities right here in town
+- You can stay up-to-date with local news
+- You can buy, sell, and trade with your neighbors
 
-We believe that informed, connected communities are stronger communities. By bringing together information that was previously scattered across multiple sources, we make it easier for everyone to participate in and contribute to Wetaskiwin's growth and vitality.
+Our goal is simple: make it easier for our community to stay connected and informed.
 
-## About the Developer
+## Meet the Developer
 
-All Things Wetaskiwin was created by **Derek Wilford**, a passionate developer dedicated to building digital solutions that make a real difference in people's lives. Derek brings years of experience in full-stack development and a deep commitment to community building through technology.
+Hi there! I'm **Derek Wilford**, and I'm the person behind All Things Wetaskiwin. This is actually my first big project, and I'm pretty excited about it!
 
-Learn more about Derek and his other projects at [derekwilford.ca](https://derekwilford.ca).
+I've always loved Wetaskiwin and wanted to do something to help our community. After working in the tech world for a while, I decided to take the leap and try to build something that could really make a difference for people here.
 
-## Built with AI Assistance
+You can learn more about me and my work at [derekwilford.ca](https://derekwilford.ca).
 
-This project represents an exciting experiment in modern software development, demonstrating how individual developers can leverage artificial intelligence to create professional-grade applications. All Things Wetaskiwin was built with extensive assistance from **GitHub Copilot**, Microsoft's AI-powered coding assistant.
+## Building a Business with AI Help
 
-Throughout the development process, GitHub Copilot helped with:
+Here's something pretty cool - I'm building this entire website with help from artificial intelligence! I use AI tools to help me write code, solve problems, and figure out how to build new features. It's like having a really smart coding buddy who's available 24/7.
 
-- **Code Generation**: Writing complex functions, components, and API endpoints
-- **Problem Solving**: Debugging issues and suggesting optimal solutions
-- **Best Practices**: Ensuring code follows modern development standards
-- **Documentation**: Creating comprehensive documentation and comments
-- **Testing**: Developing test suites and validation processes
+This is part of my bigger plan to build a profitable business that serves our community. I believe that with the help of AI, one person can now do what used to take a whole team of developers. It's pretty amazing what's possible these days!
 
-### Proving AI's Potential for Small Business
+By using AI assistance, I can focus more on what matters most - making sure this website is useful for everyone in Wetaskiwin.
 
-This project serves as a proof of concept that demonstrates how individual developers and small businesses can now compete with larger development teams by strategically leveraging AI tools. What once required extensive development resources can now be accomplished by passionate individuals with the right AI assistance.
+## A Work in Progress
 
-The combination of human creativity, business acumen, and AI-powered development capabilities opens new possibilities for entrepreneurs and small businesses to bring their digital visions to life efficiently and professionally.
+I want to be honest with you - this website is still growing and improving. I'm constantly adding new features, fixing things that aren't quite right, and trying to make it better based on what people tell me they need.
 
-## Technology Stack
+If you have ideas, find something that's not working, or just want to chat about the project, I'd love to hear from you!
 
-All Things Wetaskiwin is built using modern web technologies:
+## How You Can Help
 
-- **Next.js 15** - React framework with App Router
-- **TypeScript** - Type-safe development
-- **Tailwind CSS** - Modern, responsive styling
-- **MongoDB Atlas** - Cloud-based database
-- **Vercel** - Deployment and hosting platform
+The best way to help is simple: use the website! The more people who find events, support local businesses, and share information here, the more valuable it becomes for everyone.
 
-The application features automated content collection, mobile-responsive design, and progressive web app capabilities, all while maintaining high performance and accessibility standards.
+You can also:
+- Tell your friends and neighbors about the site
+- Let me know if you find any problems
+- Suggest new features or improvements
+- Share your local events and news
 
-## Community Partnership
+## Get in Touch
 
-We work closely with official community sources including:
+Questions? Ideas? Just want to say hi?
 
-- **City of Wetaskiwin** - Official municipal information and business directory
-- **Connect Wetaskiwin** - Community events and activities
-- **The Wetaskiwin Times** - Local news coverage
-- **Pipestone Flyer** - Regional news and events
+**Email me**: [allthingswetaskiwin@gmail.com](mailto:allthingswetaskiwin@gmail.com?subject=About%20All%20Things%20Wetaskiwin)
 
-All content is ethically sourced with proper attribution and links back to original publishers.
-
-## Contact Us
-
-Have questions, suggestions, or want to get involved? We'd love to hear from you!
-
-**Email**: [allthingswetaskiwin@gmail.com](mailto:allthingswetaskiwin@gmail.com?subject=About%20All%20Things%20Wetaskiwin)
-
-**Developer Contact**: For technical inquiries or collaboration opportunities, reach out to Derek at [derekwilford.ca](https://derekwilford.ca)
+**Learn more about me**: [derekwilford.ca](https://derekwilford.ca)
 
 ---
 
-*All Things Wetaskiwin - Connecting Community, One Click at a Time*
+Thanks for being part of this journey. Together, we're building something great for Wetaskiwin!
