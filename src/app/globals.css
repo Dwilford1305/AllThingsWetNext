@@ -817,14 +817,14 @@ nav button[class*="text-gray-"] {
 
 /* Mobile responsive improvements for profile page */
 @media (max-width: 767px) {
-  /* Make profile tabs horizontal on mobile */
+  /* Make profile tabs horizontal on mobile - use CSS Grid for better control */
   .profile-page nav.space-y-1 {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-    justify-content: center;
-    padding: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.375rem;
+    padding: 0.75rem;
+    max-width: 100%;
+    overflow: visible;
   }
   
   .profile-page nav.space-y-1 > * + * {
@@ -832,30 +832,37 @@ nav button[class*="text-gray-"] {
   }
   
   .profile-tab-button {
-    flex: 1;
-    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 0.75rem 0.25rem;
+    padding: 0.625rem 0.375rem;
     border-radius: 0.5rem;
-    min-height: 44px; /* Ensure minimum touch target */
+    min-height: 52px; /* Larger touch target for mobile */
+    max-width: 100%;
+    word-break: break-word;
+    hyphens: auto;
   }
   
   .profile-tab-button span {
-    font-size: 0.625rem;
+    font-size: 0.75rem; /* Slightly larger than before */
     display: block;
-    line-height: 1.2;
-    margin-top: 0.125rem;
-    word-break: break-word;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.1;
+    margin-top: 0.25rem;
+    text-align: center;
+    white-space: normal; /* Allow text to wrap */
+    overflow-wrap: break-word;
+    hyphens: auto;
+    max-width: 100%;
   }
   
   .profile-tab-button svg {
     margin-right: 0;
     margin-bottom: 0.125rem;
     flex-shrink: 0;
+    width: 16px;
+    height: 16px;
   }
   
   /* Adjust grid layout for mobile */
@@ -864,15 +871,57 @@ nav button[class*="text-gray-"] {
   }
 }
 
-/* Tablet improvements */
-@media (min-width: 768px) and (max-width: 1023px) {
+/* Very small mobile devices - stack tabs in 2 columns */
+@media (max-width: 480px) {
+  .profile-page nav.space-y-1 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+  
+  .profile-tab-button {
+    min-height: 58px; /* Slightly taller for better readability */
+    padding: 0.75rem 0.5rem;
+  }
+  
   .profile-tab-button span {
-    display: inline;
-    font-size: 0.875rem;
+    font-size: 0.8125rem; /* 13px - more readable on small screens */
+    line-height: 1.2;
   }
   
   .profile-tab-button svg {
-    margin-right: 0.5rem;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Tablet improvements */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .profile-page nav.space-y-1 {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+  
+  .profile-tab-button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    padding: 0.75rem 1rem;
+  }
+  
+  .profile-tab-button span {
+    display: inline;
+    font-size: 0.875rem;
+    margin-top: 0;
+  }
+  
+  .profile-tab-button svg {
+    margin-right: 0.75rem;
+    margin-bottom: 0;
+    width: 18px;
+    height: 18px;
   }
 }
 
