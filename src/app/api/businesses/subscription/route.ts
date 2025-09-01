@@ -42,6 +42,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Protect super admin test business from accidental downgrades
+    const TEST_BUSINESS_ID = 'test-platinum-business-admin'
+    if (business.id === TEST_BUSINESS_ID) {
+      // Only allow platinum tier for test business
+      if (subscriptionTier !== 'platinum') {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Test business must maintain platinum subscription. This business is reserved for testing all premium features.' 
+          },
+          { status: 403 }
+        )
+      }
+      
+      console.log('🔒 Protected test business from subscription change - maintaining platinum tier')
+    }
+
     // Check if business is claimed
     if (!business.isClaimed) {
       return NextResponse.json(
