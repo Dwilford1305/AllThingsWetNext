@@ -128,7 +128,7 @@ export default function ReportModal({
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                What's the issue?
+                What&apos;s the issue?
               </label>
               <div className="space-y-3">
                 {reportReasons.map((reason) => (
@@ -167,7 +167,7 @@ export default function ReportModal({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
                 value={reportDescription}
                 onChange={(e) => setReportDescription(e.target.value)}
-                placeholder="Please provide specific details about why you're reporting this content..."
+                placeholder="Please provide specific details about why you&apos;re reporting this content..."
                 disabled={isSubmitting}
               />
               <p className="mt-1 text-xs text-gray-500">

@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { MarketplaceListing, Report, User } from '@/models'
 import { withAuth, type AuthenticatedRequest } from '@/lib/auth-middleware'
 import { v4 as uuidv4 } from 'uuid'
-import type { ApiResponse } from '@/types'
 
 // Report a marketplace listing
 async function reportListing(

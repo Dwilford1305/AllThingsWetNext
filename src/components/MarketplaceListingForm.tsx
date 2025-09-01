@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { X, AlertCircle } from 'lucide-react'
@@ -81,13 +81,7 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
   }, [listing])
 
   // Check quota on mount if creating new listing
-  useEffect(() => {
-    if (isOpen && !listing) {
-      checkQuota()
-    }
-  }, [isOpen, listing])
-
-  const checkQuota = async () => {
+  const checkQuota = useCallback(async () => {
     try {
       if (!isAuthenticated) return;
 
@@ -102,7 +96,13 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
     } catch (error) {
       console.error('Error checking quota:', error)
     }
-  }
+  }, [isAuthenticated])
+
+  useEffect(() => {
+    if (isOpen && !listing) {
+      checkQuota()
+    }
+  }, [isOpen, listing, checkQuota])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -211,7 +211,7 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
                   </p>
                   {quota.hasQuotaAvailable === false && (
                     <p className="text-red-700 text-sm mt-1">
-                      You've used all your monthly listings. Upgrade your subscription for more.
+                      You&apos;ve used all your monthly listings. Upgrade your subscription for more.
                     </p>
                   )}
                 </div>

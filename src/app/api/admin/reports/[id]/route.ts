@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Report, MarketplaceListing, MarketplaceComment } from '@/models'
 import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware'
@@ -7,7 +7,7 @@ import type { ApiResponse } from '@/types'
 // Get all reports for admin dashboard
 async function getReports(
   request: AuthenticatedRequest,
-  context?: Record<string, unknown>
+  _context?: Record<string, unknown>
 ) {
   try {
     await connectDB()
@@ -125,7 +125,12 @@ async function updateReport(
   }
 }
 
-async function takeModerationAction(report: any, action: string) {
+type ReportDoc = {
+  reportType: 'listing' | 'comment'
+  contentId: string
+}
+
+async function takeModerationAction(report: ReportDoc, action: string) {
   try {
     if (report.reportType === 'listing') {
       const listing = await MarketplaceListing.findOne({ id: report.contentId })

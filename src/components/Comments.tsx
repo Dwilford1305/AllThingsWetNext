@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { MessageCircle, Flag, Send, AlertTriangle } from 'lucide-react'
@@ -20,11 +20,7 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
   const [error, setError] = useState('')
   const [reportingCommentId, setReportingCommentId] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetchComments()
-  }, [listingId])
-
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       const response = await fetch(`/api/marketplace/${listingId}/comments`)
       const result = await response.json()
@@ -40,7 +36,11 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [listingId])
+
+  useEffect(() => {
+    fetchComments()
+  }, [fetchComments])
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()

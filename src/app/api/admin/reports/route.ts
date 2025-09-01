@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Report } from '@/models'
 import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware'
@@ -7,7 +7,7 @@ import type { ApiResponse } from '@/types'
 // Get all reports for admin dashboard
 async function getReports(
   request: AuthenticatedRequest,
-  context?: Record<string, unknown>
+  _context?: Record<string, unknown>
 ) {
   try {
     await connectDB()

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { MarketplaceListing } from '@/models'
 import { withAuth, type AuthenticatedRequest } from '@/lib/auth-middleware'
