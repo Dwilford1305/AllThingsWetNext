@@ -68,6 +68,39 @@ const UserSchema = new Schema({
   },
   verificationDocuments: [{ type: String }], // URLs to uploaded documents
   
+  // Marketplace subscription fields
+  marketplaceSubscription: {
+    tier: { 
+      type: String, 
+      enum: ['free', 'silver', 'gold', 'platinum'],
+      default: 'free'
+    },
+    status: {
+      type: String,
+      enum: ['active', 'inactive', 'trial', 'cancelled', 'past_due'],
+      default: 'inactive'
+    },
+    subscriptionStart: { type: Date },
+    subscriptionEnd: { type: Date },
+    paypalSubscriptionId: { type: String }, // PayPal subscription ID
+    
+    // Quota management
+    adQuota: {
+      monthly: { type: Number, default: 1 }, // Free tier gets 1 ad per month
+      used: { type: Number, default: 0 },
+      resetDate: { type: Date, default: () => new Date() } // Next month's 1st day
+    },
+    
+    // Premium features enabled
+    features: {
+      featuredAds: { type: Boolean, default: false },
+      analytics: { type: Boolean, default: false },
+      prioritySupport: { type: Boolean, default: false },
+      photoLimit: { type: Number, default: 1 }, // Free tier gets 1 photo
+      adDuration: { type: Number, default: 30 } // Free tier: 30 days
+    }
+  },
+  
   // Admin specific fields
   permissions: [{
     type: String,

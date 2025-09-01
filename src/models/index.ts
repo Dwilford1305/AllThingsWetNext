@@ -120,6 +120,13 @@ const BusinessSchema = new Schema({
     websiteClicks: { type: Number, default: 0 }
   },
   
+  // Job posting quota (marketplace feature)
+  jobPostingQuota: {
+    monthly: { type: Number, default: 0 }, // Free tier gets 0 job postings
+    used: { type: Number, default: 0 },
+    resetDate: { type: Date, default: () => new Date() }
+  },
+  
   // Basic fields (always available)
   imageUrl: { type: String }, // Basic business image
   featured: { type: Boolean, default: false }, // Premium placement
