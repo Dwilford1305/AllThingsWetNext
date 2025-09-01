@@ -6,6 +6,17 @@ const UserSchema = new Schema({
   email: { type: String, required: true, unique: true, lowercase: true },
   passwordHash: { type: String, default: '' },
   firstName: { type: String, required: true },
+  // Optional public handle for display; unique if provided
+  username: {
+    type: String,
+    unique: true,
+    sparse: true, // allow many docs without username
+    lowercase: true,
+    trim: true,
+    minlength: 3,
+    maxlength: 32,
+    match: [/^[a-z0-9_.]+$/i, 'Username can only contain letters, numbers, underscore and dot']
+  },
   lastName: { type: String, required: true },
   role: { 
     type: String, 

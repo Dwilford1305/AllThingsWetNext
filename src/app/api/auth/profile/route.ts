@@ -72,6 +72,7 @@ export async function GET(request: NextRequest) {
       id: `user_${randomUUID()}`,
       email: email.toLowerCase(),
       passwordHash: '',
+      username: (auth0User?.nickname || '').toLowerCase() || undefined,
       firstName: auth0User?.given_name || fallbackFirst || 'User',
       // Ensure a non-empty lastName to satisfy schema
       lastName: auth0User?.family_name || rest.join(' ') || 'User',
@@ -116,7 +117,7 @@ export async function PUT(request: NextRequest) {
     const email = auth0User?.email
     if (!email) return NextResponse.json({ success: false, error: 'Missing email in session' }, { status: 400 })
     let dbUser = await User.findOne({ email })
-    const { firstName, lastName, phone, preferences } = await request.json()
+  const { firstName, lastName, phone, preferences, username } = await request.json()
   if (!dbUser) {
       // Auto-provision a local user for Auth0-only signups
       const name: string = auth0User?.name || ''
@@ -125,6 +126,7 @@ export async function PUT(request: NextRequest) {
         id: `user_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
         email: email.toLowerCase(),
         passwordHash: '',
+        username: (typeof username === 'string' && username ? username.toLowerCase() : (auth0User?.nickname || '')?.toLowerCase()) || undefined,
         firstName: (firstName as string) || auth0User?.given_name || fallbackFirst || 'User',
         // Ensure a non-empty lastName to satisfy schema
         lastName: (lastName as string) || auth0User?.family_name || rest.join(' ') || 'User',
@@ -142,6 +144,21 @@ export async function PUT(request: NextRequest) {
     if (typeof firstName === 'string') dbUser.firstName = firstName
     if (typeof lastName === 'string') dbUser.lastName = lastName
     if (typeof phone === 'string') dbUser.phone = phone
+    if (typeof username === 'string') {
+      const normalized = username.trim().toLowerCase()
+      if (normalized && normalized !== dbUser.username) {
+        // basic validation mirrors schema
+        const isValid = /^[a-z0-9_.]{3,32}$/i.test(normalized)
+        if (!isValid) {
+          return NextResponse.json({ success: false, error: 'Invalid username. Use 3-32 letters, numbers, underscore or dot.' }, { status: 400 })
+        }
+        const exists = await User.findOne({ username: normalized, email: { $ne: dbUser.email } })
+        if (exists) {
+          return NextResponse.json({ success: false, error: 'Username already taken' }, { status: 409 })
+        }
+        dbUser.username = normalized
+      }
+    }
     if (preferences && typeof preferences === 'object') {
       dbUser.preferences = {
         ...defaultPreferences,

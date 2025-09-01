@@ -137,7 +137,10 @@ async function addComment(
       )
     }
 
-    const userName = `${user.firstName} ${user.lastName}`
+    // Determine display name: prefer username; otherwise first name only
+    const userName = (user as { username?: string }).username?.trim()
+      ? (user as { username: string }).username.trim()
+      : user.firstName
 
     // Create comment
     const commentId = uuidv4()
@@ -153,6 +156,14 @@ async function addComment(
     })
 
     await comment.save()
+
+    // Notify live subscribers via SSE (best-effort)
+    try {
+      const mod: { notifyNewComment?: (listingId: string, payload: unknown) => void } = await import('./events/route')
+      if (typeof mod.notifyNewComment === 'function') {
+        mod.notifyNewComment(listingId, { type: 'new_comment', data: comment })
+      }
+    } catch {}
 
     return NextResponse.json({
       success: true,

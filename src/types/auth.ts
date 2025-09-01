@@ -5,6 +5,7 @@ export interface User {
   email: string
   firstName: string
   lastName: string
+  username?: string
   fullName?: string // Virtual field
   role: UserRole
   isEmailVerified: boolean
@@ -123,9 +124,9 @@ export interface UserActivityLog {
   details?: Record<string, string | number | boolean | Date>
   ip?: string
   userAgent?: string
-  success: boolean
   errorMessage?: string
   createdAt: Date
+  username?: string // Added username field
 }
 
 export type UserActivityAction = 

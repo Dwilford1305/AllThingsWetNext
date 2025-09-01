@@ -204,6 +204,15 @@ const MarketplaceListingSchema = new Schema({
   // Moderation
   isReported: { type: Boolean, default: false },
   reportCount: { type: Number, default: 0 },
+  // Reactions (Facebook-like): users (by id) who reacted
+  reactions: {
+    like: [{ type: String }],
+    love: [{ type: String }],
+    haha: [{ type: String }],
+    wow: [{ type: String }],
+    sad: [{ type: String }],
+    angry: [{ type: String }]
+  },
   
   expiresAt: { type: Date, required: true },
   createdAt: { type: Date, default: Date.now },
@@ -222,6 +231,15 @@ const MarketplaceCommentSchema = new Schema({
   isReported: { type: Boolean, default: false },
   reportCount: { type: Number, default: 0 },
   isHidden: { type: Boolean, default: false },
+  // Reactions (Facebook-like): users (by id) who reacted
+  reactions: {
+    like: [{ type: String }],
+    love: [{ type: String }],
+    haha: [{ type: String }],
+    wow: [{ type: String }],
+    sad: [{ type: String }],
+    angry: [{ type: String }]
+  },
   
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }

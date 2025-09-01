@@ -11,7 +11,7 @@ import AdPlaceholder from '@/components/AdPlaceholder';
 import MarketplaceListingForm from '@/components/MarketplaceListingForm';
 import Comments from '@/components/Comments';
 import ReportModal from '@/components/ReportModal';
-import { ShoppingBag, MapPin, User, Phone, Mail, Search, Filter, Image as ImageIcon, Plus, Flag, MessageCircle, X } from 'lucide-react';
+import { ShoppingBag, MapPin, User, Phone, Mail, Search, Filter, Image as ImageIcon, Plus, Flag, MessageCircle, X, ThumbsUp } from 'lucide-react';
 import AnimatedSection from '@/components/AnimatedSection';
 import { motion } from 'framer-motion';
 import type { MarketplaceListing, ReportReason } from '@/types';
@@ -42,6 +42,22 @@ const MarketplacePage = () => {
       console.error('Error fetching marketplace listings:', error);
     }
   };
+
+  const likeListing = async (listingId: string) => {
+    try {
+      const response = await authenticatedFetch(`/api/marketplace/${listingId}/reactions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reaction: 'like' })
+      })
+      const result = await response.json()
+      if (result.success) {
+        setListings(prev => prev.map(l => l.id === listingId ? { ...l, reactions: result.data.reactions } : l))
+      }
+    } catch (e) {
+      console.error('Failed to like listing', e)
+    }
+  }
 
   const handleReportListing = async (reason: ReportReason, description: string) => {
     if (!reportingListingId) return;
@@ -84,19 +100,10 @@ const MarketplacePage = () => {
   };
 
   const formatDate = (date: Date | string) => {
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - dateObj.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 1) return 'Posted today';
-    if (diffDays <= 7) return `${diffDays} days ago`;
-    if (diffDays <= 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
-    return dateObj.toLocaleDateString('en-CA', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    const d = typeof date === 'string' ? new Date(date) : date;
+    const datePart = d.toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' });
+    const timePart = d.toLocaleTimeString('en-CA', { hour12: false }); // HH:MM:SS
+    return `${datePart} ${timePart}`;
   };
 
   const categories = [
@@ -304,6 +311,12 @@ const MarketplacePage = () => {
                               title="Report listing"
                             >
                               <Flag className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {isAuthenticated && (
+                            <Button size="sm" variant="outline" onClick={() => likeListing(listing.id)} className="bg-white/10 hover:bg-white/20 border-white/30 text-white">
+                              <ThumbsUp className="h-4 w-4 mr-1" />
+                              <span className="text-xs">{listing.reactions?.like?.length || 0}</span>
                             </Button>
                           )}
                           {listing.contactPhone && (

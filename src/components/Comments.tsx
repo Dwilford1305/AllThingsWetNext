@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { MessageCircle, Flag, Send, AlertTriangle } from 'lucide-react'
+import { MessageCircle, Flag, Send, AlertTriangle, ThumbsUp } from 'lucide-react'
 import type { MarketplaceComment } from '@/types'
 import ReportModal from './ReportModal'
 import { authenticatedFetch } from '@/lib/auth-fetch'
@@ -21,6 +21,8 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [reportingCommentId, setReportingCommentId] = useState<string | null>(null)
+  // Track SSE connection to decide whether to optimistically update or refetch
+  const [sseConnected, setSseConnected] = useState(false)
 
   const fetchComments = useCallback(async () => {
     try {
@@ -44,6 +46,46 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
     fetchComments()
   }, [fetchComments])
 
+  // Live updates via SSE with fallback polling
+  useEffect(() => {
+    let es: EventSource | null = null
+    let pollTimer: number | null = null
+    const startSSE = () => {
+      try {
+        es = new EventSource(`/api/marketplace/${listingId}/comments/events`)
+        es.onopen = () => setSseConnected(true)
+        es.onerror = () => {
+          setSseConnected(false)
+          es?.close()
+          es = null
+          // Start polling fallback
+          if (!pollTimer) {
+            pollTimer = window.setInterval(fetchComments, 15000)
+          }
+        }
+        es.onmessage = (evt) => {
+          try {
+            const parsed = JSON.parse(evt.data)
+            if (parsed?.type === 'new_comment' && parsed?.data) {
+              setComments(prev => {
+                const exists = prev.some(c => c.id === parsed.data.id)
+                return exists ? prev : [...prev, parsed.data]
+              })
+            }
+          } catch {}
+        }
+      } catch {
+        // If SSE fails immediately, start polling
+        pollTimer = window.setInterval(fetchComments, 15000)
+      }
+    }
+    startSSE()
+    return () => {
+      es?.close()
+      if (pollTimer) window.clearInterval(pollTimer)
+    }
+  }, [listingId, fetchComments])
+
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newComment.trim() || !isAuthenticated) return
@@ -64,8 +106,12 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
       const result = await response.json()
 
       if (result.success) {
-        setComments(prev => [...prev, result.data])
+        // Don’t optimistically append to avoid duplicate with SSE event
         setNewComment('')
+        if (!sseConnected) {
+          // If SSE not connected, refresh comments immediately
+          await fetchComments()
+        }
       } else {
         setError(result.error || 'Failed to add comment')
       }
@@ -111,16 +157,28 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
     }
   }
 
+  const reactToComment = async (commentId: string, reaction: 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry') => {
+    try {
+      if (typeof window !== 'undefined') ensureCsrfCookie()
+      const response = await authenticatedFetch(`/api/marketplace/comments/${commentId}/reactions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reaction })
+      })
+      const result = await response.json()
+      if (result.success) {
+        setComments(prev => prev.map(c => c.id === commentId ? { ...c, reactions: result.data.reactions } : c))
+      }
+    } catch (e) {
+      console.error('Reaction failed', e)
+    }
+  }
+
   const formatDate = (date: string | Date) => {
-    const dateObj = typeof date === 'string' ? new Date(date) : date
-    const now = new Date()
-    const diffTime = Math.abs(now.getTime() - dateObj.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    
-    if (diffDays === 1) return 'Today'
-    if (diffDays <= 7) return `${diffDays} days ago`
-    if (diffDays <= 30) return `${Math.ceil(diffDays / 7)} weeks ago`
-    return dateObj.toLocaleDateString()
+    const d = typeof date === 'string' ? new Date(date) : date
+    const datePart = d.toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' })
+    const timePart = d.toLocaleTimeString('en-CA', { hour12: false }) // HH:MM:SS
+    return `${datePart} ${timePart}`
   }
 
   if (isLoading) {
@@ -233,6 +291,14 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
                   <p className="text-gray-700 whitespace-pre-wrap break-words">
                     {comment.content}
                   </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    {isAuthenticated && (
+                      <Button variant="ghost" size="sm" className="text-gray-500 hover:text-primary-600 p-1" onClick={() => reactToComment(comment.id, 'like')}>
+                        <ThumbsUp className="h-4 w-4 mr-1" />
+                        <span className="text-xs">{comment.reactions?.like?.length || 0}</span>
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

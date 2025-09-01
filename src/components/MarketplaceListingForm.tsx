@@ -54,7 +54,7 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
     price: '',
     condition: 'good' as MarketplaceCondition,
     location: '',
-    contactName: '',
+  // contactName is derived server-side from user profile (username or firstName)
     contactEmail: '',
     contactPhone: '',
     images: [] as string[]
@@ -73,7 +73,7 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
         price: listing.price?.toString() || '',
         condition: listing.condition || 'good',
         location: listing.location || '',
-        contactName: listing.contactName || '',
+  // contactName is not user-editable here; display-only where needed
         contactEmail: listing.contactEmail || '',
         contactPhone: listing.contactPhone || '',
         images: listing.images || []
@@ -161,7 +161,6 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
             price: '',
             condition: 'good',
             location: '',
-            contactName: '',
             contactEmail: '',
             contactPhone: '',
             images: []
@@ -331,19 +330,7 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Contact Name *
-              </label>
-              <input
-                type="text"
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                value={formData.contactName}
-                onChange={(e) => setFormData(prev => ({ ...prev, contactName: e.target.value }))}
-                placeholder="Your name"
-              />
-            </div>
+            {/* Contact name is set automatically from your profile (username or first name) */}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>

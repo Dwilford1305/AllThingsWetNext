@@ -105,10 +105,11 @@ export async function PUT(request: NextRequest) {
     if (!dbUser) {
       return NextResponse.json({ success: false, error: 'Profile not found in database' }, { status: 409 })
     }
-    const { firstName, lastName, phone, preferences } = await request.json()
+  const { firstName, lastName, phone, preferences, username } = await request.json()
     if (typeof firstName === 'string') dbUser.firstName = firstName
     if (typeof lastName === 'string') dbUser.lastName = lastName
     if (typeof phone === 'string') dbUser.phone = phone
+  if (typeof username === 'string') dbUser.username = username.trim() || undefined
     if (preferences && typeof preferences === 'object') {
       dbUser.preferences = {
         ...defaultPreferences,

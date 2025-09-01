@@ -78,7 +78,7 @@ async function reportComment(
       )
     }
 
-    const reporterName = `${user.firstName} ${user.lastName}`
+  const reporterName = (user as { username?: string }).username?.trim() || user.firstName
 
     // Create report
     const reportId = uuidv4()

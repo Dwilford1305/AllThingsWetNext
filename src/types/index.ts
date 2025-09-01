@@ -211,6 +211,7 @@ export interface MarketplaceListing {
   // Moderation
   isReported: boolean
   reportCount: number
+  reactions?: Reactions
   
   expiresAt: Date
   createdAt: Date
@@ -228,6 +229,7 @@ export interface MarketplaceComment {
   isReported: boolean
   reportCount: number
   isHidden: boolean
+  reactions?: Reactions
   
   createdAt: Date
   updatedAt: Date
@@ -296,6 +298,15 @@ export type MarketplaceStatus =
   | 'sold'
   | 'expired'
   | 'removed'
+
+export type Reactions = {
+  like?: string[]
+  love?: string[]
+  haha?: string[]
+  wow?: string[]
+  sad?: string[]
+  angry?: string[]
+}
 
 export interface ApiResponse<T> {
   success: boolean

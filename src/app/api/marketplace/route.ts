@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
-import { MarketplaceListing } from '@/models'
+import { MarketplaceListing, User } from '@/models'
 import { withAuth, type AuthenticatedRequest } from '@/lib/auth-middleware'
 import { v4 as uuidv4 } from 'uuid'
 import type { ApiResponse } from '@/types'
@@ -50,19 +50,34 @@ async function createListing(request: AuthenticatedRequest) {
   try {
     await connectDB()
     
-    const userId = request.user?.id
+    // Resolve user from id or email (supports Auth0 cookie sessions)
+  let userId = request.user?.id
+  let userDoc: { id: string; firstName?: string; username?: string } | null = null
     if (!userId) {
-      return NextResponse.json(
-        { success: false, error: 'User not authenticated' },
-        { status: 401 }
-      )
+      const email = (request.user as unknown as { email?: string } | undefined)?.email
+      if (!email) {
+        return NextResponse.json(
+          { success: false, error: 'User not authenticated' },
+          { status: 401 }
+        )
+      }
+  userDoc = await User.findOne({ email })
+      if (!userDoc) {
+        return NextResponse.json(
+          { success: false, error: 'User not found' },
+          { status: 404 }
+        )
+      }
+      userId = userDoc.id
+    } else {
+  userDoc = await User.findOne({ id: userId })
     }
 
     const body = await request.json()
-    const { title, description, category, price, condition, location, contactName, contactEmail, contactPhone, images } = body
+  const { title, description, category, price, condition, location, contactName, contactEmail, contactPhone, images } = body
 
-    // Validate required fields
-    if (!title || !description || !category || !location || !contactName) {
+  // Validate required fields (contactName is derived server-side)
+  if (!title || !description || !category || !location) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
@@ -120,6 +135,11 @@ async function createListing(request: AuthenticatedRequest) {
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 30) // Default 30 days
 
+    // Determine contact name from user if not provided: prefer username else first name
+    const derivedContactName: string = (contactName && String(contactName).trim().length > 0)
+      ? contactName
+      : ((userDoc as { username?: string; firstName: string })?.username?.trim() || (userDoc?.firstName || ''))
+
     const listing = new MarketplaceListing({
       id: listingId,
       title,
@@ -128,7 +148,7 @@ async function createListing(request: AuthenticatedRequest) {
       price: price ? parseFloat(price) : undefined,
       condition,
       location,
-      contactName,
+      contactName: derivedContactName,
       contactEmail,
       contactPhone,
       images: images || [],
