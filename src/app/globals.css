@@ -76,13 +76,6 @@ body {
 
 /* Modern Button Styles */
 .btn-modern {
-  padding: 1rem 2rem;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  color: white;
-  transform: translateY(0);
 }
 
 .btn-modern:hover {
