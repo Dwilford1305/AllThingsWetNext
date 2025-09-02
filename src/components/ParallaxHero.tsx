@@ -45,7 +45,7 @@ const ParallaxHero = () => {
   }, [])
 
   return (
-    <div ref={ref} className="relative h-screen" style={{ willChange: 'transform' }}>
+    <div ref={ref} className="relative h-screen parallax-hero" style={{ willChange: 'transform' }}>
       {/* Water Tower Background - Balanced visibility and readability */}
       <motion.div
         style={{ 
@@ -55,6 +55,14 @@ const ParallaxHero = () => {
           backgroundImage: "url('/WaterTower.png')",
           backgroundPosition: 'center center',
           backgroundSize: 'cover',
+          // Force absolute positioning and full coverage
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          height: '100%',
         }}
         className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
       />
