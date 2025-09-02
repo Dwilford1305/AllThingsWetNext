@@ -1,0 +1,999 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  position: relative;
+  max-width: 100vw;
+  width: 100vw;
+  box-sizing: border-box;
+}
+
+/* Modern Glassmorphism Utilities - Lighter and more readable */
+.glass {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+}
+
+.glass-dark {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+/* Modern Gradients */
+.gradient-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.gradient-modern {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background-size: 200% 200%;
+  animation: gradient 8s ease infinite;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Modern Button Styles */
+.btn-modern {
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  transform: translateY(0);
+}
+
+.btn-modern:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.btn-glass {
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-glass:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.btn-neumorphism {
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  background: #f3f4f6;
+  color: #1f2937;
+  box-shadow: 8px 8px 16px #d1d5db, -8px -8px 16px #ffffff;
+}
+
+.btn-neumorphism:hover {
+  box-shadow: 4px 4px 8px #d1d5db, -4px -4px 8px #ffffff;
+}
+
+/* Modern Card Styles */
+.card-modern {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(243, 244, 246, 0.5);
+  transition: all 0.3s ease;
+}
+
+.card-modern:hover {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transform: translateY(-8px);
+}
+
+.card-glass {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  transition: all 0.3s ease;
+}
+
+.card-glass:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-4px);
+}
+
+/* Modern Typography */
+.text-modern-title {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  background: linear-gradient(135deg, #1d4ed8 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-modern-subtitle {
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+/* Modern Hover Effects */
+.hover-glow {
+  transition: all 0.3s ease;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+}
+
+.hover-lift {
+  transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.hover-scale {
+  transition: transform 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+/* Interactive Elements */
+.interactive-element {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.interactive-element:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Modern Spacing */
+.section-padding {
+  padding: 5rem 0 8rem;
+}
+
+@media (min-width: 768px) {
+  .section-padding {
+    padding: 8rem 0;
+  }
+}
+
+.container-modern {
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-modern {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-modern {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Keyframes for animations */
+@keyframes gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Advanced Animations */
+.animate-blob {
+  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  animation: blob 7s ease-in-out infinite;
+}
+
+@keyframes blob {
+  0% {
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%;
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+/* Scroll-triggered Animations */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(3rem);
+  transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-reveal-left {
+  opacity: 0;
+  transform: translateX(-3rem);
+  transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scroll-reveal-left.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Keep only essential mobile and responsive fixes that can't be handled by Tailwind utilities */
+
+/* Mobile-specific scroll optimization for subscription section */
+@media (max-width: 768px) {
+  /* Subscription showcase section mobile optimization */
+  .subscription-card {
+    /* Prevent any transform/scale animations on mobile that might interfere with scroll */
+    transform: none !important;
+    /* Allow only vertical scrolling gestures, prevent horizontal pan */
+    touch-action: pan-y !important;
+    /* Disable pointer events that might capture scroll gestures */
+    pointer-events: auto;
+  }
+  
+  /* Ensure framer motion doesn't interfere with mobile scroll in subscription section */
+  section[class*="relative"] [data-framer-component],
+  section[class*="relative"] [data-projection-id] {
+    /* Force GPU acceleration for better performance */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    /* Prevent layout shifts during animation */
+    will-change: auto;
+    /* Allow vertical scrolling only */
+    touch-action: pan-y;
+  }
+  
+  /* Subscription section specific scroll fixes */
+  section[class*="py-20"] {
+    /* Ensure the section doesn't create its own scroll context */
+    overflow: visible !important;
+    /* Prevent fixed positioning issues */
+    position: relative !important;
+    /* Force proper stacking context */
+    z-index: auto !important;
+  }
+  
+  /* Disable problematic hover states on touch devices */
+  @media (hover: none) and (pointer: coarse) {
+    .subscription-card:hover {
+      transform: none !important;
+      scale: 1 !important;
+    }
+    
+    /* Disable all hover transforms on mobile */
+    *[class*="hover:"]:hover {
+      transform: none !important;
+    }
+  }
+}
+
+/* Additional mobile scroll performance optimizations */
+@media (max-width: 768px) {
+  /* Optimize scroll performance for iOS */
+  html {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    /* Prevent momentum scrolling issues */
+    overscroll-behavior-y: contain;
+  }
+  
+  /* Prevent sections from interfering with main scroll */
+  section {
+    position: relative;
+    /* Remove any overflow that might interfere */
+    overflow: visible !important;
+    /* Ensure proper scroll delegation */
+    overscroll-behavior: auto;
+  }
+  
+  /* Ensure main content areas don't create independent scroll areas */
+  .relative {
+    position: relative;
+    overflow: visible !important;
+  }
+}
+
+/* Prevent horizontal scroll */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  position: relative;
+}
+
+* {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+*::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Improved text wrapping */
+.text-wrap {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+
+/* Mobile-first responsive containers */
+.container-mobile {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 640px) {
+  .container-mobile {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-mobile {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Ensure images are responsive */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Mobile-friendly touch targets */
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Foldable device support */
+@media (max-width: 380px) {
+  /* Extra narrow screens like Galaxy Fold cover screen */
+  .nav-title {
+    font-size: 1rem !important;
+    max-width: 120px !important;
+  }
+  
+  /* Ensure navigation never overflows */
+  nav {
+    min-width: 0;
+  }
+  
+  .nav-container {
+    min-width: 0;
+  }
+}
+
+/* Pixel 9 Pro Fold cover screen specific */
+@media (max-width: 344px) {
+  .nav-title {
+    max-width: 100px !important;
+    font-size: 0.875rem !important;
+  }
+}
+
+/* Improve viewport stability during load */
+@media (max-width: 480px) {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Prevent layout shift during load */
+  nav {
+    position: fixed;
+    width: 100vw;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+}
+
+/* Better responsive breakpoints for foldables */
+@media (min-width: 280px) and (max-width: 480px) {
+  /* Ensure proper flex behavior on very small screens */
+  .flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-width: 0;
+  }
+  
+  .flex-shrink-0 {
+    flex-shrink: 0;
+  }
+  
+  .min-w-0 {
+    min-width: 0;
+  }
+}
+
+/* Critical: Prevent navigation layout shift during page load */
+nav.nav-container {
+  position: fixed !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  left: 0 !important;
+  right: 0 !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+/* Ensure navigation container doesn't cause overflow */
+.nav-container > div {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Ensure hamburger menu is always visible */
+@media (max-width: 768px) {
+  .nav-container .flex-between {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+  
+  .nav-container button {
+    flex-shrink: 0 !important;
+    margin-left: auto !important;
+  }
+  
+  /* Prevent title from pushing hamburger menu off screen */
+  .nav-title {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* Foldable device specific fixes for layout stability */
+@media (max-width: 400px) {
+  .nav-container {
+    min-width: 100vw !important;
+  }
+  
+  .nav-container > div {
+    max-width: none !important;
+    width: 100% !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}
+
+/* Viewport meta adjustments for better foldable support */
+@supports (display: flex) {
+  @media (max-width: 480px) {
+    .nav-container .flex-between {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      width: 100% !important;
+    }
+  }
+}
+
+/* Force prevent all horizontal overflow - iPhone fix */
+body {
+  position: relative;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100vw;
+  box-sizing: border-box;
+  /* Removed !important declarations that could interfere with scrolling */
+}
+
+/* Ensure all main containers respect viewport width */
+.max-w-7xl,
+.max-w-6xl,
+.max-w-5xl,
+.max-w-4xl,
+.max-w-3xl,
+.max-w-2xl,
+.max-w-xl,
+.max-w-lg,
+.container {
+  overflow-x: hidden;
+  box-sizing: border-box;
+  /* Removed !important declarations to prevent scroll interference */
+}
+
+/* Reduce aggressive div overflow handling - only target specific problematic elements */
+div.max-w-7xl,
+div.max-w-6xl,
+div.max-w-5xl,
+div.max-w-4xl,
+section.relative {
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Allow specific elements to use their natural width but not exceed viewport */
+img, video, iframe {
+  max-width: 100% !important;
+  height: auto;
+  box-sizing: border-box;
+}
+
+/* Specific iPhone fixes - Only apply most restrictive rules to very small screens */
+@media (max-width: 430px) {
+  /* iPhone 12 Pro is 390px width */
+  html {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+  }
+  
+  body {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+    position: relative !important;
+    /* Remove overflow-y restrictions that could block scrolling */
+  }
+  
+  /* Ensure no elements can extend beyond screen */
+  div, section, main, header, footer, nav {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix text that might be too wide */
+  h1, h2, h3, h4, h5, h6, p {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Debugging: Uncomment to find elements causing horizontal scroll */
+/*
+* {
+  outline: 1px solid red !important;
+  background: rgba(255, 0, 0, 0.1) !important;
+}
+
+*:hover {
+  outline: 2px solid blue !important;
+  background: rgba(0, 0, 255, 0.2) !important;
+}
+*/
+
+/* Additional iPhone-specific fixes */
+@media (max-width: 390px) {
+  /* iPhone 12 Pro specific width */
+  .nav-container {
+    max-width: 390px !important;
+    width: 100% !important;
+  }
+  
+  .nav-container > div {
+    max-width: 390px !important;
+    width: 100% !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  /* Ensure title truncation is aggressive enough */
+  .nav-title {
+    max-width: 130px !important;
+    font-size: 1rem !important;
+  }
+}
+
+/* Custom utility classes for preventing horizontal scroll */
+.no-horizontal-scroll {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  box-sizing: border-box !important;
+}
+
+.safe-width {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.force-contain {
+  contain: layout style !important;
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+}
+
+/* Root element absolute fixes - Enhanced */
+html {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100vw;
+  box-sizing: border-box;
+}
+
+body {
+  position: relative;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100vw;
+  box-sizing: border-box;
+}
+
+#__next,
+main {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100vw;
+  box-sizing: border-box;
+}
+
+/* Targeted fix for containers - less aggressive */
+* {
+  box-sizing: border-box;
+}
+
+/* Only apply max-width to specific container types */
+.container,
+[class*="max-w-"],
+section,
+main {
+  max-width: 100vw;
+}
+
+/* Removed data-scroll-container positioning that was causing scroll conflicts */
+
+/* Foldable device layout adjustments */
+@media (min-width: 650px) and (max-width: 790px) {
+  /* Broader range to catch more foldable devices */
+  .main-content-foldable {
+    padding-left: 6rem; /* 96px sidebar width */
+  }
+  
+  /* Fix any potential overflow issues on foldable */
+  body {
+    overflow-x: hidden !important;
+  }
+  
+  /* Ensure no elements break out of bounds */
+  .max-w-7xl,
+  .max-w-6xl,
+  .max-w-5xl,
+  .max-w-4xl {
+    max-width: calc(100vw - 6rem) !important; /* Account for sidebar */
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+/* Less aggressive overflow fixes - focus on preventing horizontal scroll only */
+.container,
+[class*="max-w-"],
+section,
+div.relative {
+  overflow-x: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Fix for framer-motion elements that might cause overflow */
+[data-framer-component],
+[data-projection-id] {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Ensure Framer Motion doesn't interfere with page scroll on mobile */
+@media (max-width: 768px) {
+  [data-framer-component],
+  [data-projection-id] {
+    position: relative;
+    /* Prevent motion elements from creating scroll conflicts */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+}
+
+/* Improved text contrast and accessibility - TARGETED FIXES ONLY */
+.text-muted {
+  color: #374151 !important; /* gray-700 instead of gray-500 */
+}
+
+.text-secondary {
+  color: #1f2937 !important; /* gray-800 instead of gray-600 */
+}
+
+/* Ensure good contrast for form inputs */
+input, textarea, select {
+  color: #111827 !important; /* gray-900 */
+}
+
+input::placeholder, textarea::placeholder {
+  color: #6b7280 !important; /* gray-500 for placeholders is okay */
+}
+
+/* Better focus states */
+input:focus, textarea:focus, select:focus {
+  color: #111827 !important;
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* SPECIFIC admin dashboard text fixes - only target problematic areas */
+.admin-dashboard .text-gray-500 {
+  color: #374151 !important; /* Convert to gray-700 */
+}
+
+.admin-dashboard .text-gray-600 {
+  color: #1f2937 !important; /* Convert to gray-800 */
+}
+
+/* Fix only small text in admin cards that doesn't have explicit colors */
+.admin-dashboard .text-sm:not([class*="text-white"]):not([class*="text-blue"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-yellow"]):not([class*="text-purple"]) {
+  color: #1f2937 !important;
+}
+
+/* Fix checkbox labels specifically */
+.admin-dashboard label span {
+  color: #1f2937 !important;
+}
+
+/* Preserve button text colors */
+button, .btn, [role="button"] {
+  color: inherit !important;
+}
+
+/* PROFILE PAGE SPECIFIC FIXES */
+/* Fix profile page tab navigation text colors - Updated for modern theme */
+.profile-page nav button:not(.profile-tab-active) {
+  color: #374151 !important; /* gray-700 for better contrast on light backgrounds */
+}
+
+.profile-page nav button.profile-tab-active {
+  color: white !important; /* White text on gradient background */
+}
+
+/* Profile page tab navigation override - Updated */
+nav button[class*="text-gray-"] {
+  color: #374151 !important; /* Force readable text for profile tabs */
+}
+
+/* Additional specific targeting for profile page buttons */
+.profile-page button[class*="text-gray-800"] {
+  color: #374151 !important; /* Update to gray-700 for better readability */
+}
+
+/* Override any conflicting button inheritance for profile tabs */
+.profile-page nav button span {
+  color: inherit !important;
+}
+
+/* Updated profile tab button styles for modern theme */
+.profile-tab-button.profile-tab-inactive {
+  color: #374151 !important; /* Gray-700 for inactive tabs */
+}
+
+.profile-tab-button.profile-tab-active {
+  color: white !important; /* White text on gradient background */
+}
+
+.profile-tab-button.profile-tab-active svg {
+  color: white !important; /* Ensure icons are also white on active state */
+}
+
+/* Mobile responsive improvements for profile page - simplified selectors */
+@media (max-width: 1024px) {
+  .profile-page .grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem;
+  }
+}
+
+/* Mobile responsive improvements for profile page */
+@media (max-width: 767px) {
+  /* Adjust grid layout for mobile - remove sidebar on mobile since we use dropdown */
+  .profile-page .grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* Tablet improvements */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .profile-page nav.space-y-1 {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+  
+  .profile-tab-button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    padding: 0.75rem 1rem;
+  }
+  
+  .profile-tab-button span {
+    display: inline;
+    font-size: 0.875rem;
+    margin-top: 0;
+  }
+  
+  .profile-tab-button svg {
+    margin-right: 0.75rem;
+    margin-bottom: 0;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Preserve colored backgrounds and their text */
+.bg-red-500, .bg-red-600, .bg-blue-500, .bg-blue-600, .bg-green-500, .bg-green-600,
+.bg-yellow-500, .bg-yellow-600, .bg-purple-500, .bg-purple-600, .bg-gray-800, .bg-gray-900 {
+  color: inherit !important;
+}
+
+/* Preserve white text on colored backgrounds */
+.text-white {
+  color: white !important;
+}
+
+/* Target only specific admin dashboard text that needs fixing */
+.admin-dashboard .text-sm.text-gray-500,
+.admin-dashboard .text-sm.text-gray-600,
+.admin-dashboard .text-xs.text-gray-500,
+.admin-dashboard .text-xs.text-gray-600 {
+  color: #1f2937 !important;
+}
+
+/* Navigation hamburger menu fix - specific target */
+nav button[aria-label="Toggle navigation menu"] {
+  color: #1f2937 !important; /* Ensure dark text for hamburger menu */
+}
+
+/* Refresh button specific fix */
+.refresh-button {
+  color: #1f2937 !important;
+}
+
+/* Global contrast upgrade: promote too-light grays to readable tones on light backgrounds */
+/* Use .keep-muted on elements that must remain muted */
+.text-gray-300:not(.keep-muted),
+.fill-gray-300:not(.keep-muted),
+.stroke-gray-300:not(.keep-muted) {
+  color: #4b5563 !important; /* gray-600 */
+  fill: #4b5563 !important;
+  stroke: #4b5563 !important;
+}
+
+.text-gray-400:not(.keep-muted),
+.fill-gray-400:not(.keep-muted),
+.stroke-gray-400:not(.keep-muted) {
+  color: #4b5563 !important; /* gray-600 */
+  fill: #4b5563 !important;
+  stroke: #4b5563 !important;
+}
+
+.text-gray-500:not(.keep-muted),
+.fill-gray-500:not(.keep-muted),
+.stroke-gray-500:not(.keep-muted) {
+  color: #374151 !important; /* gray-700 */
+  fill: #374151 !important;
+  stroke: #374151 !important;
+}
+
+.text-gray-600:not(.keep-muted),
+.fill-gray-600:not(.keep-muted),
+.stroke-gray-600:not(.keep-muted) {
+  color: #1f2937 !important; /* gray-800 */
+  fill: #1f2937 !important;
+  stroke: #1f2937 !important;
+}
+
+/* High-contrast container utility for any modal/section */
+.high-contrast .text-gray-300,
+.high-contrast .text-gray-400,
+.high-contrast .text-gray-500 {
+  color: #1f2937 !important; /* gray-800 */
+}
+
+.high-contrast .stroke-gray-300,
+.high-contrast .stroke-gray-400,
+.high-contrast .stroke-gray-500,
+.high-contrast svg[class*="text-gray-"] {
+  color: #1f2937 !important;
+  stroke: #1f2937 !important;
+}
+
+.high-contrast .fill-gray-300,
+.high-contrast .fill-gray-400,
+.high-contrast .fill-gray-500 {
+  fill: #1f2937 !important;
+}
