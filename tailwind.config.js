@@ -11,7 +11,7 @@ module.exports = {
         'xs': '475px',
       },
       colors: {
-        // Modern primary palette
+        // Enhanced primary palette with improved contrast
         primary: {
           50: '#f0f9ff',
           100: '#e0f2fe',
@@ -19,13 +19,13 @@ module.exports = {
           300: '#7dd3fc',
           400: '#38bdf8',
           500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
-          950: '#082f49',
+          600: '#0369a1', // Darker for better contrast with white text (5.93:1)
+          700: '#075985', // Enhanced contrast
+          800: '#0c4a6e',
+          900: '#082f49',
+          950: '#051e2e',
         },
-        // Modern secondary palette
+        // Enhanced secondary palette with improved contrast
         secondary: {
           50: '#fdf4ff',
           100: '#fae8ff',
@@ -33,13 +33,13 @@ module.exports = {
           300: '#f0abfc',
           400: '#e879f9',
           500: '#d946ef',
-          600: '#c026d3',
-          700: '#a21caf',
-          800: '#86198f',
-          900: '#701a75',
-          950: '#4a044e',
+          600: '#a21caf', // Better contrast for white text (6.32:1)
+          700: '#86198f', // Enhanced contrast  
+          800: '#701a75',
+          900: '#581c87',
+          950: '#3b0764',
         },
-        // Modern accent colors
+        // Enhanced accent colors with improved readability
         accent: {
           50: '#fff7ed',
           100: '#ffedd5',
@@ -53,19 +53,44 @@ module.exports = {
           900: '#7c2d12',
           950: '#431407',
         },
-        // Modern grays with warmer tones
+        // Enhanced grays for better accessibility
         neutral: {
           50: '#fafafa',
           100: '#f5f5f5',
           200: '#e5e5e5',
           300: '#d4d4d4',
-          400: '#a3a3a3',
-          500: '#737373',
-          600: '#525252',
-          700: '#404040',
-          800: '#262626',
-          900: '#171717',
-          950: '#0a0a0a',
+          400: '#737373', // Improved from #a3a3a3 for better contrast (4.74:1)
+          500: '#525252', // Better contrast (7.81:1)
+          600: '#404040', // Excellent contrast (10.37:1)
+          700: '#262626',
+          800: '#171717',
+          900: '#0a0a0a',
+          950: '#000000',
+        },
+        // Success, warning, error colors with proper contrast
+        success: {
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          500: '#22c55e',
+          600: '#16a34a', // Good contrast for white text
+          700: '#15803d',
+          900: '#14532d',
+        },
+        warning: {
+          50: '#fffbeb',
+          100: '#fef3c7',
+          500: '#f59e0b',
+          600: '#d97706', // Good contrast for white text
+          700: '#b45309',
+          900: '#78350f',
+        },
+        error: {
+          50: '#fef2f2',
+          100: '#fee2e2',
+          500: '#ef4444',
+          600: '#dc2626', // Good contrast for white text
+          700: '#b91c1c',
+          900: '#7f1d1d',
         }
       },
       fontSize: {
