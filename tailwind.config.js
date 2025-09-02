@@ -5,6 +5,7 @@ module.exports = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  darkMode: 'class', // Enable dark mode with class strategy
   theme: {
     extend: {
       screens: {
@@ -115,6 +116,9 @@ module.exports = {
         'fade-in-up': 'fade-in-up 0.6s ease-out',
         'slide-in-right': 'slide-in-right 0.6s ease-out',
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
+        'spin-slow': 'spin 3s linear infinite',
+        'wiggle': 'wiggle 1s ease-in-out infinite',
       },
       keyframes: {
         gradient: {
@@ -151,6 +155,20 @@ module.exports = {
             transform: 'translateX(0)'
           },
         },
+        'bounce-gentle': {
+          '0%, 100%': {
+            transform: 'translateY(-5%)',
+            'animation-timing-function': 'cubic-bezier(0.8, 0, 1, 1)'
+          },
+          '50%': {
+            transform: 'translateY(0)',
+            'animation-timing-function': 'cubic-bezier(0, 0, 0.2, 1)'
+          },
+        },
+        'wiggle': {
+          '0%, 100%': { transform: 'rotate(-3deg)' },
+          '50%': { transform: 'rotate(3deg)' },
+        },
       },
       backdropBlur: {
         'xs': '2px',
@@ -160,6 +178,23 @@ module.exports = {
         'glass-inset': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.05)',
         'modern': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
         'modern-lg': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        'glow': '0 0 20px rgba(102, 126, 234, 0.4)',
+        'glow-lg': '0 0 40px rgba(102, 126, 234, 0.6)',
+      },
+      transitionTimingFunction: {
+        'bounce': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+        'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
+      },
+      transitionDuration: {
+        '400': '400ms',
+        '600': '600ms',
+      },
+      backgroundImage: {
+        'gradient-primary': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        'gradient-secondary': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+        'gradient-accent': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+        'gradient-modern': 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        'gradient-text': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       },
     },
   },
