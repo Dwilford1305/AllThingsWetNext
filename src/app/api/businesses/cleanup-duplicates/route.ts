@@ -45,19 +45,54 @@ export async function POST() {
           businesses: (businesses as { name: string; address: string; id: string }[]).map(b => ({ name: b.name, address: b.address, id: b.id }))
         })
 
-        // Keep the business with the most complete information
-        // Prefer: 1) Has phone, 2) Longer name, 3) First one
-        // Find the best business (with all fields)
-        const bestBusiness = (businesses as Array<{ _id: { toString: () => string }; name: string; phone?: string }>).reduce((best, current) => {
-          if (current.phone && !best.phone) return current;
-          if (!current.phone && best.phone) return best;
+        // Keep the business with the most complete information, preserving websites
+        const bestBusiness = (businesses as Array<{ _id: { toString: () => string }; name: string; phone?: string; website?: string; contact?: string }>).reduce((best, current) => {
+          // Score businesses based on available data
+          const currentScore = (current.phone ? 1 : 0) + (current.website ? 2 : 0) + (current.contact ? 0.5 : 0);
+          const bestScore = (best.phone ? 1 : 0) + (best.website ? 2 : 0) + (best.contact ? 0.5 : 0);
+          
+          if (currentScore > bestScore) return current;
+          if (currentScore < bestScore) return best;
+          
+          // If scores are equal, prefer longer name or first one
           if (current.name.length > best.name.length) return current;
           return best;
         });
 
-        // Remove all others
-        const businessesToRemove = (businesses as Array<{ _id: { toString: () => string }; name: string }>)
+        // Before removing, merge website data from duplicates if the best one doesn't have it
+        const businessesToRemove = (businesses as Array<{ _id: { toString: () => string }; name: string; website?: string; phone?: string }>)
           .filter(b => b._id && bestBusiness._id && b._id.toString() !== bestBusiness._id.toString());
+
+        // Merge data from duplicates before removing them
+        const mergeData: any = {};
+        let hasUpdates = false;
+        
+        if (!bestBusiness.website) {
+          for (const duplicate of businessesToRemove) {
+            if (duplicate.website) {
+              mergeData.website = duplicate.website;
+              hasUpdates = true;
+              break;
+            }
+          }
+        }
+        
+        if (!bestBusiness.phone) {
+          for (const duplicate of businessesToRemove) {
+            if (duplicate.phone) {
+              mergeData.phone = duplicate.phone;
+              hasUpdates = true;
+              break;
+            }
+          }
+        }
+        
+        // Update the best business with merged data
+        if (hasUpdates) {
+          mergeData.updatedAt = new Date();
+          await Business.findByIdAndUpdate(bestBusiness._id, mergeData);
+          console.log(`Merged data into kept business: ${bestBusiness.name}`);
+        }
 
         for (const business of businessesToRemove) {
           await Business.deleteOne({ _id: business._id });

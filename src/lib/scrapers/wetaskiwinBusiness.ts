@@ -19,10 +19,14 @@ export interface BusinessScrapingResult {
 
 export class WetaskiwinBusinessScraper {
   private baseUrl = 'https://www.wetaskiwin.ca'
+  private existingBusinesses: Array<{name: string, address: string, id: string}> = []
 
-  async scrapeBusinessPage(url: string): Promise<ScrapedBusiness[]> {
+  async scrapeBusinessPage(url: string, existingBusinesses?: Array<{name: string, address: string, id: string}>): Promise<ScrapedBusiness[]> {
     try {
       console.log(`Starting business scraping from Wetaskiwin directory...`)
+      
+      // Store existing businesses for duplicate detection
+      this.existingBusinesses = existingBusinesses || []
       
       // Use the show all URL parameter to get all businesses in one request
       const showAllUrl = url.includes('?') 
@@ -72,14 +76,13 @@ export class WetaskiwinBusinessScraper {
           if (text.length > 20 && text.includes('Wetaskiwin')) {
             const business = this.parseBusinessEntry(text)
             if (business && business.name && business.address) {
-              // Check for duplicates
-              const isDuplicate = businesses.some(existing => 
-                existing.name.toLowerCase().trim() === business.name.toLowerCase().trim() &&
-                existing.address.toLowerCase().includes(business.address.toLowerCase().substring(0, 15))
-              )
+              // Check for duplicates against both current session and existing database entries
+              const isDuplicate = this.isDuplicateBusiness(business, businesses)
               
               if (!isDuplicate) {
                 businesses.push(business)
+              } else {
+                console.log(`Skipping duplicate business: "${business.name}" at "${business.address}"`)
               }
             }
           }
@@ -218,10 +221,11 @@ export class WetaskiwinBusinessScraper {
   private extractWebsite(text: string): string | undefined {
     // Extract website URL before it gets removed from cleaning
     const websitePatterns = [
-      /Link:\s*(https?:\/\/[^\s]+)/i,
-      /Link:\s*(www\.[^\s]+)/i,
-      /(https?:\/\/[^\s]+)/i,
-      /(www\.[^\s]+)/i
+      /Link:\s*(https?:\/\/[^\s]+)/i, // Link: https://example.com
+      /Link:\s*(www\.[^\s]+)/i,       // Link: www.example.com
+      /Link:\s*([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/i, // Link: example.com/path or subdomain.example.net/contact
+      /(https?:\/\/[^\s]+)/i,         // Standalone https://example.com
+      /(www\.[^\s]+)/i               // Standalone www.example.com
     ];
     
     for (const pattern of websitePatterns) {
@@ -232,6 +236,8 @@ export class WetaskiwinBusinessScraper {
         if (!website.startsWith('http')) {
           website = 'https://' + website;
         }
+        // Clean up common endings that might get captured, but preserve paths
+        website = website.replace(/[.,;:]+(\s|$)/, ''); // Remove trailing punctuation only if followed by space or end
         return website;
       }
     }
@@ -339,6 +345,94 @@ export class WetaskiwinBusinessScraper {
 
   private cleanPhoneNumber(phone: string): string {
     return phone.replace(/[-.\s,]/g, '-')
+  }
+
+  private isDuplicateBusiness(business: ScrapedBusiness, currentBusinesses: ScrapedBusiness[]): boolean {
+    // Check against current scraping session
+    const duplicateInSession = currentBusinesses.some(existing => 
+      this.businessesAreEqual(existing, business)
+    )
+    
+    if (duplicateInSession) {
+      return true
+    }
+    
+    // Check against existing database entries
+    const duplicateInDatabase = this.existingBusinesses.some(existing => {
+      const normalizedExistingName = this.normalizeBusinessName(existing.name)
+      const normalizedNewName = this.normalizeBusinessName(business.name)
+      const addressSimilar = this.addressesAreSimilar(existing.address, business.address)
+      
+      return normalizedExistingName === normalizedNewName && addressSimilar
+    })
+    
+    return duplicateInDatabase
+  }
+
+  private businessesAreEqual(business1: ScrapedBusiness, business2: ScrapedBusiness): boolean {
+    const name1 = this.normalizeBusinessName(business1.name)
+    const name2 = this.normalizeBusinessName(business2.name)
+    const addressSimilar = this.addressesAreSimilar(business1.address, business2.address)
+    
+    return name1 === name2 && addressSimilar
+  }
+
+  private normalizeBusinessName(name: string): string {
+    return name.toLowerCase()
+      .replace(/\b(ltd|inc|corp|co|llc|limited|incorporated|corporation|company)\b\.?/g, '') // Remove business suffixes
+      .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+      .replace(/\s+/g, ' ') // Normalize spaces
+      .trim()
+  }
+
+  private addressesAreSimilar(address1: string, address2: string): boolean {
+    // Normalize addresses for comparison
+    const normalize = (addr: string) => addr.toLowerCase()
+      .replace(/\b(street|avenue|ave|st|road|rd|drive|dr|boulevard|blvd|crescent|cres|close|court|ct|way|lane|place|pl)\b/g, 'st') // Normalize street types
+      .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+      .replace(/\s+/g, ' ') // Normalize spaces
+      .trim()
+    
+    const norm1 = normalize(address1)
+    const norm2 = normalize(address2)
+    
+    // Extract street numbers for comparison
+    const streetNum1 = address1.match(/^\s*#?\d+[a-z]?/i)?.[0]?.replace(/[^0-9a-z]/gi, '').toLowerCase() || ''
+    const streetNum2 = address2.match(/^\s*#?\d+[a-z]?/i)?.[0]?.replace(/[^0-9a-z]/gi, '').toLowerCase() || ''
+    
+    // If street numbers are different, probably different addresses
+    if (streetNum1 && streetNum2 && streetNum1 !== streetNum2) {
+      return false
+    }
+    
+    // Check if addresses are very similar (allowing for minor variations)
+    const similarity = this.calculateStringSimilarity(norm1, norm2)
+    return similarity > 0.8 // 80% similarity threshold
+  }
+
+  private calculateStringSimilarity(str1: string, str2: string): number {
+    // Simple similarity calculation using longest common subsequence ratio
+    const longer = str1.length > str2.length ? str1 : str2
+    const shorter = str1.length > str2.length ? str2 : str1
+    
+    if (longer.length === 0) {
+      return 1.0
+    }
+    
+    // Count common characters
+    let commonChars = 0
+    const shorterChars = shorter.split('')
+    const longerChars = longer.split('')
+    
+    for (const char of shorterChars) {
+      const index = longerChars.indexOf(char)
+      if (index !== -1) {
+        commonChars++
+        longerChars.splice(index, 1) // Remove to avoid double counting
+      }
+    }
+    
+    return commonChars / longer.length
   }
 
   private cleanAddress(address: string): string {

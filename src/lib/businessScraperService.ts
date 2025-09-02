@@ -14,9 +14,19 @@ export class BusinessScraperService {
       // Connect to database
       await connectDB()
       
-      // Scrape businesses
+      // Get existing businesses for duplicate detection
+      const existingBusinesses = await Business.find({}, 'id name address').lean()
+      const existingBusinessData = existingBusinesses.map(b => ({
+        id: b.id,
+        name: b.name,
+        address: b.address
+      }))
+      
+      console.log(`Found ${existingBusinessData.length} existing businesses for duplicate detection`)
+      
+      // Scrape businesses with existing business data for duplicate detection
       const allBusinessesUrl = 'https://www.wetaskiwin.ca/businessdirectoryii.aspx'
-      const businesses = await this.businessScraper.scrapeBusinessPage(allBusinessesUrl)
+      const businesses = await this.businessScraper.scrapeBusinessPage(allBusinessesUrl, existingBusinessData)
       const categorizedBusinesses = this.businessScraper.categorizeBusinesses(businesses)
       
       // Save to database
