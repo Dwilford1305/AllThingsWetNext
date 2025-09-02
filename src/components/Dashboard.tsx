@@ -3,9 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Card } from './ui/Card';
 import { Badge } from './ui/Badge';
-import { Button } from './ui/Button';
 import { Calendar, Clock, MapPin, ArrowRight } from 'lucide-react';
 import type { Event, NewsArticle } from '@/types';
 

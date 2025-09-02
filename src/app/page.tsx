@@ -1,5 +1,5 @@
 import Navigation from '@/components/ui/Navigation';
-import ParallaxHero from '@/components/ParallaxHero';
+import ModernHero from '@/components/ModernHero';
 import Dashboard from '@/components/Dashboard';
 import CommunityStats from '@/components/CommunityStats';
 import SubscriptionShowcase from '@/components/SubscriptionShowcase';
@@ -13,7 +13,7 @@ export default function Home() {
     <FoldableLayout>
       <div className="site-layout">
         <Navigation />
-        <ParallaxHero />
+        <ModernHero />
       
         {/* Top Banner Ad */}
         <AnimatedSection delay={0}>
