@@ -356,15 +356,14 @@ html, body {
   position: relative;
 }
 
-/* Box sizing for all elements - but preserve parallax hero styling */
-*:not(.parallax-hero *) {
-  max-width: 100%;
+/* Box sizing for all elements, but allow specific overrides */
+* {
   box-sizing: border-box;
 }
 
-/* Allow parallax hero children to override max-width */
-.parallax-hero * {
-  box-sizing: border-box;
+/* Apply max-width constraints selectively, excluding elements that need full freedom */
+body *:not(.parallax-hero):not(.parallax-hero *) {
+  max-width: 100%;
 }
 
 *::before, *::after {
@@ -711,6 +710,7 @@ main:not(.parallax-hero) {
 .parallax-hero {
   position: relative !important;
   height: 100vh !important;
+  min-height: 100vh !important;
   overflow: hidden !important;
   max-width: unset !important;
   width: 100vw !important;
@@ -754,12 +754,48 @@ main:not(.parallax-hero) {
 }
 
 /* Ensure all elements inside parallax hero can use their intended positioning */
+.parallax-hero .absolute {
+  position: absolute !important;
+}
+
 .parallax-hero .relative {
   position: relative !important;
 }
 
 .parallax-hero .z-10 {
   z-index: 10 !important;
+}
+
+/* Fix all Tailwind positioning utilities within parallax hero */
+.parallax-hero .inset-0 {
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+}
+
+.parallax-hero .top-1\/4 {
+  top: 25% !important;
+}
+
+.parallax-hero .left-1\/4 {
+  left: 25% !important;
+}
+
+.parallax-hero .bottom-1\/4 {
+  bottom: 25% !important;
+}
+
+.parallax-hero .right-1\/4 {
+  right: 25% !important;
+}
+
+.parallax-hero .h-full {
+  height: 100% !important;
+}
+
+.parallax-hero .w-full {
+  width: 100% !important;
 }
 
 /* Removed data-scroll-container positioning that was causing scroll conflicts */
