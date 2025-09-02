@@ -64,7 +64,7 @@ export async function POST() {
           .filter(b => b._id && bestBusiness._id && b._id.toString() !== bestBusiness._id.toString());
 
         // Merge data from duplicates before removing them
-        const mergeData: any = {};
+        const mergeData: Record<string, unknown> = {};
         let hasUpdates = false;
         
         if (!bestBusiness.website) {
