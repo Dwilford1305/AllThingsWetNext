@@ -100,6 +100,9 @@ export class WetaskiwinBusinessScraper {
     try {
       if (text.length < 10) return null
 
+      // Extract website URL BEFORE cleaning the text
+      const website = this.extractWebsite(text)
+
       // Clean up the text thoroughly
       let cleanText = text
         .replace(/\[View Map[^\]]*\]/g, '') // Remove map links
@@ -202,6 +205,7 @@ export class WetaskiwinBusinessScraper {
         contact: contact,
         address: this.cleanAddress(fullAddress),
         phone: phone,
+        website: website,
         sourceUrl: this.baseUrl + '/businessdirectoryii.aspx'
       }
 
@@ -211,62 +215,126 @@ export class WetaskiwinBusinessScraper {
     }
   }
 
+  private extractWebsite(text: string): string | undefined {
+    // Extract website URL before it gets removed from cleaning
+    const websitePatterns = [
+      /Link:\s*(https?:\/\/[^\s]+)/i,
+      /Link:\s*(www\.[^\s]+)/i,
+      /(https?:\/\/[^\s]+)/i,
+      /(www\.[^\s]+)/i
+    ];
+    
+    for (const pattern of websitePatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        let website = match[1];
+        // Ensure proper protocol
+        if (!website.startsWith('http')) {
+          website = 'https://' + website;
+        }
+        return website;
+      }
+    }
+    return undefined;
+  }
+
   private parseNameAndContactSimplified(nameContactText: string): { businessName: string; contact: string } {
     if (!nameContactText) {
       return { businessName: '', contact: '' }
     }
 
+    // Clean up the text first and fix concatenated words
+    let text = nameContactText.trim();
+    
     // List of endings that usually mean the business name is over
     const businessEndings = [
-      'Ltd', 'Inc', 'Corp', 'Co', 'LLC', 'Limited', 'Services', 'Service', 'Restaurant', 'Cafe', 'Centre', 'Center', 'Group', 'Club', 'Hotel', 'Inn', 'Bar', 'Grill', 'Kitchen', 'Market', 'Auto', 'Motors', 'Sales', 'Clinic', 'Hospital', 'Salon', 'Studio', 'Fitness', 'Gym', 'Pizza', 'Pasta', 'Liquor', 'Gas', 'Oil', 'Tire', 'Glass', 'Electric', 'Plumbing', 'Construction', 'Contracting', 'Cleaning', 'Pharmacy', 'Bank', 'Insurance', 'Travel', 'Agency', 'Consulting', 'Solutions', 'Systems', 'Tech', 'Communications', 'Media', 'Design', 'Graphics', 'Printing', 'Photography', 'Entertainment', 'Equipment', 'Supply', 'Supplies', 'Parts', 'Repair', 'Maintenance', 'Security', 'Safety', 'Training', 'Education', 'Academy', 'School', 'Institute', 'Foundation', 'Association', 'Society', 'Network', 'Taxi', 'Cab', 'Rental', 'Rentals', 'Finance', 'Financial', 'Investment', 'Holdings', 'Properties', 'Development', 'Management', 'Shop'
+      'Ltd', 'Inc', 'Corp', 'Co', 'LLC', 'Limited', 'Services', 'Service', 'Restaurant', 'Cafe', 'Centre', 'Center', 'Group', 'Club', 'Hotel', 'Inn', 'Bar', 'Grill', 'Kitchen', 'Market', 'Auto', 'Motors', 'Sales', 'Clinic', 'Hospital', 'Salon', 'Studio', 'Fitness', 'Gym', 'Pizza', 'Pasta', 'Liquor', 'Gas', 'Oil', 'Tire', 'Glass', 'Electric', 'Plumbing', 'Construction', 'Contracting', 'Cleaning', 'Pharmacy', 'Bank', 'Insurance', 'Travel', 'Agency', 'Consulting', 'Solutions', 'Systems', 'Tech', 'Communications', 'Media', 'Design', 'Graphics', 'Printing', 'Photography', 'Entertainment', 'Equipment', 'Supply', 'Supplies', 'Parts', 'Repair', 'Maintenance', 'Security', 'Safety', 'Training', 'Education', 'Academy', 'School', 'Institute', 'Foundation', 'Association', 'Society', 'Network', 'Taxi', 'Cab', 'Rental', 'Rentals', 'Finance', 'Financial', 'Investment', 'Holdings', 'Properties', 'Development', 'Management', 'Shop', 'Office'
     ];
 
-    // Insert a space after any business ending if glued to a capitalized word
-    let businessName = nameContactText.trim();
+    // Fix concatenated words by adding spaces before capital letters that follow business endings
     for (const ending of businessEndings) {
-      const gluedPattern = new RegExp(`(${ending})([A-Z][a-z]+)`, 'g');
-      businessName = businessName.replace(gluedPattern, '$1 $2');
+      const pattern = new RegExp(`(${ending})([A-Z][a-z]+)`, 'g');
+      text = text.replace(pattern, '$1 $2');
     }
-    // Insert a space before 'and' or '&' if glued to the business name
-    businessName = businessName.replace(/([a-zA-Z])((and|&)\b)/g, '$1 $2');
-    // Also insert a space before any capitalized word that follows a lowercase, symbol, or period
-    businessName = businessName
-      .replace(/([a-z0-9\)\]\.!?])([A-Z][a-z]+)/g, '$1 $2')
-      .replace(/([a-z])([A-Z][A-Z]+)/g, '$1 $2')
-      .replace(/([a-z])([A-Z])/g, '$1 $2');
+    
+    // Add space before capital letters that seem to start contact names
+    text = text.replace(/([a-z])([A-Z][a-z]+\s+[A-Z][a-z]+)$/g, '$1 $2'); // "ServiceGary Johnson" -> "Service Gary Johnson"
 
+    let businessName = text;
     let contact = '';
 
-    // Try to split by business ending
+    // First try to match business ending patterns with contact names
     for (const ending of businessEndings) {
-      const pattern = new RegExp(`^(.+?\\b${ending}\\b\\.?)(?:\\s+|$)([A-Z][a-z]+(?:\\s+(?:Mc|Mac)?[A-Z][a-z]+){0,2})?$`, 'i');
-      const match = businessName.match(pattern);
+      const pattern = new RegExp(`^(.+?\\b${ending}\\b\\.?)\\s+([A-Z][a-z]+(?:\\s+(?:Mc|Mac)?[A-Z][a-z]+){0,2})\\s*$`, 'i');
+      const match = text.match(pattern);
       if (match) {
-        businessName = match[1].trim().replace(/[.,;:]+$/, '');
-        contact = (match[2] || '').trim();
-        return { businessName, contact };
+        const potentialContact = match[2].trim();
+        // Check if the potential contact is also a business ending - if so, keep as business name
+        const contactIsBusinessEnding = businessEndings.some(ending => 
+          ending.toLowerCase() === potentialContact.toLowerCase()
+        );
+        if (!contactIsBusinessEnding) {
+          businessName = match[1].trim().replace(/[.,;:]+$/, '');
+          contact = potentialContact;
+          return { businessName, contact };
+        }
       }
     }
 
-    // If not found, try to extract the last 1-3 words as contact if they look like names or are 'and'/'&'
-    const words = businessName.split(/\s+/);
-    for (let n = 3; n >= 1; n--) {
-      if (words.length > n) {
-        const lastN = words.slice(-n);
-        // Accept if all are capitalized, or are 'and'/'&', or look like names (including Mc/Mac)
-        if (lastN.every(w => /^[A-Z][a-z]+$/.test(w) || /^Mc[A-Z][a-z]+$/.test(w) || /^Mac[A-Z][a-z]+$/.test(w) || w.toLowerCase() === 'and' || w === '&')) {
-          // Don't treat as contact if the last word is a business ending
-          if (!businessEndings.includes(lastN[lastN.length - 1])) {
-            businessName = words.slice(0, -n).join(' ');
-            contact = lastN.join(' ');
-            return { businessName, contact };
-          }
+    // If no contact name found but text ends with business ending, keep the whole thing as business name
+    for (const ending of businessEndings) {
+      const pattern = new RegExp(`\\b${ending}\\b\\.?\\s*$`, 'i');
+      if (pattern.test(text)) {
+        return { businessName: text, contact: '' };
+      }
+    }
+
+    // If no business ending found, look for pattern where last 1-2 words are capitalized names
+    const words = text.split(/\s+/);
+    if (words.length >= 3) {
+      // Try extracting last 2 words as contact name if they look like proper names
+      const lastTwoWords = words.slice(-2);
+      if (lastTwoWords.length === 2 && 
+          lastTwoWords.every(w => /^[A-Z][a-z]+$/.test(w))) {
+        // Check that these aren't business endings or common business words
+        const isBusinessEnding = businessEndings.some(ending => 
+          ending.toLowerCase() === lastTwoWords[lastTwoWords.length - 1].toLowerCase()
+        );
+        // Additional check for common business words that aren't in the endings list
+        const commonBusinessWords = ['store', 'shop', 'company', 'services', 'center', 'centre'];
+        const isCommonBusinessWord = commonBusinessWords.some(word => 
+          lastTwoWords.some(w => w.toLowerCase() === word)
+        );
+        
+        if (!isBusinessEnding && !isCommonBusinessWord) {
+          businessName = words.slice(0, -2).join(' ');
+          contact = lastTwoWords.join(' ');
+          return { businessName, contact };
+        }
+      }
+      
+      // Try extracting last word as contact name if it's a proper name
+      const lastWord = words[words.length - 1];
+      if (/^[A-Z][a-z]{2,}$/.test(lastWord)) { // At least 3 characters to avoid short words
+        const isBusinessEnding = businessEndings.some(ending => 
+          ending.toLowerCase() === lastWord.toLowerCase()
+        );
+        // Additional common business words check
+        const commonBusinessWords = ['store', 'shop', 'company', 'services', 'center', 'centre'];
+        const isCommonBusinessWord = commonBusinessWords.some(word => 
+          lastWord.toLowerCase() === word
+        );
+        
+        if (!isBusinessEnding && !isCommonBusinessWord) {
+          businessName = words.slice(0, -1).join(' ');
+          contact = lastWord;
+          return { businessName, contact };
         }
       }
     }
 
     // Otherwise, treat the whole thing as business name
-    return { businessName, contact };
+    return { businessName, contact: '' };
   }
 
   private cleanPhoneNumber(phone: string): string {
