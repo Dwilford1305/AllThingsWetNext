@@ -457,7 +457,7 @@ function ProfileTab({
                   className="w-16 h-16 rounded-full object-cover"
                 />
               ) : (
-                <User className="h-8 w-8 text-gray-400" />
+                <User className="h-8 w-8 text-gray-600" />
               )}
             </div>
             <Button type="button" variant="outline" size="sm">
@@ -516,7 +516,7 @@ function ProfileTab({
             Email Address
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-600" />
             <input
               type="email"
               id="email"
@@ -535,7 +535,7 @@ function ProfileTab({
             Phone Number
           </label>
           <div className="relative">
-            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-600" />
             <input
               type="tel"
               id="phone"
@@ -629,7 +629,7 @@ function PreferencesTab({
                   onChange={(e) => setPrefs({ ...prefs, theme: e.target.value as 'light' | 'dark' | 'system' })}
                   className="h-4 w-4 text-primary-600 border-gray-300 focus:ring-primary-500"
                 />
-                <Icon className="h-5 w-5 text-gray-500" />
+                <Icon className="h-5 w-5 text-gray-700" />
                 <span className="text-sm font-medium text-gray-900">{label}</span>
               </label>
             ))}
@@ -804,7 +804,7 @@ function BusinessTab({ userId: _userId }: { userId: string }) {
                       <h4 className="font-semibold text-lg text-gray-900">{business.name}</h4>
                       <p className="text-gray-600 text-sm mb-2">{business.category}</p>
                       <p className="text-gray-700 text-sm mb-2">{business.description}</p>
-                      <div className="flex items-center text-sm text-gray-500 space-x-4">
+                      <div className="flex items-center text-sm text-gray-700 space-x-4">
                         <span>📍 {business.address}</span>
                         {business.phone && <span>📞 {business.phone}</span>}
                         {business.verified && (
@@ -993,7 +993,7 @@ function ListingsTab({ userId: _userId }: { userId: string }) {
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full">
-                        <Package className="h-8 w-8 text-gray-400" />
+                        <Package className="h-8 w-8 text-gray-600" />
                       </div>
                     )}
                     <div className="absolute top-2 right-2">
@@ -1017,12 +1017,12 @@ function ListingsTab({ userId: _userId }: { userId: string }) {
                     
                     <p className="text-sm text-gray-600 mb-2 line-clamp-2">{listing.description}</p>
                     
-                    <div className="flex items-center text-xs text-gray-500 mb-3">
+                    <div className="flex items-center text-xs text-gray-700 mb-3">
                       <MapPin className="h-3 w-3 mr-1" />
                       <span className="truncate">{listing.location}</span>
                     </div>
                     
-                    <div className="flex items-center text-xs text-gray-500 mb-4">
+                    <div className="flex items-center text-xs text-gray-700 mb-4">
                       <Calendar className="h-3 w-3 mr-1" />
                       <span>Posted {formatDate(listing.createdAt)}</span>
                     </div>
@@ -1059,8 +1059,8 @@ function ListingsTab({ userId: _userId }: { userId: string }) {
             </div>
           ) : (
             <div className="text-center py-8">
-              <Package className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 mb-4">No marketplace listings posted yet.</p>
+              <Package className="h-12 w-12 text-gray-500 mx-auto mb-3" />
+              <p className="text-gray-700 mb-4">No marketplace listings posted yet.</p>
               <Button 
                 onClick={() => setShowCreateForm(true)}
                 className="bg-primary-600 hover:bg-primary-700"
@@ -1082,8 +1082,8 @@ function ListingsTab({ userId: _userId }: { userId: string }) {
             </Button>
           </div>
           <div className="text-center py-8">
-            <Briefcase className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">No job postings created yet.</p>
+            <Briefcase className="h-12 w-12 text-gray-500 mx-auto mb-3" />
+            <p className="text-gray-700">No job postings created yet.</p>
           </div>
         </div>
       )}
@@ -1139,7 +1139,7 @@ function SecurityTab({
                 Current Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-700" />
                 <input
                   type="password"
                   id="currentPassword"
@@ -1155,7 +1155,7 @@ function SecurityTab({
                 New Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-700" />
                 <input
                   type="password"
                   id="newPassword"
@@ -1171,7 +1171,7 @@ function SecurityTab({
                 Confirm New Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-700" />
                 <input
                   type="password"
                   id="confirmPassword"

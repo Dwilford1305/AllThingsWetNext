@@ -161,7 +161,7 @@ const MarketplacePage = () => {
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 mb-8 border border-white/20 shadow-lg">
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 h-5 w-5" />
                     <input
                       type="text"
                       value={searchTerm}
@@ -171,7 +171,7 @@ const MarketplacePage = () => {
                     />
                   </div>
                   <div className="relative">
-                    <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 h-5 w-5" />
                     <select
                       value={selectedCategory}
                       onChange={(e) => setSelectedCategory(e.target.value)}
@@ -382,13 +382,13 @@ const MarketplacePage = () => {
       {/* Listing Detail Modal with Comments */}
       {selectedListing && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-lg">
+          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-lg high-contrast">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">{selectedListing.title}</h2>
                 <button
                   onClick={() => setSelectedListing(null)}
-                  className="text-gray-500 hover:text-gray-700 p-2"
+                  className="text-gray-800 hover:text-gray-900 p-2"
                   type="button"
                 >
                   <X className="h-5 w-5" />
@@ -409,7 +409,7 @@ const MarketplacePage = () => {
                     </div>
                   ) : (
                     <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
-                      <ImageIcon className="h-16 w-16 text-gray-400" />
+                      <ImageIcon className="h-16 w-16 text-gray-600" />
                     </div>
                   )}
                 </div>
@@ -433,23 +433,23 @@ const MarketplacePage = () => {
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="font-medium text-gray-600">Location:</span>
-                      <div className="flex items-center mt-1">
-                        <MapPin className="h-4 w-4 text-gray-400 mr-1" />
+                      <span className="font-medium text-gray-800">Location:</span>
+                      <div className="flex items-center mt-1 text-gray-900">
+                        <MapPin className="h-4 w-4 text-gray-700 mr-1" />
                         {selectedListing.location}
                       </div>
                     </div>
                     <div>
-                      <span className="font-medium text-gray-600">Contact:</span>
-                      <div className="flex items-center mt-1">
-                        <User className="h-4 w-4 text-gray-400 mr-1" />
+                      <span className="font-medium text-gray-800">Contact:</span>
+                      <div className="flex items-center mt-1 text-gray-900">
+                        <User className="h-4 w-4 text-gray-700 mr-1" />
                         {selectedListing.contactName}
                       </div>
                     </div>
                     {selectedListing.condition && (
                       <div>
-                        <span className="font-medium text-gray-600">Condition:</span>
-                        <div className="mt-1">
+                        <span className="font-medium text-gray-800">Condition:</span>
+                        <div className="mt-1 text-gray-900">
                           {selectedListing.condition.split('-').map(word => 
                             word.charAt(0).toUpperCase() + word.slice(1)
                           ).join(' ')}
@@ -457,8 +457,8 @@ const MarketplacePage = () => {
                       </div>
                     )}
                     <div>
-                      <span className="font-medium text-gray-600">Posted:</span>
-                      <div className="mt-1">{formatDate(selectedListing.createdAt)}</div>
+                      <span className="font-medium text-gray-800">Posted:</span>
+                      <div className="mt-1 text-gray-700">{formatDate(selectedListing.createdAt)}</div>
                     </div>
                   </div>
                   
@@ -477,12 +477,11 @@ const MarketplacePage = () => {
                     )}
                     {isAuthenticated && (
                       <Button
-                        variant="outline"
                         onClick={() => {
                           setReportingListingId(selectedListing.id);
                           setSelectedListing(null);
                         }}
-                        className="border-red-300 text-red-600 hover:bg-red-50"
+                        className="bg-red-600 hover:bg-red-700 text-white"
                       >
                         <Flag className="h-4 w-4 mr-2" />
                         Report

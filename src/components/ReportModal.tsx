@@ -106,13 +106,13 @@ export default function ReportModal({
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-                <p className="text-sm text-gray-600">{description}</p>
+                <p className="text-sm text-gray-700">{description}</p>
               </div>
             </div>
             <button
               onClick={handleClose}
               disabled={isSubmitting}
-              className="text-gray-500 hover:text-gray-700 p-2"
+              className="text-gray-700 hover:text-gray-900 p-2"
               type="button"
             >
               <X className="h-5 w-5" />
@@ -127,14 +127,14 @@ export default function ReportModal({
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-800 mb-3">
                 What&apos;s the issue?
               </label>
               <div className="space-y-3">
                 {reportReasons.map((reason) => (
                   <label
                     key={reason.value}
-                    className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="flex items-start gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
                   >
                     <input
                       type="radio"
@@ -148,7 +148,7 @@ export default function ReportModal({
                       <div className="font-medium text-gray-900">
                         {reason.label}
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-700">
                         {reason.description}
                       </div>
                     </div>
@@ -158,7 +158,7 @@ export default function ReportModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-800 mb-2">
                 Additional details *
               </label>
               <textarea
@@ -170,7 +170,7 @@ export default function ReportModal({
                 placeholder="Please provide specific details about why you&apos;re reporting this content..."
                 disabled={isSubmitting}
               />
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-700">
                 Be specific about the issue to help our moderators review it quickly.
               </p>
             </div>

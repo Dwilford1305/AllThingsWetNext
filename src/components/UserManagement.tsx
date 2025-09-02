@@ -265,7 +265,7 @@ export function UserManagement({ onClose: _onClose }: UserManagementProps) {
           {/* Search and Filters */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 h-4 w-4" />
               <input
                 type="text"
                 placeholder="Search users by name or email..."
@@ -354,7 +354,7 @@ export function UserManagement({ onClose: _onClose }: UserManagementProps) {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider w-16">
                       <input
                         type="checkbox"
                         checked={selectedUsers.length === users.length && users.length > 0}
@@ -363,19 +363,19 @@ export function UserManagement({ onClose: _onClose }: UserManagementProps) {
                         aria-label="Select all users"
                       />
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       User Details
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Role & Status
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Business Info
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Activity
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider w-32">
                       Actions
                     </th>
                   </tr>
@@ -405,8 +405,8 @@ export function UserManagement({ onClose: _onClose }: UserManagementProps) {
                             <div className="text-sm font-medium text-gray-900">
                               {user.firstName} {user.lastName}
                             </div>
-                            <div className="text-sm text-gray-500 truncate">{user.email}</div>
-                            <div className="text-xs text-gray-400">
+                            <div className="text-sm text-gray-700 truncate">{user.email}</div>
+                            <div className="text-xs text-gray-600">
                               ID: {user.id?.slice(-8) || 'N/A'}
                             </div>
                           </div>
@@ -422,22 +422,22 @@ export function UserManagement({ onClose: _onClose }: UserManagementProps) {
                         <div className="text-sm space-y-1">
                           <div>
                             <span className="font-medium">{user.totalBusinesses || 0}</span>
-                            <span className="text-gray-500"> total</span>
+                            <span className="text-gray-700"> total</span>
                           </div>
                           <div>
                             <span className="font-medium text-green-600">{user.claimedBusinesses || 0}</span>
-                            <span className="text-gray-500"> claimed</span>
+                            <span className="text-gray-700"> claimed</span>
                           </div>
                           <div>
                             <span className="font-medium text-purple-600">{user.premiumBusinesses || 0}</span>
-                            <span className="text-gray-500"> premium</span>
+                            <span className="text-gray-700"> premium</span>
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-4">
                         <div className="text-sm space-y-1">
                           <div>
-                            <span className="text-gray-500">Joined:</span>
+                            <span className="text-gray-700">Joined:</span>
                             <div className="font-medium">
                               {new Date(user.createdAt).toLocaleDateString('en-US', { 
                                 month: 'short', 
@@ -447,7 +447,7 @@ export function UserManagement({ onClose: _onClose }: UserManagementProps) {
                             </div>
                           </div>
                           <div>
-                            <span className="text-gray-500">Last active:</span>
+                            <span className="text-gray-700">Last active:</span>
                             <div className="font-medium">
                               {user.lastLoginAt 
                                 ? new Date(user.lastLoginAt).toLocaleDateString('en-US', { 
@@ -543,8 +543,8 @@ export function UserManagement({ onClose: _onClose }: UserManagementProps) {
                         <div className="text-lg font-semibold text-gray-900">
                           {user.firstName} {user.lastName}
                         </div>
-                        <div className="text-sm text-gray-500 break-all">{user.email}</div>
-                        <div className="text-xs text-gray-400 mt-1">
+                        <div className="text-sm text-gray-700 break-all">{user.email}</div>
+                        <div className="text-xs text-gray-600 mt-1">
                           ID: {user.id?.slice(-8) || 'N/A'}
                         </div>
                       </div>
@@ -561,7 +561,7 @@ export function UserManagement({ onClose: _onClose }: UserManagementProps) {
                   <div className="grid grid-cols-3 gap-4 mb-3 p-3 bg-gray-50 rounded-lg">
                     <div className="text-center">
                       <div className="text-lg font-bold text-gray-900">{user.totalBusinesses || 0}</div>
-                      <div className="text-xs text-gray-500">Total</div>
+                      <div className="text-xs text-gray-700">Total</div>
                     </div>
                     <div className="text-center">
                       <div className="text-lg font-bold text-green-600">{user.claimedBusinesses || 0}</div>

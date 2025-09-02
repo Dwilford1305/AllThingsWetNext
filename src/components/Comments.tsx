@@ -30,7 +30,11 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
       const result = await response.json()
       
       if (result.success) {
-        setComments(result.data)
+        // Ensure newest-first ordering
+        const sorted = [...result.data].sort((a: MarketplaceComment, b: MarketplaceComment) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+        setComments(sorted)
       } else {
         setError('Failed to load comments')
       }
@@ -69,7 +73,10 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
             if (parsed?.type === 'new_comment' && parsed?.data) {
               setComments(prev => {
                 const exists = prev.some(c => c.id === parsed.data.id)
-                return exists ? prev : [...prev, parsed.data]
+                if (exists) return prev
+                const next = [parsed.data, ...prev]
+                // Keep newest-first
+                return next.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
               })
             }
           } catch {}
@@ -105,7 +112,7 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
 
       const result = await response.json()
 
-      if (result.success) {
+  if (result.success) {
         // Don’t optimistically append to avoid duplicate with SSE event
         setNewComment('')
         if (!sseConnected) {
@@ -186,7 +193,7 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
       <Card className="p-6">
         <div className="animate-pulse">
           <div className="flex items-center gap-2 mb-4">
-            <MessageCircle className="h-5 w-5 text-gray-400" />
+            <MessageCircle className="h-5 w-5 text-gray-600" />
             <div className="h-6 bg-gray-200 rounded w-24"></div>
           </div>
           <div className="space-y-4">
@@ -266,7 +273,7 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
                       <span className="font-medium text-gray-900">
                         {comment.userName}
                       </span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-600">
                         {formatDate(comment.createdAt)}
                       </span>
                       {comment.isReported && (
@@ -281,7 +288,7 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
                         variant="ghost"
                         size="sm"
                         onClick={() => setReportingCommentId(comment.id)}
-                        className="text-gray-500 hover:text-red-600 p-1"
+                        className="text-gray-600 hover:text-red-600 p-1"
                         title="Report comment"
                       >
                         <Flag className="h-3 w-3" />
@@ -291,9 +298,9 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
                   <p className="text-gray-700 whitespace-pre-wrap break-words">
                     {comment.content}
                   </p>
-                  <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-2 mt-2">
                     {isAuthenticated && (
-                      <Button variant="ghost" size="sm" className="text-gray-500 hover:text-primary-600 p-1" onClick={() => reactToComment(comment.id, 'like')}>
+            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-primary-600 p-1" onClick={() => reactToComment(comment.id, 'like')}>
                         <ThumbsUp className="h-4 w-4 mr-1" />
                         <span className="text-xs">{comment.reactions?.like?.length || 0}</span>
                       </Button>
@@ -305,8 +312,8 @@ export default function Comments({ listingId, isAuthenticated }: CommentsProps) 
           </div>
         ) : (
           <div className="text-center py-8">
-            <MessageCircle className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">No comments yet. Be the first to comment!</p>
+            <MessageCircle className="h-12 w-12 text-gray-500 mx-auto mb-3" />
+            <p className="text-gray-600">No comments yet. Be the first to comment!</p>
           </div>
         )}
       </Card>
