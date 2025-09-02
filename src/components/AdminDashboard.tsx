@@ -21,9 +21,11 @@ import {
   UserCheck,
   RefreshCw,
   Activity,
-  Ticket
+  Ticket,
+  Flag,
+  AlertTriangle
 } from 'lucide-react';
-import type { Business, Event, NewsArticle, BusinessCategory, SubscriptionTier } from '@/types';
+import type { Business, Event, NewsArticle, BusinessCategory, SubscriptionTier, Report as ReportType } from '@/types';
 import ScraperLogs from './ScraperLogs';
 import { csrfFetch } from '@/lib/csrf';
 
@@ -53,7 +55,7 @@ interface ScraperConfig {
 }
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'business-requests' | 'content' | 'users' | 'offer-codes' | 'scrapers' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'business-requests' | 'content' | 'users' | 'offer-codes' | 'scrapers' | 'settings' | 'reports'>('overview');
   const [data, setData] = useState<ContentStats | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -263,6 +265,81 @@ const AdminDashboard = () => {
       return false;
     } catch (error) {
       console.error('Error updating scraper status:', error);
+      return false;
+    }
+  };
+
+  // -------------------- Reports (Moderation) State & Helpers --------------------
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsError, setReportsError] = useState<string>('');
+  const [reports, setReports] = useState<ReportType[]>([]);
+  const [reportStatusFilter, setReportStatusFilter] = useState<'pending' | 'resolved' | 'dismissed' | 'all'>('pending');
+  const [reportTypeFilter, setReportTypeFilter] = useState<'listing' | 'comment' | 'all'>('all');
+  const [reportPage, setReportPage] = useState(1);
+  const [reportLimit] = useState(25);
+  const [reportTotal, setReportTotal] = useState(0);
+
+  const fetchReports = async () => {
+    try {
+      setReportsLoading(true);
+      setReportsError('');
+      const params = new URLSearchParams();
+      if (reportStatusFilter) params.append('status', reportStatusFilter);
+      if (reportTypeFilter !== 'all') params.append('type', reportTypeFilter);
+      params.append('page', String(reportPage));
+      params.append('limit', String(reportLimit));
+
+      const response = await fetch(`/api/admin/reports?${params.toString()}`, { credentials: 'include' });
+      const result = await response.json();
+      if (result.success) {
+        setReports(Array.isArray(result.data) ? result.data : (result.data?.reports || []));
+        const total = result.pagination?.total ?? result.total ?? (Array.isArray(result.data) ? result.data.length : 0);
+        setReportTotal(total);
+      } else {
+        setReportsError(result.error || 'Failed to load reports');
+      }
+    } catch (error) {
+      setReportsError(error instanceof Error ? error.message : 'Failed to load reports');
+    } finally {
+      setReportsLoading(false);
+    }
+  };
+
+  // Fetch reports when tab or filters change
+  useEffect(() => {
+    if (activeTab === 'reports') {
+      fetchReports();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, reportStatusFilter, reportTypeFilter, reportPage]);
+
+  const actOnReport = async (
+    reportId: string,
+  opts: { status?: 'pending' | 'resolved' | 'dismissed'; action?: 'dismiss' | 'hide' | 'remove' | 'unhide'; adminNotes?: string; reason?: string }
+  ) => {
+    try {
+      const csrf = document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1];
+      const response = await fetch(`/api/admin/reports/${reportId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf || '' },
+        credentials: 'include',
+        body: JSON.stringify(opts)
+      });
+      const result = await response.json();
+      if (result.success) {
+        // Optimistic update: remove or update report in list
+        setReports(prev => prev.map(r => r.id === reportId ? { ...r, status: opts.status || r.status, adminNotes: opts.adminNotes || r.adminNotes } : r));
+        // If resolved or dismissed, optionally filter out when viewing pending
+        if ((opts.status === 'resolved' || opts.status === 'dismissed') && reportStatusFilter === 'pending') {
+          setReports(prev => prev.filter(r => r.id !== reportId));
+        }
+        return true;
+      } else {
+        alert(result.error || 'Failed to update report');
+        return false;
+      }
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Failed to update report');
       return false;
     }
   };
@@ -721,6 +798,7 @@ const AdminDashboard = () => {
     { id: 'businesses', label: 'Businesses', icon: Building },
     { id: 'business-requests', label: 'Business Requests', icon: UserCheck },
     { id: 'content', label: 'Content', icon: Newspaper },
+  { id: 'reports', label: 'Reports', icon: Flag },
     { id: 'users', label: 'Users', icon: Users },
     { id: 'offer-codes', label: 'Offer Codes', icon: Ticket },
     { id: 'scrapers', label: 'Scrapers', icon: Activity },
@@ -1129,6 +1207,157 @@ const AdminDashboard = () => {
 
       {activeTab === 'business-requests' && (
         <BusinessRequestManager />
+      )}
+
+      {activeTab === 'reports' && (
+        <div className="space-y-6">
+          <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white flex items-center">
+                <Flag className="h-5 w-5 mr-2" />
+                Reported Content
+              </h3>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" onClick={() => fetchReports()} className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-wrap gap-3 mb-4 items-center">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-blue-200">Status:</span>
+                <select
+                  value={reportStatusFilter}
+                  onChange={(e) => { setReportPage(1); setReportStatusFilter(e.target.value as typeof reportStatusFilter); }}
+                  className="px-3 py-2 text-sm bg-white/10 text-white border border-white/20 rounded-md"
+                >
+                  <option value="pending" className="text-gray-900">Pending</option>
+                  <option value="resolved" className="text-gray-900">Resolved</option>
+                  <option value="dismissed" className="text-gray-900">Dismissed</option>
+                  <option value="all" className="text-gray-900">All</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-blue-200">Type:</span>
+                <select
+                  value={reportTypeFilter}
+                  onChange={(e) => { setReportPage(1); setReportTypeFilter(e.target.value as typeof reportTypeFilter); }}
+                  className="px-3 py-2 text-sm bg-white/10 text-white border border-white/20 rounded-md"
+                >
+                  <option value="all" className="text-gray-900">All</option>
+                  <option value="listing" className="text-gray-900">Listings</option>
+                  <option value="comment" className="text-gray-900">Comments</option>
+                </select>
+              </div>
+              <div className="text-sm text-blue-200 ml-auto">
+                Total: {reportTotal}
+              </div>
+            </div>
+
+            {/* List */}
+            {reportsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="h-6 w-6 animate-spin text-gray-400 mr-2" />
+                <span className="text-gray-600">Loading reports…</span>
+              </div>
+            ) : reportsError ? (
+              <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded">
+                {reportsError}
+              </div>
+            ) : reports.length === 0 ? (
+              <div className="text-center py-10 text-blue-200">No reports found for the selected filters.</div>
+            ) : (
+              <div className="space-y-3">
+                {reports.map((r) => (
+                  <div key={r.id} className="p-4 bg-white rounded-lg border flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge className={`${r.reportType === 'listing' ? 'bg-blue-600 text-white' : 'bg-purple-600 text-white'}`}>{r.reportType}</Badge>
+                        <Badge className={`${r.status === 'pending' ? 'bg-yellow-500 text-black' : r.status === 'resolved' ? 'bg-green-600 text-white' : 'bg-gray-500 text-white'}`}>{r.status}</Badge>
+                        <span className="text-xs text-gray-500">{new Date(r.createdAt).toLocaleString()}</span>
+                      </div>
+                      <div className="text-sm text-gray-900 truncate">
+                        <span className="font-medium">Reason:</span> {r.reason}
+                      </div>
+                      {r.description && (
+                        <div className="text-sm text-gray-700 truncate">
+                          <span className="font-medium">Details:</span> {r.description}
+                        </div>
+                      )}
+                      <div className="text-xs text-gray-600 mt-1 truncate">
+                        <span className="font-medium">Content ID:</span> {r.contentId}
+                      </div>
+                      {/* Preview snippet */}
+                      <ReportPreviewSnippet reportType={r.reportType} contentId={r.contentId} />
+                      {r.adminNotes && (
+                        <div className="text-xs text-gray-600 mt-1 truncate">
+                          <span className="font-medium">Admin Notes:</span> {r.adminNotes}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {r.status === 'pending' && (
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => actOnReport(r.id, { status: 'dismissed', action: 'dismiss' })} className="text-xs">Dismiss</Button>
+                          <Button size="sm" variant="outline" onClick={() => {
+                            const reason = prompt('Enter a reason to hide this content (visible to the user):') || ''
+                            if (!reason.trim()) return
+                            actOnReport(r.id, { status: 'resolved', action: 'hide', reason })
+                          }} className="text-xs flex items-center">
+                            <Eye className="h-3 w-3 mr-1" /> Hide
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => {
+                            const reason = prompt('Enter a reason for removal (user will be notified):') || ''
+                            if (!reason.trim()) return
+                            actOnReport(r.id, { status: 'resolved', action: 'remove', reason })
+                          }} className="text-xs flex items-center text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400">
+                            <Trash2 className="h-3 w-3 mr-1" /> Remove
+                          </Button>
+                        </>
+                      )}
+                      {r.status !== 'pending' && (
+                        <>
+                          <Badge className="bg-green-100 text-green-800">Handled</Badge>
+                          {(() => {
+                            type ModerationState = 'hidden' | 'awaiting_review' | 'none'
+                            type ContentModeration = { type: 'listing'; state: ModerationState; status?: string } | { type: 'comment'; state: ModerationState; isHidden?: boolean }
+                            type ReportWithModeration = typeof r & { contentModeration?: ContentModeration }
+                            const rw = r as ReportWithModeration
+                            const state = rw.contentModeration?.state
+                            const canUnhide = state === 'hidden' || state === 'awaiting_review'
+                            return canUnhide ? (
+                              <Button size="sm" variant="outline" onClick={() => actOnReport(r.id, { status: 'resolved', action: 'unhide' })} className="text-xs">
+                                Unhide
+                              </Button>
+                            ) : null
+                          })()}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            <div className="flex items-center justify-between mt-4">
+              <Button size="sm" variant="outline" disabled={reportPage <= 1 || reportsLoading} onClick={() => setReportPage(p => Math.max(1, p - 1))}>Previous</Button>
+              <span className="text-sm text-blue-200">Page {reportPage}</span>
+              <Button size="sm" variant="outline" disabled={(reportPage * reportLimit) >= reportTotal || reportsLoading} onClick={() => setReportPage(p => p + 1)}>Next</Button>
+            </div>
+          </Card>
+
+          {/* Helper note */}
+          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+            <p className="text-sm text-yellow-800">
+              Hiding a comment marks it invisible to users. Removing a listing sets its status to removed. Dismiss will keep the content and mark the report as dismissed.
+            </p>
+          </div>
+        </div>
       )}
 
       {activeTab === 'content' && data && (
@@ -2027,5 +2256,78 @@ const SubscriptionManagementModal: React.FC<SubscriptionManagementModalProps> = 
     </div>
   );
 };
+
+// Lightweight preview snippet for reported items
+function ReportPreviewSnippet({ reportType, contentId }: { reportType: 'listing' | 'comment'; contentId: string }) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string>('')
+  type ListingPreview = { id: string; title?: string; description?: string; image?: string; status?: string; moderation?: { state: 'hidden' | 'awaiting_review' | 'none'; reason?: string } }
+  type CommentPreview = { id: string; content: string; userId: string; userName: string; isHidden: boolean; moderation?: { state: 'hidden' | 'awaiting_review' | 'none'; reason?: string } }
+  const [data, setData] = useState<ListingPreview | CommentPreview | null>(null)
+
+  useEffect(() => {
+    let ignore = false
+    const fetchPreview = async () => {
+      try {
+        setLoading(true)
+        setError('')
+        const url = `/api/admin/reports/preview?type=${encodeURIComponent(reportType)}&id=${encodeURIComponent(contentId)}`
+        const res = await fetch(url, { credentials: 'include' })
+        const json = await res.json()
+        if (!ignore) {
+          if (json.success) setData(json.data)
+          else setError(json.error || 'Failed to load preview')
+        }
+  } catch (_e) {
+        if (!ignore) setError('Failed to load preview')
+      } finally {
+        if (!ignore) setLoading(false)
+      }
+    }
+    fetchPreview()
+    return () => { ignore = true }
+  }, [reportType, contentId])
+
+  if (loading) return <div className="text-xs text-gray-500 mt-1">Loading preview…</div>
+  if (error) return <div className="text-xs text-red-600 mt-1">{error}</div>
+  if (!data) return null
+
+  if (reportType === 'listing') {
+    const listing = data as ListingPreview | null
+    return (
+      <div className="mt-2 p-2 border rounded bg-gray-50">
+        <div className="flex items-center gap-2">
+          {listing?.image && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={listing.image} alt="preview" className="w-10 h-10 object-cover rounded" />
+          )}
+          <div className="min-w-0">
+            <div className="text-xs font-medium text-gray-900 truncate">{listing?.title}</div>
+            <div className="text-xs text-gray-600 truncate">{listing?.description}</div>
+            {listing?.moderation?.state === 'hidden' && (
+              <div className="text-[10px] text-orange-700 mt-1">Hidden: {listing.moderation?.reason || 'Policy violation'}</div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-2 p-2 border rounded bg-gray-50">
+      {(() => {
+        const comment = data as CommentPreview | null
+        return (
+          <>
+            <div className="text-xs text-gray-800 truncate">{comment?.content}</div>
+            {comment?.isHidden && (
+              <div className="text-[10px] text-orange-700 mt-1">Hidden{comment.moderation?.reason ? `: ${comment.moderation.reason}` : ''}</div>
+            )}
+          </>
+        )
+      })()}
+    </div>
+  )
+}
 
 export default AdminDashboard;

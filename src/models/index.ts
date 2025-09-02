@@ -204,6 +204,12 @@ const MarketplaceListingSchema = new Schema({
   // Moderation
   isReported: { type: Boolean, default: false },
   reportCount: { type: Number, default: 0 },
+  moderation: {
+    state: { type: String, enum: ['hidden', 'awaiting_review', 'none'], default: 'none' },
+    reason: { type: String },
+    adminUserId: { type: String },
+    updatedAt: { type: Date }
+  },
   // Reactions (Facebook-like): users (by id) who reacted
   reactions: {
     like: [{ type: String }],
@@ -231,6 +237,12 @@ const MarketplaceCommentSchema = new Schema({
   isReported: { type: Boolean, default: false },
   reportCount: { type: Number, default: 0 },
   isHidden: { type: Boolean, default: false },
+  moderation: {
+    state: { type: String, enum: ['hidden', 'awaiting_review', 'none'], default: 'none' },
+    reason: { type: String },
+    adminUserId: { type: String },
+    updatedAt: { type: Date }
+  },
   // Reactions (Facebook-like): users (by id) who reacted
   reactions: {
     like: [{ type: String }],

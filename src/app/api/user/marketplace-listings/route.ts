@@ -31,8 +31,8 @@ async function getUserListings(request: AuthenticatedRequest) {
       effectiveUserId = dbUser.id
     }
 
-    const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status') || 'active'
+  const { searchParams } = new URL(request.url)
+  const status = searchParams.get('status') || 'all'
     const limit = parseInt(searchParams.get('limit') || '50')
 
   const query: Record<string, unknown> = { userId: effectiveUserId }

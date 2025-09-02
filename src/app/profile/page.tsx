@@ -1007,7 +1007,7 @@ function ListingsTab({ userId: _userId }: { userId: string }) {
                     </div>
                   </div>
                   
-                  <div className="p-4">
+                    <div className="p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="font-semibold text-gray-900 truncate">{listing.title}</h4>
                       <span className="font-bold text-primary-600 ml-2">
@@ -1016,6 +1016,17 @@ function ListingsTab({ userId: _userId }: { userId: string }) {
                     </div>
                     
                     <p className="text-sm text-gray-600 mb-2 line-clamp-2">{listing.description}</p>
+                      {listing.status === 'removed' && listing.moderation?.state === 'hidden' && (
+                        <div className="p-2 rounded bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs mb-2">
+                          This listing is hidden by moderators.
+                          {listing.moderation.reason && (
+                            <>
+                              {' '}Reason: <span className="font-medium">{listing.moderation.reason}</span>.
+                            </>
+                          )}
+                          {' '}Edit your ad to address the reason; it will be re-reviewed.
+                        </div>
+                      )}
                     
                     <div className="flex items-center text-xs text-gray-700 mb-3">
                       <MapPin className="h-3 w-3 mr-1" />

@@ -105,7 +105,7 @@ async function updateListing(
     }
 
     const body = await request.json()
-    const { title, description, category, price, condition, location, contactName, contactEmail, contactPhone, images, status } = body
+  const { title, description, category, price, condition, location, contactName, contactEmail, contactPhone, images, status } = body
 
     // Update fields if provided
     if (title) listing.title = title
@@ -119,6 +119,17 @@ async function updateListing(
     if (contactPhone !== undefined) listing.contactPhone = contactPhone
     if (images) listing.images = images
     if (status) listing.status = status
+
+    // If listing was hidden by moderators and the owner edits it, mark as awaiting_review
+    if (listing.moderation?.state === 'hidden') {
+      listing.moderation = {
+        state: 'awaiting_review',
+        reason: listing.moderation?.reason,
+        adminUserId: listing.moderation?.adminUserId,
+        updatedAt: new Date()
+      }
+      listing.isReported = true
+    }
     
     listing.updatedAt = new Date()
     await listing.save()

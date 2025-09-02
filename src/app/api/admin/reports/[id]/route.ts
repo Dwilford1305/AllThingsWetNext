@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
-import { Report, MarketplaceListing, MarketplaceComment } from '@/models'
+import { Report, MarketplaceListing, MarketplaceComment, User } from '@/models'
 import { withRole, type AuthenticatedRequest } from '@/lib/auth-middleware'
 import type { ApiResponse } from '@/types'
+import { sendEmail } from '@/lib/email'
 
 // Get all reports for admin dashboard
 async function getReports(
@@ -66,7 +67,16 @@ async function updateReport(
   try {
     await connectDB()
     
-    const reportId = (context?.params as { id?: string } | undefined)?.id
+    let reportId: string | undefined
+    if (context && 'params' in context) {
+      const paramsValue = (context as { params?: unknown }).params
+      if (paramsValue && typeof (paramsValue as { then?: unknown }).then === 'function') {
+        const resolved = await (paramsValue as Promise<{ id?: string }>)
+        reportId = resolved?.id
+      } else {
+        reportId = (paramsValue as { id?: string } | undefined)?.id
+      }
+    }
     if (!reportId) {
       return NextResponse.json(
         { success: false, error: 'Report ID missing' },
@@ -83,7 +93,7 @@ async function updateReport(
     }
 
     const body = await request.json()
-    const { status, adminNotes, action } = body // action: 'dismiss', 'hide', 'remove'
+  const { status, adminNotes, action, reason } = body // action: 'dismiss', 'hide', 'remove'; reason required for hide/remove
 
     const report = await Report.findOne({ id: reportId })
     if (!report) {
@@ -93,10 +103,18 @@ async function updateReport(
       )
     }
 
+    // Require reason for hide/remove to inform user and for audit
+  if ((action === 'hide' || action === 'remove') && (!reason || String(reason).trim().length === 0)) {
+      return NextResponse.json(
+        { success: false, error: 'Reason is required for hide/remove actions' },
+        { status: 400 }
+      )
+    }
+
     // Update report status
     report.status = status
     report.adminUserId = adminUserId
-    report.adminNotes = adminNotes
+    report.adminNotes = [adminNotes, reason].filter(Boolean).join('\n')
     if (status === 'resolved') {
       report.resolvedAt = new Date()
     }
@@ -104,7 +122,7 @@ async function updateReport(
 
     // Take moderation action if specified
     if (action && status === 'resolved') {
-      await takeModerationAction(report, action)
+      await takeModerationAction(report, action, reason)
     }
 
     return NextResponse.json({
@@ -130,27 +148,128 @@ type ReportDoc = {
   contentId: string
 }
 
-async function takeModerationAction(report: ReportDoc, action: string) {
+async function takeModerationAction(report: ReportDoc, action: string, reason?: string) {
   try {
     if (report.reportType === 'listing') {
       const listing = await MarketplaceListing.findOne({ id: report.contentId })
       if (listing) {
-        if (action === 'hide' || action === 'remove') {
+        if (action === 'hide') {
+          // Hide from marketplace, keep for owner with explanation
           listing.status = 'removed'
+          listing.moderation = {
+            ...(listing.moderation || {}),
+            state: 'hidden',
+            reason: reason || listing.moderation?.reason,
+            adminUserId: (await User.findOne({ id: listing.userId })) ? listing.userId : listing.moderation?.adminUserId,
+            updatedAt: new Date()
+          }
+          await listing.save()
+
+          // Notify owner with required changes
+          await notifyListingOwner(listing.userId, listing.title, 'hidden', reason)
+        } else if (action === 'remove') {
+          // Permanently remove listing and credit quota back
+          const owner = await User.findOne({ id: listing.userId })
+          if (owner) {
+            // Credit back one ad quota if applicable
+            if (owner.marketplaceSubscription?.adQuota) {
+              owner.marketplaceSubscription.adQuota.used = Math.max(0, owner.marketplaceSubscription.adQuota.used - 1)
+              await owner.save()
+            }
+            await notifyListingOwner(listing.userId, listing.title, 'removed', reason, true)
+          }
+          await MarketplaceListing.deleteOne({ id: report.contentId })
+        } else if (action === 'unhide') {
+          // Restore listing to active if previously hidden/awaiting_review
+          listing.status = 'active'
+          listing.moderation = {
+            state: 'none',
+            reason: '',
+            adminUserId: listing.moderation?.adminUserId,
+            updatedAt: new Date()
+          }
+          listing.isReported = false
           await listing.save()
         }
       }
     } else if (report.reportType === 'comment') {
       const comment = await MarketplaceComment.findOne({ id: report.contentId })
       if (comment) {
-        if (action === 'hide' || action === 'remove') {
+        const author = await User.findOne({ id: comment.userId })
+        if (action === 'hide') {
           comment.isHidden = true
+          comment.moderation = {
+            ...(comment.moderation || {}),
+            state: 'hidden',
+            reason: reason || comment.moderation?.reason,
+            adminUserId: comment.moderation?.adminUserId,
+            updatedAt: new Date()
+          }
+          await comment.save()
+          await notifyCommentAuthor(author?.email, comment.userId, 'hidden', reason)
+        } else if (action === 'remove') {
+          // Permanently delete the comment
+          await MarketplaceComment.deleteOne({ id: report.contentId })
+          await notifyCommentAuthor(author?.email, comment.userId, 'removed', reason, true)
+          // Track simple strike count via activity log or future field (omitted schema changes)
+        } else if (action === 'unhide') {
+          comment.isHidden = false
+          comment.moderation = { state: 'none', reason: '', adminUserId: comment.moderation?.adminUserId, updatedAt: new Date() }
           await comment.save()
         }
       }
     }
   } catch (error) {
     console.error('Moderation action error:', error)
+  }
+}
+
+async function notifyListingOwner(userId: string, listingTitle: string, state: 'hidden' | 'removed', reason?: string, credited?: boolean) {
+  try {
+    const user = await User.findOne({ id: userId })
+    if (!user?.email) return
+    const subject = state === 'hidden' 
+      ? 'Your marketplace listing has been temporarily hidden'
+      : 'Your marketplace listing has been removed'
+    const creditLine = state === 'removed' && credited ? '\n\nWe have credited your ad quota with one additional ad.' : ''
+    const body = `Hello ${user.firstName},
+
+Your listing "${listingTitle}" has been ${state} by our moderation team.
+
+Reason:
+${reason || 'Violation of community standards.'}
+${creditLine}
+
+If hidden: please edit your ad to address the above. It will enter review once updated.
+
+Thanks,
+All Things Wetaskiwin Team`
+    await sendEmail(user.email, subject, body)
+  } catch (e) {
+    console.error('Failed to notify listing owner:', e)
+  }
+}
+
+async function notifyCommentAuthor(email: string | undefined, userId: string, state: 'hidden' | 'removed', reason?: string, removalWarning?: boolean) {
+  try {
+    if (!email) return
+    const subject = state === 'hidden' 
+      ? 'Your comment has been temporarily hidden'
+      : 'Your comment has been removed'
+    const warning = removalWarning ? '\n\nPlease note: 3 removed comments may result in account suspension.' : ''
+    const body = `Hello,
+
+Your comment was ${state} by our moderation team.
+
+Reason:
+${reason || 'Violation of community standards.'}
+${warning}
+
+Thanks,
+All Things Wetaskiwin Team`
+    await sendEmail(email, subject, body)
+  } catch (e) {
+    console.error('Failed to notify comment author:', e)
   }
 }
 

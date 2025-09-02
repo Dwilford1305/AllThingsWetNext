@@ -211,6 +211,12 @@ export interface MarketplaceListing {
   // Moderation
   isReported: boolean
   reportCount: number
+  moderation?: {
+    state: 'hidden' | 'awaiting_review' | 'none'
+    reason?: string
+    adminUserId?: string
+    updatedAt?: Date
+  }
   reactions?: Reactions
   
   expiresAt: Date
@@ -229,6 +235,12 @@ export interface MarketplaceComment {
   isReported: boolean
   reportCount: number
   isHidden: boolean
+  moderation?: {
+    state: 'hidden' | 'awaiting_review' | 'none'
+    reason?: string
+    adminUserId?: string
+    updatedAt?: Date
+  }
   reactions?: Reactions
   
   createdAt: Date
