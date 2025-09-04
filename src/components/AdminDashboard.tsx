@@ -23,7 +23,10 @@ import {
   Activity,
   Ticket,
   Flag,
-  AlertTriangle
+  AlertTriangle,
+  TestTube,
+  EyeOff,
+  Monitor
 } from 'lucide-react';
 import type { Business, Event, NewsArticle, BusinessCategory, SubscriptionTier, Report as ReportType } from '@/types';
 import ScraperLogs from './ScraperLogs';
@@ -55,13 +58,27 @@ interface ScraperConfig {
 }
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'business-requests' | 'content' | 'users' | 'offer-codes' | 'scrapers' | 'settings' | 'reports'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'business-requests' | 'content' | 'users' | 'offer-codes' | 'scrapers' | 'settings' | 'reports' | 'test-business'>('overview');
   const [data, setData] = useState<ContentStats | null>(null);
   const [loading, setLoading] = useState(true);
   
   // Scraper configurations from database
   const [scraperConfigs, setScraperConfigs] = useState<ScraperConfig[]>([]);
   const [configsLoading, setConfigsLoading] = useState(true);
+
+  // Test business management state
+  const [testBusinessState, setTestBusinessState] = useState<{
+    exists: boolean;
+    business?: Business;
+    loading: boolean;
+    isHidden: boolean;
+    adsVisible: boolean;
+  }>({
+    exists: false,
+    loading: true,
+    isHidden: false,
+    adsVisible: true
+  });
 
   // Scraper state management
   const [scraperStates, setScraperStates] = useState<{
@@ -116,6 +133,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchData();
     fetchScraperConfigs();
+    fetchTestBusinessStatus();
     // Poll scraper configs every 60s to show near real-time status & next run countdown
     const interval = setInterval(() => {
       fetchScraperConfigs();
@@ -270,6 +288,130 @@ const AdminDashboard = () => {
   };
 
   // -------------------- Reports (Moderation) State & Helpers --------------------
+  const fetchTestBusinessStatus = async () => {
+    try {
+      setTestBusinessState(prev => ({ ...prev, loading: true }));
+      
+      const response = await fetch('/api/admin/setup-test-business', { 
+        credentials: 'include' 
+      });
+      const result = await response.json();
+      
+      if (result.success) {
+        const testBusiness = result.data?.testBusiness;
+        setTestBusinessState({
+          exists: result.data?.testBusinessExists || false,
+          business: testBusiness,
+          loading: false,
+          isHidden: testBusiness?.isHidden || false,
+          adsVisible: testBusiness?.adsVisible !== false // Default to true if not set
+        });
+      } else {
+        setTestBusinessState(prev => ({ ...prev, loading: false }));
+      }
+    } catch (error) {
+      console.error('Error fetching test business status:', error);
+      setTestBusinessState(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const createOrClaimTestBusiness = async () => {
+    try {
+      setTestBusinessState(prev => ({ ...prev, loading: true }));
+      
+      // For super admin, we'll use a simplified approach - just call the existing endpoint
+      const csrf = document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1];
+      const response = await fetch('/api/admin/setup-test-business', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrf || ''
+        },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          setupPassword: 'super-admin-dashboard-request' // Special identifier for dashboard requests
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        await fetchTestBusinessStatus(); // Refresh status
+        alert('✅ Test business created and claimed successfully!');
+      } else {
+        alert(`❌ Failed to create test business: ${result.error}`);
+        setTestBusinessState(prev => ({ ...prev, loading: false }));
+      }
+    } catch (error) {
+      console.error('Error creating test business:', error);
+      alert('❌ Error creating test business');
+      setTestBusinessState(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const toggleTestBusinessVisibility = async () => {
+    try {
+      const newHiddenState = !testBusinessState.isHidden;
+      
+      const csrf = document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1];
+      const response = await fetch('/api/admin/test-business/visibility', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrf || ''
+        },
+        credentials: 'include',
+        body: JSON.stringify({ isHidden: newHiddenState })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setTestBusinessState(prev => ({ 
+          ...prev, 
+          isHidden: newHiddenState 
+        }));
+        alert(`✅ Test business is now ${newHiddenState ? 'hidden from' : 'visible in'} the directory`);
+      } else {
+        alert(`❌ Failed to toggle visibility: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error toggling test business visibility:', error);
+      alert('❌ Error toggling visibility');
+    }
+  };
+
+  const toggleAdVisibility = async () => {
+    try {
+      const newAdsState = !testBusinessState.adsVisible;
+      
+      const csrf = document.cookie.split('; ').find(c=>c.startsWith('csrfToken='))?.split('=')[1];
+      const response = await fetch('/api/admin/test-business/ads', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrf || ''
+        },
+        credentials: 'include',
+        body: JSON.stringify({ adsVisible: newAdsState })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setTestBusinessState(prev => ({ 
+          ...prev, 
+          adsVisible: newAdsState 
+        }));
+        alert(`✅ Ads are now ${newAdsState ? 'visible' : 'hidden'} - refresh pages to see changes`);
+      } else {
+        alert(`❌ Failed to toggle ads: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error toggling ad visibility:', error);
+      alert('❌ Error toggling ad visibility');
+    }
+  };
   const [reportsLoading, setReportsLoading] = useState(false);
   const [reportsError, setReportsError] = useState<string>('');
   const [reports, setReports] = useState<ReportType[]>([]);
@@ -801,6 +943,7 @@ const AdminDashboard = () => {
   { id: 'reports', label: 'Reports', icon: Flag },
     { id: 'users', label: 'Users', icon: Users },
     { id: 'offer-codes', label: 'Offer Codes', icon: Ticket },
+    { id: 'test-business', label: 'Test Business', icon: TestTube },
     { id: 'scrapers', label: 'Scrapers', icon: Activity },
     { id: 'settings', label: 'Settings', icon: Settings },
   ] as const;
@@ -1426,6 +1569,187 @@ const AdminDashboard = () => {
 
       {activeTab === 'offer-codes' && (
         <OfferCodeManager />
+      )}
+
+      {activeTab === 'test-business' && (
+        <div className="space-y-6">
+          {/* Test Business Management */}
+          <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-semibold text-white flex items-center">
+                  <TestTube className="h-5 w-5 mr-2" />
+                  Test Business Management
+                </h3>
+                <p className="text-sm text-blue-200 mt-1">
+                  Create and manage a test business to experience the full business owner journey
+                </p>
+              </div>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={fetchTestBusinessStatus}
+                className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
+
+            {testBusinessState.loading ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="h-6 w-6 animate-spin text-blue-400 mr-2" />
+                <span className="text-blue-200">Loading test business status...</span>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Status Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-blue-500/20 p-4 rounded-lg backdrop-blur-sm border border-blue-400/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-lg font-bold text-blue-300">
+                          {testBusinessState.exists ? 'Active' : 'Not Created'}
+                        </div>
+                        <div className="text-sm text-blue-200">Test Business Status</div>
+                      </div>
+                      <div className={`w-3 h-3 rounded-full ${testBusinessState.exists ? 'bg-green-400' : 'bg-gray-400'}`}></div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-purple-500/20 p-4 rounded-lg backdrop-blur-sm border border-purple-400/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-lg font-bold text-purple-300">
+                          {testBusinessState.isHidden ? 'Hidden' : 'Visible'}
+                        </div>
+                        <div className="text-sm text-purple-200">Directory Visibility</div>
+                      </div>
+                      {testBusinessState.isHidden ? (
+                        <EyeOff className="h-5 w-5 text-purple-300" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-purple-300" />
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-green-500/20 p-4 rounded-lg backdrop-blur-sm border border-green-400/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-lg font-bold text-green-300">
+                          {testBusinessState.adsVisible ? 'Enabled' : 'Disabled'}
+                        </div>
+                        <div className="text-sm text-green-200">Ad Visibility</div>
+                      </div>
+                      <Monitor className="h-5 w-5 text-green-300" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Business Details */}
+                {testBusinessState.exists && testBusinessState.business && (
+                  <Card className="p-4 bg-white/5 backdrop-blur-sm border border-white/10">
+                    <h4 className="font-semibold text-white mb-3 flex items-center">
+                      <Building className="h-4 w-4 mr-2" />
+                      {testBusinessState.business.name}
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-blue-200">Subscription:</span>
+                        <span className="ml-2 text-white font-medium">
+                          {testBusinessState.business.subscriptionTier?.toUpperCase() || 'FREE'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-blue-200">Category:</span>
+                        <span className="ml-2 text-white">{testBusinessState.business.category}</span>
+                      </div>
+                      <div>
+                        <span className="text-blue-200">Address:</span>
+                        <span className="ml-2 text-white">{testBusinessState.business.address}</span>
+                      </div>
+                      <div>
+                        <span className="text-blue-200">Phone:</span>
+                        <span className="ml-2 text-white">{testBusinessState.business.phone}</span>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-4">
+                  {!testBusinessState.exists ? (
+                    <Button 
+                      onClick={createOrClaimTestBusiness}
+                      className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
+                    >
+                      <TestTube className="h-4 w-4 mr-2" />
+                      Create & Claim Test Business
+                    </Button>
+                  ) : (
+                    <>
+                      <Button 
+                        onClick={toggleTestBusinessVisibility}
+                        variant="outline"
+                        className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900"
+                      >
+                        {testBusinessState.isHidden ? (
+                          <>
+                            <Eye className="h-4 w-4 mr-2" />
+                            Show in Directory
+                          </>
+                        ) : (
+                          <>
+                            <EyeOff className="h-4 w-4 mr-2" />
+                            Hide from Directory
+                          </>
+                        )}
+                      </Button>
+                      
+                      <Button 
+                        onClick={toggleAdVisibility}
+                        variant="outline"
+                        className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900"
+                      >
+                        <Monitor className="h-4 w-4 mr-2" />
+                        {testBusinessState.adsVisible ? 'Disable Ads' : 'Enable Ads'}
+                      </Button>
+                      
+                      <Button 
+                        onClick={() => window.open('/businesses/manage', '_blank')}
+                        variant="outline"
+                        className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900"
+                      >
+                        <Building className="h-4 w-4 mr-2" />
+                        Manage Business
+                      </Button>
+                      
+                      <Button 
+                        onClick={() => window.open('/businesses', '_blank')}
+                        variant="outline"
+                        className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900"
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View in Directory
+                      </Button>
+                    </>
+                  )}
+                </div>
+
+                {/* Testing Guide */}
+                <Card className="p-4 bg-blue-500/10 backdrop-blur-sm border border-blue-400/20">
+                  <h4 className="font-semibold text-blue-300 mb-3">🧪 Testing Guide</h4>
+                  <div className="space-y-2 text-sm text-blue-200">
+                    <p><strong>Business Owner Journey:</strong> Use the test business to experience claiming, subscription upgrades, and premium features.</p>
+                    <p><strong>Directory Visibility:</strong> Toggle visibility to test how businesses appear/disappear in search results.</p>
+                    <p><strong>Ad Placement Testing:</strong> Enable/disable ads to test how different subscription tiers display advertisements.</p>
+                    <p><strong>Subscription Features:</strong> The test business has Platinum subscription to test all premium features.</p>
+                  </div>
+                </Card>
+              </div>
+            )}
+          </Card>
+        </div>
       )}
 
       {activeTab === 'settings' && (
