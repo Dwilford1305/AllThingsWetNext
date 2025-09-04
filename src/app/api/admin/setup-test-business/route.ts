@@ -196,7 +196,7 @@ export async function GET() {
     const superAdmin = await User.findOne({ role: 'super_admin' })
 
     // Get ad visibility setting
-    const mongoose = require('mongoose')
+    const mongoose = await import('mongoose')
     const AdminConfig = mongoose.models.AdminConfig || mongoose.model('AdminConfig', new mongoose.Schema({
       key: { type: String, unique: true, required: true },
       value: mongoose.Schema.Types.Mixed,

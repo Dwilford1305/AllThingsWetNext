@@ -371,6 +371,25 @@ export interface OfferCode {
   usageHistory: OfferCodeUsage[]
 }
 
+export interface BusinessAd {
+  id: string
+  businessId: string
+  tier: 'silver' | 'gold' | 'platinum'
+  photo: string // Required photo URL
+  logo?: string // Optional logo URL (platinum only)
+  businessName: string
+  isActive: boolean
+  isVisible: boolean // Admin controlled visibility
+  adSize: {
+    width: number
+    height: number
+  }
+  impressions: number
+  clicks: number
+  createdAt: Date
+  updatedAt: Date
+}
+
 export interface OfferCodeUsage {
   businessId: string
   userId: string

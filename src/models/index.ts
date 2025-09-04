@@ -384,6 +384,40 @@ const OfferCodeSchema = new Schema({
   }]
 })
 
+// Business Ad Schemas for each tier
+const BusinessAdSchema = new Schema({
+  id: { type: String, required: true, unique: true },
+  businessId: { type: String, required: true, index: true },
+  tier: { 
+    type: String, 
+    enum: ['silver', 'gold', 'platinum'],
+    required: true 
+  },
+  // Ad content
+  photo: { type: String, required: true }, // Required photo for all tiers
+  logo: { type: String }, // Optional logo (only for platinum tier)
+  businessName: { type: String, required: true }, // Cached business name
+  isActive: { type: Boolean, default: true },
+  isVisible: { type: Boolean, default: true }, // Admin can hide/show ads
+  
+  // Ad specifications based on tier
+  adSize: {
+    width: { type: Number, required: true },
+    height: { type: Number, required: true }
+  },
+  
+  // Performance tracking
+  impressions: { type: Number, default: 0 },
+  clicks: { type: Number, default: 0 },
+  
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+})
+
+// Compound index for efficient queries
+BusinessAdSchema.index({ tier: 1, isActive: 1, isVisible: 1 })
+BusinessAdSchema.index({ businessId: 1, tier: 1 })
+
 // Export models
 export const Event = models.Event || model('Event', EventSchema)
 export const NewsArticle = models.NewsArticle || model('NewsArticle', NewsSchema)
@@ -395,6 +429,7 @@ export const Report = models.Report || model('Report', ReportSchema)
 export const ScraperLog = models.ScraperLog || model('ScraperLog', ScraperLogSchema)
 export const ScraperConfig = models.ScraperConfig || model('ScraperConfig', ScraperConfigSchema)
 export const OfferCode = models.OfferCode || model('OfferCode', OfferCodeSchema)
+export const BusinessAd = models.BusinessAd || model('BusinessAd', BusinessAdSchema)
 
 // Re-export auth models for convenience
 export * from './auth'

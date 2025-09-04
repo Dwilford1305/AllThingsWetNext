@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     // Store the ad visibility setting in a simple admin config
     // For now, we'll use environment-like storage since this is for testing
-    const mongoose = require('mongoose')
+    const mongoose = await import('mongoose')
     const AdminConfig = mongoose.models.AdminConfig || mongoose.model('AdminConfig', new mongoose.Schema({
       key: { type: String, unique: true, required: true },
       value: mongoose.Schema.Types.Mixed,
@@ -65,7 +65,7 @@ export async function GET() {
   try {
     await connectDB()
 
-    const mongoose = require('mongoose')
+    const mongoose = await import('mongoose')
     const AdminConfig = mongoose.models.AdminConfig || mongoose.model('AdminConfig', new mongoose.Schema({
       key: { type: String, unique: true, required: true },
       value: mongoose.Schema.Types.Mixed,
