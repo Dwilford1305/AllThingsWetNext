@@ -254,7 +254,7 @@ export class WetaskiwinBusinessScraper {
     
     // List of endings that usually mean the business name is over
     const businessEndings = [
-      'Ltd', 'Inc', 'Corp', 'Co', 'LLC', 'Limited', 'Services', 'Service', 'Restaurant', 'Cafe', 'Centre', 'Center', 'Group', 'Club', 'Hotel', 'Inn', 'Bar', 'Grill', 'Kitchen', 'Market', 'Auto', 'Motors', 'Sales', 'Clinic', 'Hospital', 'Salon', 'Studio', 'Fitness', 'Gym', 'Pizza', 'Pasta', 'Liquor', 'Gas', 'Oil', 'Tire', 'Glass', 'Electric', 'Plumbing', 'Construction', 'Contracting', 'Cleaning', 'Pharmacy', 'Bank', 'Insurance', 'Travel', 'Agency', 'Consulting', 'Solutions', 'Systems', 'Tech', 'Communications', 'Media', 'Design', 'Graphics', 'Printing', 'Photography', 'Entertainment', 'Equipment', 'Supply', 'Supplies', 'Parts', 'Repair', 'Maintenance', 'Security', 'Safety', 'Training', 'Education', 'Academy', 'School', 'Institute', 'Foundation', 'Association', 'Society', 'Network', 'Taxi', 'Cab', 'Rental', 'Rentals', 'Finance', 'Financial', 'Investment', 'Holdings', 'Properties', 'Development', 'Management', 'Shop', 'Office'
+      'Ltd', 'Inc', 'Corp', 'Co', 'LLC', 'Limited', 'Services', 'Service', 'Restaurant', 'Cafe', 'Centre', 'Center', 'Group', 'Club', 'Hotel', 'Inn', 'Bar', 'Grill', 'Kitchen', 'Market', 'Auto', 'Motors', 'Sales', 'Clinic', 'Hospital', 'Salon', 'Studio', 'Fitness', 'Gym', 'Pizza', 'Pasta', 'Liquor', 'Gas', 'Oil', 'Tire', 'Glass', 'Electric', 'Plumbing', 'Construction', 'Contracting', 'Cleaning', 'Pharmacy', 'Bank', 'Insurance', 'Travel', 'Agency', 'Consulting', 'Solutions', 'Systems', 'Tech', 'Communications', 'Media', 'Design', 'Graphics', 'Printing', 'Photography', 'Entertainment', 'Equipment', 'Supply', 'Supplies', 'Parts', 'Repair', 'Maintenance', 'Security', 'Safety', 'Training', 'Education', 'Academy', 'School', 'Institute', 'Foundation', 'Association', 'Society', 'Network', 'Taxi', 'Cab', 'Rental', 'Rentals', 'Finance', 'Financial', 'Investment', 'Holdings', 'Properties', 'Development', 'Management', 'Shop', 'Office', 'Store'
     ];
 
     // Fix concatenated words by adding spaces before capital letters that follow business endings
@@ -339,6 +339,12 @@ export class WetaskiwinBusinessScraper {
       }
     }
 
+    // Clean up common parsing artifacts that create malformed names
+    businessName = businessName
+      .replace(/\s+/g, ' ') // Normalize spaces
+      .replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9\s]+$/g, '') // Remove leading/trailing non-alphanumeric (except spaces)
+      .trim();
+
     // Otherwise, treat the whole thing as business name
     return { businessName, contact: '' };
   }
@@ -363,7 +369,17 @@ export class WetaskiwinBusinessScraper {
       const normalizedNewName = this.normalizeBusinessName(business.name)
       const addressSimilar = this.addressesAreSimilar(existing.address, business.address)
       
-      return normalizedExistingName === normalizedNewName && addressSimilar
+      // First check for exact normalized match
+      if (normalizedExistingName === normalizedNewName && addressSimilar) {
+        return true
+      }
+      
+      // Then check for fuzzy name match if addresses are similar
+      if (addressSimilar && this.businessNamesAreSimilar(normalizedExistingName, normalizedNewName)) {
+        return true
+      }
+      
+      return false
     })
     
     return duplicateInDatabase
@@ -374,12 +390,56 @@ export class WetaskiwinBusinessScraper {
     const name2 = this.normalizeBusinessName(business2.name)
     const addressSimilar = this.addressesAreSimilar(business1.address, business2.address)
     
-    return name1 === name2 && addressSimilar
+    // First check exact match
+    if (name1 === name2 && addressSimilar) {
+      return true
+    }
+    
+    // Then check fuzzy match if addresses are similar
+    if (addressSimilar && this.businessNamesAreSimilar(name1, name2)) {
+      return true
+    }
+    
+    return false
+  }
+
+  private businessNamesAreSimilar(name1: string, name2: string): boolean {
+    // If either name is empty, they're not similar
+    if (!name1 || !name2) {
+      return false
+    }
+    
+    // If one name is contained within the other (like "tim hortons" and "tim hortons coffee")
+    if (name1.includes(name2) || name2.includes(name1)) {
+      // Make sure the longer name isn't drastically longer (more than double)
+      const lengthRatio = Math.max(name1.length, name2.length) / Math.min(name1.length, name2.length)
+      return lengthRatio <= 2.0
+    }
+    
+    // Check word-based similarity
+    const words1 = name1.split(/\s+/).filter(w => w.length > 2) // Filter out short words
+    const words2 = name2.split(/\s+/).filter(w => w.length > 2)
+    
+    if (words1.length === 0 || words2.length === 0) {
+      return false
+    }
+    
+    // Count matching words
+    const matchingWords = words1.filter(word1 => 
+      words2.some(word2 => word1 === word2)
+    ).length
+    
+    // If majority of words match, consider them similar
+    const minWords = Math.min(words1.length, words2.length)
+    const matchRatio = matchingWords / minWords
+    
+    return matchRatio >= 0.7 // 70% of words must match
   }
 
   private normalizeBusinessName(name: string): string {
     return name.toLowerCase()
       .replace(/\b(ltd|inc|corp|co|llc|limited|incorporated|corporation|company)\b\.?/g, '') // Remove business suffixes
+      .replace(/\b(coffee shop|restaurant|cafe|bar|grill|store|shop|services|service|center|centre|clinic|salon|studio|spa)\b/g, '') // Remove descriptive business type words
       .replace(/[^a-z0-9\s]/g, '') // Remove special characters
       .replace(/\s+/g, ' ') // Normalize spaces
       .trim()

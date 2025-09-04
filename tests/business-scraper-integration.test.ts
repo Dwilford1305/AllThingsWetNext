@@ -116,11 +116,11 @@ describe('Integration: Business Scraper with Duplicate Prevention', () => {
     const normalizeBusinessName = (scraper as any).normalizeBusinessName.bind(scraper);
 
     const testCases = [
-      { input: 'Tim Hortons Coffee Shop Ltd.', expected: 'tim hortons coffee shop' },
-      { input: 'A&W Restaurant Inc', expected: 'aw restaurant' },
-      { input: 'Bob\'s Auto Repair & Services Co.', expected: 'bobs auto repair services' },
+      { input: 'Tim Hortons Coffee Shop Ltd.', expected: 'tim hortons' }, // coffee shop removed
+      { input: 'A&W Restaurant Inc', expected: 'aw' }, // restaurant removed
+      { input: 'Bob\'s Auto Repair & Services Co.', expected: 'bobs auto repair' }, // services removed
       { input: 'Main Street Pizza Corporation', expected: 'main street pizza' },
-      { input: '7-Eleven Convenience Store', expected: '7eleven convenience store' }
+      { input: '7-Eleven Convenience Store', expected: '7eleven convenience' } // store removed
     ];
 
     testCases.forEach(({ input, expected }) => {

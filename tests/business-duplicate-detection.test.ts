@@ -74,6 +74,11 @@ describe('Business Duplicate Detection', () => {
         shouldMatch: true // Should match when ignoring business suffixes
       },
       {
+        name1: 'Tim Hortons',
+        name2: 'Tim Hortons Coffee Shop',
+        shouldMatch: true // Should match after normalization removes "coffee shop"
+      },
+      {
         name1: 'Main Street Pizza',
         name2: 'Oak Street Pizza',
         shouldMatch: false // Different businesses
@@ -81,7 +86,7 @@ describe('Business Duplicate Detection', () => {
       {
         name1: 'Quality Auto Repair Services',
         name2: 'Quality Auto Repair Services Ltd',
-        shouldMatch: true // Should match ignoring Ltd
+        shouldMatch: true // Should match ignoring Ltd and Services
       }
     ];
 
@@ -89,6 +94,7 @@ describe('Business Duplicate Detection', () => {
       // Normalize names like the duplicate detection logic should do
       const normalize = (name: string) => name.toLowerCase()
         .replace(/\b(ltd|inc|corp|co|llc|limited|incorporated|corporation|company)\b\.?/g, '')
+        .replace(/\b(coffee shop|restaurant|cafe|bar|grill|store|shop|services|service|center|centre|clinic|salon|studio)\b/g, '')
         .replace(/[^a-z0-9\s]/g, '')
         .replace(/\s+/g, ' ')
         .trim();
