@@ -53,6 +53,57 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
   const [adPreview, setAdPreview] = useState<Record<string, unknown> | null>(null);
   const [showAdPreview, setShowAdPreview] = useState(false);
 
+  // File validation constants
+  const PHOTO_SIZE_LIMITS = {
+    silver: 2 * 1024 * 1024, // 2MB
+    gold: 5 * 1024 * 1024,   // 5MB
+    platinum: 10 * 1024 * 1024 // 10MB
+  };
+  const LOGO_SIZE_LIMIT = 5 * 1024 * 1024; // 5MB
+
+  // Client-side file validation
+  const validateFile = (file: File, type: 'photo' | 'logo', tier: string) => {
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      return {
+        valid: false,
+        error: 'File must be an image (JPG, PNG, GIF, WebP)'
+      };
+    }
+
+    // Check file size based on type and tier
+    if (type === 'photo') {
+      const maxSize = PHOTO_SIZE_LIMITS[tier as keyof typeof PHOTO_SIZE_LIMITS];
+      if (!maxSize) {
+        return {
+          valid: false,
+          error: 'Photo upload requires silver tier or higher'
+        };
+      }
+      if (file.size > maxSize) {
+        return {
+          valid: false,
+          error: `Photo size (${Math.round(file.size / (1024 * 1024))}MB) exceeds ${Math.round(maxSize / (1024 * 1024))}MB limit for ${tier} tier`
+        };
+      }
+    } else if (type === 'logo') {
+      if (tier !== 'platinum') {
+        return {
+          valid: false,
+          error: 'Logo upload requires platinum tier'
+        };
+      }
+      if (file.size > LOGO_SIZE_LIMIT) {
+        return {
+          valid: false,
+          error: `Logo size (${Math.round(file.size / (1024 * 1024))}MB) exceeds ${Math.round(LOGO_SIZE_LIMIT / (1024 * 1024))}MB limit`
+        };
+      }
+    }
+
+    return { valid: true };
+  };
+
   // Business subscription tiers for the new modal
   const businessTiers = [
     {
@@ -302,7 +353,27 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
   // Photo upload handler
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      alert('Please select a file to upload');
+      return;
+    }
+
+    // Client-side validation
+    const validation = validateFile(file, 'photo', currentTier);
+    if (!validation.valid) {
+      alert(validation.error);
+      // Reset file input
+      event.target.value = '';
+      return;
+    }
+
+    // Check authentication
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert('Please log in to upload photos');
+      event.target.value = '';
+      return;
+    }
 
     setUploadingPhoto(true);
     try {
@@ -310,7 +381,6 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
       formData.append('photo', file);
       formData.append('businessId', business.id);
 
-      const token = localStorage.getItem('accessToken');
       const response = await fetch('/api/businesses/photos', {
         method: 'POST',
         headers: {
@@ -320,6 +390,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
       });
 
       const result = await response.json();
+      
       if (result.success) {
         alert('Photo uploaded successfully!');
         // Update business with new photo
@@ -331,11 +402,32 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
           onUpdate(updatedBusiness);
         }
       } else {
-        alert(result.error || 'Failed to upload photo');
+        // Provide more specific error messages
+        let errorMessage = result.error || 'Failed to upload photo';
+        if (response.status === 401) {
+          errorMessage = 'Authentication failed. Please log in again.';
+        } else if (response.status === 403) {
+          errorMessage = result.error || 'You do not have permission to upload photos for this business.';
+        } else if (response.status === 404) {
+          errorMessage = 'Business not found or you do not have permission to edit it.';
+        } else if (response.status === 413) {
+          errorMessage = result.error || 'File size is too large.';
+        }
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Photo upload error:', error);
-      alert('Failed to upload photo');
+      let errorMessage = 'Failed to upload photo. ';
+      if (error instanceof Error) {
+        if (error.message.includes('Failed to fetch')) {
+          errorMessage += 'Please check your internet connection.';
+        } else {
+          errorMessage += error.message;
+        }
+      } else {
+        errorMessage += 'Please try again.';
+      }
+      alert(errorMessage);
     } finally {
       setUploadingPhoto(false);
       // Reset file input
@@ -346,7 +438,27 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
   // Logo upload handler
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      alert('Please select a file to upload');
+      return;
+    }
+
+    // Client-side validation
+    const validation = validateFile(file, 'logo', currentTier);
+    if (!validation.valid) {
+      alert(validation.error);
+      // Reset file input
+      event.target.value = '';
+      return;
+    }
+
+    // Check authentication
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      alert('Please log in to upload logos');
+      event.target.value = '';
+      return;
+    }
 
     setUploadingLogo(true);
     try {
@@ -354,7 +466,6 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
       formData.append('logo', file);
       formData.append('businessId', business.id);
 
-      const token = localStorage.getItem('accessToken');
       const response = await fetch('/api/businesses/logo', {
         method: 'POST',
         headers: {
@@ -364,6 +475,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
       });
 
       const result = await response.json();
+      
       if (result.success) {
         alert('Logo uploaded successfully!');
         // Update business with new logo
@@ -375,11 +487,32 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
           onUpdate(updatedBusiness);
         }
       } else {
-        alert(result.error || 'Failed to upload logo');
+        // Provide more specific error messages
+        let errorMessage = result.error || 'Failed to upload logo';
+        if (response.status === 401) {
+          errorMessage = 'Authentication failed. Please log in again.';
+        } else if (response.status === 403) {
+          errorMessage = result.error || 'Logo upload requires platinum tier.';
+        } else if (response.status === 404) {
+          errorMessage = 'Business not found or you do not have permission to edit it.';
+        } else if (response.status === 413) {
+          errorMessage = result.error || 'Logo file size is too large.';
+        }
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Logo upload error:', error);
-      alert('Failed to upload logo');
+      let errorMessage = 'Failed to upload logo. ';
+      if (error instanceof Error) {
+        if (error.message.includes('Failed to fetch')) {
+          errorMessage += 'Please check your internet connection.';
+        } else {
+          errorMessage += error.message;
+        }
+      } else {
+        errorMessage += 'Please try again.';
+      }
+      alert(errorMessage);
     } finally {
       setUploadingLogo(false);
       // Reset file input
@@ -638,42 +771,46 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
               Edit Business Info
             </Button>
             {(currentTier === 'gold' || currentTier === 'platinum') && (
-              <>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => document.getElementById('photo-upload')?.click()}
-                  disabled={uploadingPhoto}
-                >
-                  {uploadingPhoto ? 'Uploading...' : 'Manage Photos'}
-                </Button>
+              <div className="relative inline-block">
                 <input
                   id="photo-upload"
                   type="file"
                   accept="image/*"
                   onChange={handlePhotoUpload}
-                  style={{ display: 'none' }}
+                  disabled={uploadingPhoto}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                  title="Select photos to upload"
                 />
-              </>
-            )}
-            {currentTier === 'platinum' && (
-              <>
                 <Button 
                   variant="outline" 
-                  size="sm"
-                  onClick={() => document.getElementById('logo-upload')?.click()}
-                  disabled={uploadingLogo}
+                  size="sm" 
+                  disabled={uploadingPhoto}
+                  className="relative pointer-events-none"
                 >
-                  {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
+                  {uploadingPhoto ? 'Uploading...' : 'Manage Photos'}
                 </Button>
+              </div>
+            )}
+            {currentTier === 'platinum' && (
+              <div className="relative inline-block">
                 <input
                   id="logo-upload"
                   type="file"
                   accept="image/*"
                   onChange={handleLogoUpload}
-                  style={{ display: 'none' }}
+                  disabled={uploadingLogo}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                  title="Select logo to upload"
                 />
-              </>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  disabled={uploadingLogo}
+                  className="relative pointer-events-none"
+                >
+                  {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
+                </Button>
+              </div>
             )}
             {currentTier !== 'free' && (
               <Button variant="outline" size="sm" onClick={handleAdPreview}>
