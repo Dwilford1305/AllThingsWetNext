@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
+import SubscriptionUpgradeModal from './SubscriptionUpgradeModal';
 import { 
   Building, 
   Star, 
@@ -30,6 +31,7 @@ interface BusinessDashboardProps {
 export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps) => {
   const [loading, setLoading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showNewUpgradeModal, setShowNewUpgradeModal] = useState(false);
   const [selectedTier, setSelectedTier] = useState<string>('');
   const [offerCode, setOfferCode] = useState('');
   const [offerCodeValidation, setOfferCodeValidation] = useState<OfferCodeValidationResult | null>(null);
@@ -43,6 +45,59 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
     website: business.website || '',
     address: business.address || ''
   });
+
+  // Business subscription tiers for the new modal
+  const businessTiers = [
+    {
+      id: 'silver',
+      name: 'Silver',
+      price: { monthly: 19.99, annual: 199.99 },
+      description: 'Perfect for small businesses getting started online',
+      features: [
+        'Enhanced business listing',
+        'Contact form integration', 
+        'Basic analytics dashboard',
+        'Business hours display',
+        '2 job postings per month',
+        'Email support'
+      ],
+      color: 'text-gray-600'
+    },
+    {
+      id: 'gold',
+      name: 'Gold',
+      price: { monthly: 39.99, annual: 399.99 },
+      description: 'Ideal for growing businesses seeking more visibility',
+      features: [
+        'Everything in Silver',
+        'Photo gallery (up to 10 photos)',
+        'Social media links integration',
+        'Special offers and promotions',
+        'Featured placement in directory',
+        '5 job postings per month',
+        'Priority email support'
+      ],
+      popular: true,
+      color: 'text-yellow-600'
+    },
+    {
+      id: 'platinum',
+      name: 'Platinum',
+      price: { monthly: 79.99, annual: 799.99 },
+      description: 'Complete business marketing solution',
+      features: [
+        'Everything in Gold',
+        'Custom logo upload',
+        'Advanced analytics & reporting',
+        'Priority support with dedicated manager',
+        'Custom business description',
+        'Unlimited job postings',
+        'Phone support',
+        'Monthly performance review'
+      ],
+      color: 'text-purple-600'
+    }
+  ];
 
   const getTierIcon = (tier: string) => {
     switch (tier) {
@@ -65,6 +120,47 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
   const handleUpgrade = async (newTier: string) => {
     setSelectedTier(newTier);
     setShowUpgradeModal(true);
+  };
+
+  const handleNewUpgrade = () => {
+    setShowNewUpgradeModal(true);
+  };
+
+  const handleUpgradeSuccess = async (tier: string, paymentId: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/businesses/subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subscriptionTier: tier,
+          duration: 12, // Annual billing
+          paymentId,
+          businessId: business.id
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        // Update the business object with new subscription
+        const updatedBusiness = { 
+          ...business, 
+          subscriptionTier: tier as 'free' | 'silver' | 'gold' | 'platinum',
+          subscriptionStatus: 'active' as const
+        };
+        onUpdate?.(updatedBusiness);
+        alert('🎉 Business subscription upgraded successfully! Your new features are now active.');
+      } else {
+        alert('Error upgrading subscription: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error upgrading subscription:', error);
+      alert('Failed to upgrade subscription. Please try again later.');
+    } finally {
+      setLoading(false);
+      setShowNewUpgradeModal(false);
+    }
   };
 
   const validateOfferCode = async () => {
@@ -316,10 +412,10 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                   size="sm" 
                   variant="outline" 
                   className="w-full"
-                  onClick={() => handleUpgrade('silver')}
+                  onClick={handleNewUpgrade}
                   disabled={loading}
                 >
-                  Upgrade to Silver
+                  Upgrade with PayPal
                 </Button>
               </div>
 
@@ -759,6 +855,16 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
           </Card>
         </div>
       )}
+
+      {/* New PayPal Upgrade Modal */}
+      <SubscriptionUpgradeModal
+        isOpen={showNewUpgradeModal}
+        onClose={() => setShowNewUpgradeModal(false)}
+        tiers={businessTiers}
+        currentTier={currentTier}
+        onUpgradeSuccess={handleUpgradeSuccess}
+        type="business"
+      />
     </div>
   );
 };

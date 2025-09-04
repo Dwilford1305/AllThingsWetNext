@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { User } from '@/models/auth'
 import { Business } from '@/models'
+import { authenticate } from '@/lib/auth-middleware'
 import type { ApiResponse } from '@/types'
 
 // Test business constants
@@ -77,19 +78,20 @@ export async function POST(request: NextRequest) {
     await connectDB()
 
     // Check if request is from super admin
-    const authHeader = request.headers.get('Authorization')
-    if (!authHeader) {
+    const authResult = await authenticate(request)
+    if (authResult.error || authResult.user?.role !== 'super_admin') {
       return NextResponse.json(
-        { success: false, error: 'Authorization required' },
-        { status: 401 }
+        { success: false, error: 'Super admin access required' },
+        { status: 403 }
       )
     }
 
-    // For now, allow setup key to provision test business
-    const setupKey = process.env.SUPER_ADMIN_SETUP_KEY
+    // For dashboard requests, we don't need the setup key
     const { setupPassword } = await request.json()
+    const setupKey = process.env.SUPER_ADMIN_SETUP_KEY
 
-    if (setupKey && setupPassword !== setupKey) {
+    // Allow dashboard requests or setup key requests
+    if (setupKey && setupPassword && setupPassword !== setupKey && setupPassword !== 'super-admin-dashboard-request') {
       return NextResponse.json(
         { success: false, error: 'Invalid setup key' },
         { status: 403 }
@@ -97,10 +99,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Find super admin user
-    const superAdmin = await User.findOne({ role: 'super_admin' })
+    const superAdmin = authResult.user
     if (!superAdmin) {
       return NextResponse.json(
-        { success: false, error: 'Super admin not found. Please create super admin first.' },
+        { success: false, error: 'Super admin not found' },
         { status: 404 }
       )
     }
@@ -193,6 +195,17 @@ export async function GET() {
     const testBusiness = await Business.findOne({ id: TEST_BUSINESS_ID })
     const superAdmin = await User.findOne({ role: 'super_admin' })
 
+    // Get ad visibility setting
+    const mongoose = require('mongoose')
+    const AdminConfig = mongoose.models.AdminConfig || mongoose.model('AdminConfig', new mongoose.Schema({
+      key: { type: String, unique: true, required: true },
+      value: mongoose.Schema.Types.Mixed,
+      updatedAt: { type: Date, default: Date.now }
+    }))
+
+    const adConfig = await AdminConfig.findOne({ key: 'test_ads_visible' })
+    const adsVisible = adConfig?.value !== false // Default to true if not set
+
     return NextResponse.json({
       success: true,
       message: 'Test business setup status',
@@ -202,10 +215,15 @@ export async function GET() {
         testBusiness: testBusiness ? {
           id: testBusiness.id,
           name: testBusiness.name,
+          category: testBusiness.category,
+          address: testBusiness.address,
+          phone: testBusiness.phone,
           subscriptionTier: testBusiness.subscriptionTier,
           subscriptionStatus: testBusiness.subscriptionStatus,
           isClaimed: testBusiness.isClaimed,
-          claimedBy: testBusiness.claimedBy
+          claimedBy: testBusiness.claimedBy,
+          isHidden: testBusiness.isHidden || false,
+          adsVisible
         } : null
       }
     })

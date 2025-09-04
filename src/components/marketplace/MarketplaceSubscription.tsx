@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import SubscriptionUpgradeModal from '@/components/SubscriptionUpgradeModal';
 import { 
   Crown, 
   Star, 
@@ -111,6 +112,7 @@ const MarketplaceSubscription = () => {
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Transform API response to component format
   const transformApiResponse = (apiData: ApiSubscriptionResponse): UserSubscription => {
@@ -164,7 +166,7 @@ const MarketplaceSubscription = () => {
     }
   };
 
-  const handleUpgrade = async (tierId: string) => {
+  const handleUpgrade = async (tierId: string, paymentId?: string) => {
     setUpgrading(tierId);
     try {
       const duration = billingPeriod === 'annual' ? 12 : 1;
@@ -173,7 +175,8 @@ const MarketplaceSubscription = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           subscriptionTier: tierId,
-          duration
+          duration,
+          paymentId // Include payment ID from PayPal
         })
       });
       
@@ -185,9 +188,10 @@ const MarketplaceSubscription = () => {
       }
       
       if (data.success) {
-        // TODO: Redirect to PayPal payment
-        console.log('Subscription upgrade initiated:', data.message);
+        console.log('Subscription upgrade completed:', data.message);
         await fetchSubscriptionInfo(); // Refresh data
+        // Show success notification
+        alert('🎉 Subscription upgraded successfully! Your new features are now active.');
       } else {
         alert('Error upgrading subscription: ' + (data.error || 'Unknown error'));
       }
@@ -197,6 +201,15 @@ const MarketplaceSubscription = () => {
     } finally {
       setUpgrading(null);
     }
+  };
+
+  const handleUpgradeClick = () => {
+    setShowUpgradeModal(true);
+  };
+
+  const handleUpgradeSuccess = async (tier: string, paymentId: string) => {
+    await handleUpgrade(tier, paymentId);
+    setShowUpgradeModal(false);
   };
 
   const formatQuotaText = (quota: number) => {
@@ -362,7 +375,7 @@ const MarketplaceSubscription = () => {
               </div>
 
               <Button
-                onClick={() => handleUpgrade(tier.id)}
+                onClick={() => tier.id === 'free' ? undefined : handleUpgradeClick()}
                 disabled={isCurrentTier || upgrading === tier.id || tier.id === 'free'}
                 className={`w-full ${
                   isCurrentTier 
@@ -382,7 +395,7 @@ const MarketplaceSubscription = () => {
                 ) : tier.id === 'free' ? (
                   'Default Plan'
                 ) : (
-                  'Upgrade'
+                  'Upgrade with PayPal'
                 )}
               </Button>
             </Card>
@@ -447,6 +460,29 @@ const MarketplaceSubscription = () => {
           </table>
         </div>
       </div>
+
+      {/* Subscription Upgrade Modal */}
+      <SubscriptionUpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        tiers={SUBSCRIPTION_TIERS.map(tier => ({
+          id: tier.id,
+          name: tier.name,
+          price: tier.price,
+          description: tier.id === 'silver' 
+            ? 'Perfect for casual sellers with occasional listings'
+            : tier.id === 'gold'
+            ? 'Ideal for active sellers with regular inventory'
+            : 'Best for power sellers with high-volume sales',
+          features: tier.features,
+          popular: tier.popular,
+          color: tier.color.includes('yellow') ? 'text-yellow-600' : 
+                 tier.color.includes('purple') ? 'text-purple-600' : 'text-gray-600'
+        }))}
+        currentTier={currentSubscription?.tier}
+        onUpgradeSuccess={handleUpgradeSuccess}
+        type="marketplace"
+      />
     </div>
   );
 };
