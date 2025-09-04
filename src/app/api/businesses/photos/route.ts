@@ -3,7 +3,6 @@ import { connectDB } from '@/lib/mongodb'
 import { Business, BusinessAd } from '@/models'
 import { AuthService } from '@/lib/auth'
 import type { ApiResponse } from '@/types'
-import { v4 as uuidv4 } from 'uuid'
 
 // Photo size limits based on tier (in bytes)
 const PHOTO_SIZE_LIMITS = {

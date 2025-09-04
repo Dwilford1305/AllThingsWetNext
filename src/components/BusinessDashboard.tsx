@@ -21,7 +21,8 @@ import {
   Ticket,
   Check
 } from 'lucide-react';
-import type { Business, OfferCodeValidationResult } from '@/types';
+import type { Business, OfferCodeValidationResult, BusinessAd } from '@/types';
+import AdPreview from './AdPreview';
 
 interface BusinessDashboardProps {
   business: Business;
@@ -45,6 +46,12 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
     website: business.website || '',
     address: business.address || ''
   });
+  
+  // Photo and logo upload state
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [adPreview, setAdPreview] = useState<Record<string, unknown> | null>(null);
+  const [showAdPreview, setShowAdPreview] = useState(false);
 
   // Business subscription tiers for the new modal
   const businessTiers = [
@@ -292,6 +299,117 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
     }
   };
 
+  // Photo upload handler
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append('photo', file);
+      formData.append('businessId', business.id);
+
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('/api/businesses/photos', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert('Photo uploaded successfully!');
+        // Update business with new photo
+        const updatedBusiness = {
+          ...business,
+          photos: [...(business.photos || []), result.data.photoUrl]
+        };
+        if (onUpdate) {
+          onUpdate(updatedBusiness);
+        }
+      } else {
+        alert(result.error || 'Failed to upload photo');
+      }
+    } catch (error) {
+      console.error('Photo upload error:', error);
+      alert('Failed to upload photo');
+    } finally {
+      setUploadingPhoto(false);
+      // Reset file input
+      event.target.value = '';
+    }
+  };
+
+  // Logo upload handler
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append('logo', file);
+      formData.append('businessId', business.id);
+
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('/api/businesses/logo', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert('Logo uploaded successfully!');
+        // Update business with new logo
+        const updatedBusiness = {
+          ...business,
+          logo: result.data.logoUrl
+        };
+        if (onUpdate) {
+          onUpdate(updatedBusiness);
+        }
+      } else {
+        alert(result.error || 'Failed to upload logo');
+      }
+    } catch (error) {
+      console.error('Logo upload error:', error);
+      alert('Failed to upload logo');
+    } finally {
+      setUploadingLogo(false);
+      // Reset file input
+      event.target.value = '';
+    }
+  };
+
+  // Ad preview handler
+  const handleAdPreview = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/businesses/ads?preview=true&businessId=${business.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setAdPreview(result.data);
+        setShowAdPreview(true);
+      } else {
+        alert(result.error || 'Failed to generate ad preview');
+      }
+    } catch (error) {
+      console.error('Ad preview error:', error);
+      alert('Failed to generate ad preview');
+    }
+  };
+
   const currentTier = business.subscriptionTier || 'free';
   const analytics = business.analytics || { views: 0, clicks: 0, callClicks: 0, websiteClicks: 0 };
 
@@ -520,13 +638,46 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
               Edit Business Info
             </Button>
             {(currentTier === 'gold' || currentTier === 'platinum') && (
-              <Button variant="outline" size="sm">
-                Manage Photos
-              </Button>
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => document.getElementById('photo-upload')?.click()}
+                  disabled={uploadingPhoto}
+                >
+                  {uploadingPhoto ? 'Uploading...' : 'Manage Photos'}
+                </Button>
+                <input
+                  id="photo-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  style={{ display: 'none' }}
+                />
+              </>
             )}
             {currentTier === 'platinum' && (
-              <Button variant="outline" size="sm">
-                Upload Logo
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => document.getElementById('logo-upload')?.click()}
+                  disabled={uploadingLogo}
+                >
+                  {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
+                </Button>
+                <input
+                  id="logo-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  style={{ display: 'none' }}
+                />
+              </>
+            )}
+            {currentTier !== 'free' && (
+              <Button variant="outline" size="sm" onClick={handleAdPreview}>
+                Preview Ad
               </Button>
             )}
           </div>
@@ -865,6 +1016,55 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
         onUpgradeSuccess={handleUpgradeSuccess}
         type="business"
       />
+
+      {/* Ad Preview Modal */}
+      {showAdPreview && adPreview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Ad Preview - {currentTier.charAt(0).toUpperCase() + currentTier.slice(1)} Tier
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAdPreview(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  This is how your ad will appear throughout the website based on your current subscription tier.
+                </p>
+                
+                <div className="flex justify-center p-8 bg-gray-50 rounded-lg">
+                  <AdPreview ad={adPreview as unknown as BusinessAd} />
+                </div>
+
+                <div className="text-sm text-gray-600 space-y-2">
+                  <p><strong>Tier:</strong> {currentTier.charAt(0).toUpperCase() + currentTier.slice(1)}</p>
+                  <p><strong>Photo:</strong> {(adPreview as unknown as BusinessAd).photo ? 'Uploaded' : 'Not uploaded'}</p>
+                  {currentTier === 'platinum' && (
+                    <p><strong>Logo:</strong> {(adPreview as unknown as BusinessAd).logo ? 'Uploaded' : 'Not uploaded'}</p>
+                  )}
+                  <p><strong>Ad Size:</strong> {(adPreview as unknown as BusinessAd).adSize.width} × {(adPreview as unknown as BusinessAd).adSize.height} pixels</p>
+                </div>
+
+                {!(adPreview as unknown as BusinessAd).photo && (
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-yellow-800 text-sm">
+                      <strong>Note:</strong> Upload a photo to activate your ad and display it throughout the website.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

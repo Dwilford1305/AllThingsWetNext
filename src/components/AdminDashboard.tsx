@@ -26,7 +26,8 @@ import {
   AlertTriangle,
   TestTube,
   EyeOff,
-  Monitor
+  Monitor,
+  Zap
 } from 'lucide-react';
 import type { Business, Event, NewsArticle, BusinessCategory, SubscriptionTier, Report as ReportType } from '@/types';
 import ScraperLogs from './ScraperLogs';
@@ -58,7 +59,7 @@ interface ScraperConfig {
 }
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'business-requests' | 'content' | 'users' | 'offer-codes' | 'scrapers' | 'settings' | 'reports' | 'test-business'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'business-requests' | 'content' | 'users' | 'offer-codes' | 'ads' | 'scrapers' | 'settings' | 'reports' | 'test-business'>('overview');
   const [data, setData] = useState<ContentStats | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -106,6 +107,19 @@ const AdminDashboard = () => {
     type: null
   });
 
+  // Ad management state
+  const [adData, setAdData] = useState<{
+    silver: Record<string, unknown>[];
+    gold: Record<string, unknown>[];
+    platinum: Record<string, unknown>[];
+    loading: boolean;
+  }>({
+    silver: [],
+    gold: [],
+    platinum: [],
+    loading: true
+  });
+
   // Comprehensive scraper state
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [comprehensiveScraperStatus, setComprehensiveScraperStatus] = useState<{
@@ -143,6 +157,13 @@ const AdminDashboard = () => {
     // These functions are defined after useEffect and are stable in this context.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Fetch ads when ads tab is active
+  useEffect(() => {
+    if (activeTab === 'ads') {
+      fetchAds();
+    }
+  }, [activeTab]);
 
   // Helper function to fetch all data
   const fetchData = async () => {
@@ -410,6 +431,65 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error toggling ad visibility:', error);
       alert('❌ Error toggling ad visibility');
+    }
+  };
+
+  // Ad management functions
+  const fetchAds = async () => {
+    setAdData(prev => ({ ...prev, loading: true }));
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('/api/admin/ads', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        // Group ads by tier
+        const adsByTier = {
+          silver: result.data.filter((ad: Record<string, unknown>) => ad.tier === 'silver'),
+          gold: result.data.filter((ad: Record<string, unknown>) => ad.tier === 'gold'),
+          platinum: result.data.filter((ad: Record<string, unknown>) => ad.tier === 'platinum'),
+          loading: false
+        };
+        setAdData(adsByTier);
+      } else {
+        console.error('Failed to fetch ads:', result.error);
+        setAdData(prev => ({ ...prev, loading: false }));
+      }
+    } catch (error) {
+      console.error('Error fetching ads:', error);
+      setAdData(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const toggleAdVisibilityById = async (adId: string, currentVisibility: boolean) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('/api/admin/ads', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          adId,
+          isVisible: !currentVisibility
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert(`✅ Ad ${!currentVisibility ? 'shown' : 'hidden'} successfully`);
+        fetchAds(); // Refresh ads
+      } else {
+        alert(`❌ Failed to update ad: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error updating ad visibility:', error);
+      alert('❌ Error updating ad visibility');
     }
   };
   const [reportsLoading, setReportsLoading] = useState(false);
@@ -943,6 +1023,7 @@ const AdminDashboard = () => {
   { id: 'reports', label: 'Reports', icon: Flag },
     { id: 'users', label: 'Users', icon: Users },
     { id: 'offer-codes', label: 'Offer Codes', icon: Ticket },
+    { id: 'ads', label: 'Ad Management', icon: Zap },
     { id: 'test-business', label: 'Test Business', icon: TestTube },
     { id: 'scrapers', label: 'Scrapers', icon: Activity },
     { id: 'settings', label: 'Settings', icon: Settings },
@@ -1569,6 +1650,168 @@ const AdminDashboard = () => {
 
       {activeTab === 'offer-codes' && (
         <OfferCodeManager />
+      )}
+
+      {activeTab === 'ads' && (
+        <div className="space-y-6">
+          {/* Ad Management */}
+          <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-semibold text-white flex items-center">
+                  <Zap className="h-5 w-5 mr-2" />
+                  Business Ad Management
+                </h3>
+                <p className="text-sm text-blue-200 mt-1">
+                  View and manage business advertisements across all subscription tiers
+                </p>
+              </div>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={fetchAds}
+                className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
+
+            {adData.loading ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="h-6 w-6 animate-spin text-blue-400 mr-2" />
+                <span className="text-blue-200">Loading ads...</span>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Silver Tier Ads */}
+                <div>
+                  <h4 className="text-white font-medium mb-3 flex items-center">
+                    <div className="w-3 h-3 bg-gray-400 rounded-full mr-2"></div>
+                    Silver Tier Ads ({adData.silver.length})
+                  </h4>
+                  {adData.silver.length === 0 ? (
+                    <p className="text-gray-400 text-sm">No silver tier ads found</p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {adData.silver.map((ad: Record<string, unknown>) => (
+                        <div key={ad.id as string} className="p-4 bg-white/5 rounded-lg border border-white/10">
+                          <div className="flex items-start justify-between mb-2">
+                            <h5 className="font-medium text-white text-sm">{ad.businessName as string}</h5>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => toggleAdVisibilityById(ad.id as string, ad.isVisible as boolean)}
+                              className="text-xs"
+                            >
+                              {ad.isVisible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                            </Button>
+                          </div>
+                          <div className="text-xs text-gray-300 space-y-1">
+                            <p>Size: {(ad.adSize as {width: number, height: number}).width} × {(ad.adSize as {width: number, height: number}).height}</p>
+                            <p>Status: {ad.isActive ? 'Active' : 'Inactive'}</p>
+                            <p>Visible: {ad.isVisible ? 'Yes' : 'No'}</p>
+                            <p>Impressions: {ad.impressions as number}</p>
+                            <p>Clicks: {ad.clicks as number}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Gold Tier Ads */}
+                <div>
+                  <h4 className="text-white font-medium mb-3 flex items-center">
+                    <div className="w-3 h-3 bg-yellow-400 rounded-full mr-2"></div>
+                    Gold Tier Ads ({adData.gold.length})
+                  </h4>
+                  {adData.gold.length === 0 ? (
+                    <p className="text-gray-400 text-sm">No gold tier ads found</p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {adData.gold.map((ad: Record<string, unknown>) => (
+                        <div key={ad.id as string} className="p-4 bg-white/5 rounded-lg border border-white/10">
+                          <div className="flex items-start justify-between mb-2">
+                            <h5 className="font-medium text-white text-sm">{ad.businessName as string}</h5>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => toggleAdVisibilityById(ad.id as string, ad.isVisible as boolean)}
+                              className="text-xs"
+                            >
+                              {ad.isVisible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                            </Button>
+                          </div>
+                          <div className="text-xs text-gray-300 space-y-1">
+                            <p>Size: {(ad.adSize as {width: number, height: number}).width} × {(ad.adSize as {width: number, height: number}).height}</p>
+                            <p>Status: {ad.isActive ? 'Active' : 'Inactive'}</p>
+                            <p>Visible: {ad.isVisible ? 'Yes' : 'No'}</p>
+                            <p>Impressions: {ad.impressions as number}</p>
+                            <p>Clicks: {ad.clicks as number}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Platinum Tier Ads */}
+                <div>
+                  <h4 className="text-white font-medium mb-3 flex items-center">
+                    <div className="w-3 h-3 bg-purple-400 rounded-full mr-2"></div>
+                    Platinum Tier Ads ({adData.platinum.length})
+                  </h4>
+                  {adData.platinum.length === 0 ? (
+                    <p className="text-gray-400 text-sm">No platinum tier ads found</p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {adData.platinum.map((ad: Record<string, unknown>) => (
+                        <div key={ad.id as string} className="p-4 bg-white/5 rounded-lg border border-white/10">
+                          <div className="flex items-start justify-between mb-2">
+                            <h5 className="font-medium text-white text-sm">{ad.businessName as string}</h5>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => toggleAdVisibilityById(ad.id as string, ad.isVisible as boolean)}
+                              className="text-xs"
+                            >
+                              {ad.isVisible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                            </Button>
+                          </div>
+                          <div className="text-xs text-gray-300 space-y-1">
+                            <p>Size: {(ad.adSize as {width: number, height: number}).width} × {(ad.adSize as {width: number, height: number}).height}</p>
+                            <p>Status: {ad.isActive ? 'Active' : 'Inactive'}</p>
+                            <p>Visible: {ad.isVisible ? 'Yes' : 'No'}</p>
+                            <p>Logo: {ad.logo ? 'Yes' : 'No'}</p>
+                            <p>Impressions: {ad.impressions as number}</p>
+                            <p>Clicks: {ad.clicks as number}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Summary Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-white/10">
+                  <div className="text-center p-4 bg-gray-500/20 rounded-lg">
+                    <div className="text-2xl font-bold text-white">{adData.silver.length}</div>
+                    <div className="text-sm text-gray-300">Silver Ads</div>
+                  </div>
+                  <div className="text-center p-4 bg-yellow-500/20 rounded-lg">
+                    <div className="text-2xl font-bold text-white">{adData.gold.length}</div>
+                    <div className="text-sm text-gray-300">Gold Ads</div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-500/20 rounded-lg">
+                    <div className="text-2xl font-bold text-white">{adData.platinum.length}</div>
+                    <div className="text-sm text-gray-300">Platinum Ads</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </Card>
+        </div>
       )}
 
       {activeTab === 'test-business' && (

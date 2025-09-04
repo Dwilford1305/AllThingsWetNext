@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Business, BusinessAd } from '@/models'
 import { AuthService } from '@/lib/auth'
-import type { ApiResponse, BusinessAd as BusinessAdType } from '@/types'
+import type { ApiResponse } from '@/types'
 
 export async function GET(request: NextRequest) {
   try {
