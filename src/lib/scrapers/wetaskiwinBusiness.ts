@@ -254,7 +254,7 @@ export class WetaskiwinBusinessScraper {
     
     // List of endings that usually mean the business name is over
     const businessEndings = [
-      'Ltd', 'Inc', 'Corp', 'Co', 'LLC', 'Limited', 'Services', 'Service', 'Restaurant', 'Cafe', 'Centre', 'Center', 'Group', 'Club', 'Hotel', 'Inn', 'Bar', 'Grill', 'Kitchen', 'Market', 'Auto', 'Motors', 'Sales', 'Clinic', 'Hospital', 'Salon', 'Studio', 'Fitness', 'Gym', 'Pizza', 'Pasta', 'Liquor', 'Gas', 'Oil', 'Tire', 'Glass', 'Electric', 'Plumbing', 'Construction', 'Contracting', 'Cleaning', 'Pharmacy', 'Bank', 'Insurance', 'Travel', 'Agency', 'Consulting', 'Solutions', 'Systems', 'Tech', 'Communications', 'Media', 'Design', 'Graphics', 'Printing', 'Photography', 'Entertainment', 'Equipment', 'Supply', 'Supplies', 'Parts', 'Repair', 'Maintenance', 'Security', 'Safety', 'Training', 'Education', 'Academy', 'School', 'Institute', 'Foundation', 'Association', 'Society', 'Network', 'Taxi', 'Cab', 'Rental', 'Rentals', 'Finance', 'Financial', 'Investment', 'Holdings', 'Properties', 'Development', 'Management', 'Shop', 'Office'
+      'Ltd', 'Inc', 'Corp', 'Co', 'LLC', 'Limited', 'Services', 'Service', 'Restaurant', 'Cafe', 'Centre', 'Center', 'Group', 'Club', 'Hotel', 'Inn', 'Bar', 'Grill', 'Kitchen', 'Market', 'Auto', 'Motors', 'Sales', 'Clinic', 'Hospital', 'Salon', 'Studio', 'Fitness', 'Gym', 'Pizza', 'Pasta', 'Liquor', 'Gas', 'Oil', 'Tire', 'Glass', 'Electric', 'Plumbing', 'Construction', 'Contracting', 'Cleaning', 'Pharmacy', 'Bank', 'Insurance', 'Travel', 'Agency', 'Consulting', 'Solutions', 'Systems', 'Tech', 'Communications', 'Media', 'Design', 'Graphics', 'Printing', 'Photography', 'Entertainment', 'Equipment', 'Supply', 'Supplies', 'Parts', 'Repair', 'Maintenance', 'Security', 'Safety', 'Training', 'Education', 'Academy', 'School', 'Institute', 'Foundation', 'Association', 'Society', 'Network', 'Taxi', 'Cab', 'Rental', 'Rentals', 'Finance', 'Financial', 'Investment', 'Holdings', 'Properties', 'Development', 'Management', 'Shop', 'Office', 'Change'
     ];
 
     // Fix concatenated words by adding spaces before capital letters that follow business endings
@@ -308,7 +308,7 @@ export class WetaskiwinBusinessScraper {
           lastTwoWords.some(w => w.toLowerCase() === ending.toLowerCase())
         );
         // Additional check for common business words that aren't in the endings list
-        const commonBusinessWords = ['store', 'shop', 'company', 'services', 'center', 'centre', 'palace', 'house', 'plaza', 'place', 'point', 'corner', 'junction', 'station', 'depot', 'works', 'factory', 'mill', 'yard'];
+        const commonBusinessWords = ['store', 'shop', 'company', 'services', 'center', 'centre', 'palace', 'house', 'plaza', 'place', 'point', 'corner', 'junction', 'station', 'depot', 'works', 'factory', 'mill', 'yard', 'change'];
         const hasCommonBusinessWord = commonBusinessWords.some(word => 
           lastTwoWords.some(w => w.toLowerCase() === word)
         );
@@ -327,7 +327,7 @@ export class WetaskiwinBusinessScraper {
           ending.toLowerCase() === lastWord.toLowerCase()
         );
         // Additional common business words check
-        const commonBusinessWords = ['store', 'shop', 'company', 'services', 'center', 'centre', 'palace', 'house', 'plaza', 'place', 'point', 'corner', 'junction', 'station', 'depot', 'works', 'factory', 'mill', 'yard'];
+        const commonBusinessWords = ['store', 'shop', 'company', 'services', 'center', 'centre', 'palace', 'house', 'plaza', 'place', 'point', 'corner', 'junction', 'station', 'depot', 'works', 'factory', 'mill', 'yard', 'change'];
         const isCommonBusinessWord = commonBusinessWords.some(word => 
           lastWord.toLowerCase() === word
         );
