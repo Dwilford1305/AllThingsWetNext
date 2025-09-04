@@ -86,3 +86,7 @@ debug-*.ts
 temp-*
 *.tmp
 *.bak
+
+# Validation and demo scripts
+validate-*.js
+demo-*.js
