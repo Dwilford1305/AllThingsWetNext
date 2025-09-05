@@ -159,14 +159,44 @@ const Footer = () => {
       <div className="border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center">
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="text-gray-400 text-xs sm:text-sm mb-3 sm:mb-0 text-center sm:text-left"
-            >
-              © {currentYear} All Things Wetaskiwin. All rights reserved.
-            </motion.p>
+            <div className="text-center sm:text-left mb-3 sm:mb-0">
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="text-gray-400 text-xs sm:text-sm"
+              >
+                © {currentYear} All Things Wetaskiwin. All rights reserved.
+              </motion.p>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ 
+                  opacity: [1, 0.7, 1],
+                }}
+                transition={{ 
+                  duration: 0.6, 
+                  delay: 0.5,
+                  opacity: {
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }
+                }}
+                className="text-gray-400 text-xs sm:text-sm mt-1"
+              >
+                Full Stack Web App Created by{' '}
+                <motion.a 
+                  href="https://derekwilford.ca" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-300 hover:text-blue-200 transition-colors underline"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  derekwilford.ca
+                </motion.a>
+              </motion.p>
+            </div>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
