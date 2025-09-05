@@ -122,14 +122,14 @@ const EventsPage = () => {
                   className="flex items-center justify-center space-x-4 mb-6"
                 >
                   <Calendar className="h-12 w-12 text-blue-400" />
-                  <div>
+                  <header>
                     <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
-                      Events
+                      Events Wetaskiwin Alberta
                     </h1>
                     <p className="text-xl text-blue-200 mt-2">
-                      Discover what&apos;s happening in Wetaskiwin
+                      Discover upcoming events, festivals, and community activities in Wetaskiwin
                     </p>
-                  </div>
+                  </header>
                 </motion.div>
               </div>
             </div>
@@ -147,7 +147,7 @@ const EventsPage = () => {
           </div>
         </AnimatedSection>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Modern Search and Filter */}
           <AnimatedSection delay={0.15}>
             <div className="card-glass p-6 rounded-2xl mb-8">
@@ -202,14 +202,16 @@ const EventsPage = () => {
           {filteredEvents.length > 0 ? (
             <>
               <AnimatedSection delay={0.25}>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <section aria-labelledby="upcoming-events-heading">
+                  <h2 id="upcoming-events-heading" className="sr-only">Upcoming Events in Wetaskiwin</h2>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                   {filteredEvents.slice(0, 6).map((event) => (
                   <Card key={event.id} className="card-glass overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-white/5 border-white/10">
                     {event.imageUrl && (
                       <div className="h-48 bg-gray-700/50/50 relative">
                         <Image
                           src={event.imageUrl}
-                          alt={event.title}
+                          alt={`${event.title} - Event in Wetaskiwin, Alberta on ${formatDate(event.date)}`}
                           fill
                           className="object-cover"
                         />
@@ -276,7 +278,8 @@ const EventsPage = () => {
                     </div>
                   </Card>
                 ))}
-                </div>
+                  </div>
+                </section>
               </AnimatedSection>
 
               {/* Mid-page Ad */}
@@ -308,7 +311,7 @@ const EventsPage = () => {
                           <div className="h-48 bg-gray-700/50/50 relative">
                             <Image 
                               src={event.imageUrl} 
-                              alt={event.title}
+                              alt={`${event.title} - Event in Wetaskiwin, Alberta on ${formatDate(event.date)}`}
                               fill
                               className="object-cover"
                             />
@@ -396,7 +399,7 @@ const EventsPage = () => {
               </div>
             </div>
           </AnimatedSection>
-        </div>
+        </main>
       </div>
     </FoldableLayout>
   );

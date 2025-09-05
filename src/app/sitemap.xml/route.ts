@@ -4,7 +4,7 @@ import { headers } from 'next/headers'
 // Generate XML sitemap with all public pages
 export async function GET(_request: NextRequest) {
   const h = await headers()
-  const host = h.get('host') || 'allthingswetaskiwin.com'
+  const host = h.get('host') || 'allthingswetaskiwin.ca'
   const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
   const baseUrl = `${protocol}://${host}`
 
