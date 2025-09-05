@@ -52,6 +52,8 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [adPreview, setAdPreview] = useState<Record<string, unknown> | null>(null);
   const [showAdPreview, setShowAdPreview] = useState(false);
+  const [showPermissionDialog, setShowPermissionDialog] = useState(false);
+  const [pendingUploadType, setPendingUploadType] = useState<'photo' | 'logo' | null>(null);
 
   // File validation constants
   const PHOTO_SIZE_LIMITS = {
@@ -102,6 +104,27 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
     }
 
     return { valid: true };
+  };
+
+  // Permission request for file access
+  const requestFilePermission = (type: 'photo' | 'logo'): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setPendingUploadType(type);
+      setShowPermissionDialog(true);
+      
+      // Store resolve function for later use
+      (window as unknown as { permissionResolve?: (value: boolean) => void }).permissionResolve = resolve;
+    });
+  };
+
+  const handlePermissionResponse = (granted: boolean) => {
+    setShowPermissionDialog(false);
+    const resolve = (window as unknown as { permissionResolve?: (value: boolean) => void }).permissionResolve;
+    if (resolve) {
+      resolve(granted);
+      delete (window as unknown as { permissionResolve?: (value: boolean) => void }).permissionResolve;
+    }
+    setPendingUploadType(null);
   };
 
   // Business subscription tiers for the new modal
@@ -347,6 +370,36 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
       alert('Failed to update business information');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Photo upload trigger with permission request
+  const triggerPhotoUpload = async () => {
+    // Request permission first
+    const permissionGranted = await requestFilePermission('photo');
+    if (!permissionGranted) {
+      return; // User denied permission
+    }
+
+    // Trigger file input click
+    const fileInput = document.getElementById('photo-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  };
+
+  // Logo upload trigger with permission request
+  const triggerLogoUpload = async () => {
+    // Request permission first
+    const permissionGranted = await requestFilePermission('logo');
+    if (!permissionGranted) {
+      return; // User denied permission
+    }
+
+    // Trigger file input click
+    const fileInput = document.getElementById('logo-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
     }
   };
 
@@ -771,46 +824,44 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
               Edit Business Info
             </Button>
             {(currentTier === 'gold' || currentTier === 'platinum') && (
-              <div className="relative inline-block">
+              <>
                 <input
                   id="photo-upload"
                   type="file"
                   accept="image/*"
                   onChange={handlePhotoUpload}
                   disabled={uploadingPhoto}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                  title="Select photos to upload"
+                  className="hidden"
                 />
                 <Button 
                   variant="outline" 
                   size="sm" 
                   disabled={uploadingPhoto}
-                  className="relative pointer-events-none"
+                  onClick={triggerPhotoUpload}
                 >
                   {uploadingPhoto ? 'Uploading...' : 'Manage Photos'}
                 </Button>
-              </div>
+              </>
             )}
             {currentTier === 'platinum' && (
-              <div className="relative inline-block">
+              <>
                 <input
                   id="logo-upload"
                   type="file"
                   accept="image/*"
                   onChange={handleLogoUpload}
                   disabled={uploadingLogo}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                  title="Select logo to upload"
+                  className="hidden"
                 />
                 <Button 
                   variant="outline" 
                   size="sm"
                   disabled={uploadingLogo}
-                  className="relative pointer-events-none"
+                  onClick={triggerLogoUpload}
                 >
                   {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
                 </Button>
-              </div>
+              </>
             )}
             {currentTier !== 'free' && (
               <Button variant="outline" size="sm" onClick={handleAdPreview}>
@@ -1197,6 +1248,47 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                     </p>
                   </div>
                 )}
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* File Permission Dialog */}
+      {showPermissionDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="p-6 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                {pendingUploadType === 'photo' ? (
+                  <Building className="h-6 w-6 text-white" />
+                ) : (
+                  <Award className="h-6 w-6 text-white" />
+                )}
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                File Access Permission
+              </h3>
+              <p className="text-gray-600 mb-6">
+                This app would like to access your device's photo gallery to upload{' '}
+                {pendingUploadType === 'photo' ? 'business photos' : 'your business logo'}.
+                Would you like to allow access?
+              </p>
+              <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={() => handlePermissionResponse(false)}
+                  className="flex-1"
+                >
+                  Deny
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => handlePermissionResponse(true)}
+                  className="flex-1"
+                >
+                  Allow
+                </Button>
               </div>
             </div>
           </Card>
