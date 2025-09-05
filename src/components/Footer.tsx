@@ -170,19 +170,31 @@ const Footer = () => {
               </motion.p>
               <motion.p
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
+                animate={{ 
+                  opacity: [1, 0.7, 1],
+                }}
+                transition={{ 
+                  duration: 0.6, 
+                  delay: 0.5,
+                  opacity: {
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }
+                }}
                 className="text-gray-400 text-xs sm:text-sm mt-1"
               >
                 Full Stack Web App Created by{' '}
-                <a 
+                <motion.a 
                   href="https://derekwilford.ca" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-blue-300 hover:text-blue-200 transition-colors underline"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   derekwilford.ca
-                </a>
+                </motion.a>
               </motion.p>
             </div>
             <motion.div
