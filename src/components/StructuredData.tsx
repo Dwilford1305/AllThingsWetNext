@@ -170,15 +170,79 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
 // Pre-configured components for common schemas
 export function WebsiteStructuredData() {
   return (
-    <StructuredData
-      type="WebSite"
-      data={{
-        name: 'All Things Wetaskiwin',
-        description: 'Your comprehensive community hub for events, news, local businesses, jobs, and marketplace listings in Wetaskiwin, Alberta.',
-        url: 'https://allthingswetaskiwin.com',
-        sameAs: []
-      }}
-    />
+    <>
+      <StructuredData
+        type="WebSite"
+        data={{
+          name: 'All Things Wetaskiwin',
+          description: 'Your comprehensive community hub for events, news, local businesses, jobs, and marketplace listings in Wetaskiwin, Alberta.',
+          url: 'https://allthingswetaskiwin.ca',
+          sameAs: []
+        }}
+      />
+      <Script
+        id="organization-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'All Things Wetaskiwin',
+            description: 'Community platform serving Wetaskiwin, Alberta with local events, business directory, news, and marketplace.',
+            url: 'https://allthingswetaskiwin.ca',
+            logo: 'https://allthingswetaskiwin.ca/WaterTower.png',
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: 'Wetaskiwin',
+              addressRegion: 'Alberta',
+              addressCountry: 'CA'
+            },
+            areaServed: {
+              '@type': 'City',
+              name: 'Wetaskiwin',
+              addressRegion: 'Alberta',
+              addressCountry: 'CA'
+            },
+            contactPoint: {
+              '@type': 'ContactPoint',
+              contactType: 'customer service',
+              url: 'https://allthingswetaskiwin.ca'
+            }
+          })
+        }}
+      />
+      <Script
+        id="local-business-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'LocalBusiness',
+            name: 'All Things Wetaskiwin',
+            description: 'Community hub and business directory for Wetaskiwin, Alberta',
+            url: 'https://allthingswetaskiwin.ca',
+            image: 'https://allthingswetaskiwin.ca/WaterTower.png',
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: 'Wetaskiwin',
+              addressRegion: 'Alberta',
+              addressCountry: 'CA'
+            },
+            geo: {
+              '@type': 'GeoCoordinates',
+              latitude: 52.9686,
+              longitude: -113.3741
+            },
+            areaServed: {
+              '@type': 'City',
+              name: 'Wetaskiwin',
+              addressRegion: 'Alberta',
+              addressCountry: 'CA'
+            }
+          })
+        }}
+      />
+    </>
   )
 }
 
@@ -194,7 +258,79 @@ export function LocalBusinessDirectoryStructuredData() {
           addressRegion: 'Alberta',
           addressCountry: 'CA'
         },
-        url: 'https://allthingswetaskiwin.com/businesses'
+        url: 'https://allthingswetaskiwin.ca/businesses'
+      }}
+    />
+  )
+}
+
+export function EventsPageStructuredData() {
+  return (
+    <Script
+      id="events-page-schema"
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: 'Events Wetaskiwin Alberta | Community Events Calendar',
+          description: 'Find all upcoming events in Wetaskiwin, Alberta. Discover local festivals, community gatherings, workshops, and activities.',
+          url: 'https://allthingswetaskiwin.ca/events',
+          mainEntity: {
+            '@type': 'EventSeries',
+            name: 'Wetaskiwin Community Events',
+            description: 'Ongoing series of community events, festivals, and activities in Wetaskiwin, Alberta',
+            location: {
+              '@type': 'City',
+              name: 'Wetaskiwin',
+              addressRegion: 'Alberta',
+              addressCountry: 'CA'
+            },
+            organizer: {
+              '@type': 'Organization',
+              name: 'All Things Wetaskiwin',
+              url: 'https://allthingswetaskiwin.ca'
+            }
+          },
+          breadcrumb: {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: 'https://allthingswetaskiwin.ca'
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Events',
+                item: 'https://allthingswetaskiwin.ca/events'
+              }
+            ]
+          }
+        })
+      }}
+    />
+  )
+}
+
+export function BreadcrumbStructuredData({ items }: { items: { name: string; url: string }[] }) {
+  return (
+    <Script
+      id="breadcrumb-schema"
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: items.map((item, index) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            name: item.name,
+            item: item.url
+          }))
+        })
       }}
     />
   )

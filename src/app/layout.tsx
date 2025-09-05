@@ -8,10 +8,10 @@ import { WebsiteStructuredData } from "@/components/StructuredData";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NODE_ENV === 'production' ? 'https://allthingswetaskiwin.com' : 'http://localhost:3000'),
-  title: "All Things Wetaskiwin - Your Community Hub",
-  description: "Your comprehensive community hub for events, news, local businesses, jobs, and marketplace listings in Wetaskiwin, Alberta. Stay connected with your community.",
-  keywords: "Wetaskiwin, Alberta, community, events, businesses, jobs, marketplace, news, local, community hub, city information",
+  metadataBase: new URL(process.env.NODE_ENV === 'production' ? 'https://allthingswetaskiwin.ca' : 'http://localhost:3000'),
+  title: "All Things Wetaskiwin - Your Community Hub | Wetaskiwin, Alberta",
+  description: "Discover events, news, local businesses, jobs, and marketplace listings in Wetaskiwin, Alberta. Your comprehensive community hub for staying connected with Wetaskiwin events and local activities.",
+  keywords: "Wetaskiwin events, Wetaskiwin Alberta, Wetaskiwin community, Wetaskiwin businesses, Wetaskiwin jobs, Wetaskiwin marketplace, Wetaskiwin news, Alberta events, local events Wetaskiwin, community hub Wetaskiwin",
   authors: [{ name: "All Things Wetaskiwin" }],
   manifest: "/manifest.json",
   robots: {
@@ -24,6 +24,16 @@ export const metadata: Metadata = {
       'max-snippet': -1,
       'max-video-preview': -1,
     },
+  },
+  other: {
+    'geo.region': 'CA-AB',
+    'geo.placename': 'Wetaskiwin',
+    'geo.position': '52.9686;-113.3741',
+    'ICBM': '52.9686, -113.3741',
+    'DC.title': 'All Things Wetaskiwin - Community Hub',
+    'DC.description': 'Comprehensive community platform for Wetaskiwin, Alberta events, businesses, and local information',
+    'DC.language': 'en-CA',
+    'DC.coverage': 'Wetaskiwin, Alberta, Canada',
   },
   appleWebApp: {
     capable: true,
@@ -41,8 +51,8 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "All Things Wetaskiwin - Your Community Hub",
-    description: "Stay connected with your Wetaskiwin community through events, local businesses, job opportunities, and more.",
+    title: "All Things Wetaskiwin - Your Community Hub | Wetaskiwin, Alberta",
+    description: "Discover upcoming events, local businesses, jobs, and community news in Wetaskiwin, Alberta. Your comprehensive resource for staying connected with the Wetaskiwin community.",
     type: "website",
     locale: "en_CA",
     url: '/',
@@ -59,12 +69,15 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     site: '@AllThingsWet',
-    title: 'All Things Wetaskiwin - Your Community Hub',
-    description: 'Your comprehensive community hub for Wetaskiwin, Alberta.',
+    title: 'All Things Wetaskiwin - Your Community Hub | Wetaskiwin, Alberta',
+    description: 'Discover events, businesses, and community news in Wetaskiwin, Alberta.',
     images: ['/WaterTower.png']
   },
   alternates: {
-    canonical: '/'
+    canonical: '/',
+    languages: {
+      'en-CA': '/',
+    },
   },
   verification: {
     google: process.env.GOOGLE_SITE_VERIFICATION,
