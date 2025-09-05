@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
-import { Business, BusinessAd } from '@/models'
+import { Business, BusinessAd, User } from '@/models'
 import { AuthService } from '@/lib/auth'
 import type { ApiResponse } from '@/types'
 
@@ -40,11 +40,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Find and verify business ownership
-    const business = await Business.findOne({ 
-      id: businessId,
-      claimedByUserId: decoded.userId
-    })
+    // Get user information to check for super admin permissions
+    const user = await User.findOne({ id: decoded.userId })
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    // Find business - allow super admin to access any business
+    let business
+    if (user.role === 'super_admin') {
+      // Super admin can upload logos to any business
+      business = await Business.findOne({ id: businessId })
+    } else {
+      // Regular users can only access businesses they own
+      business = await Business.findOne({ 
+        id: businessId,
+        claimedByUserId: decoded.userId
+      })
+    }
 
     if (!business) {
       return NextResponse.json(
@@ -53,9 +69,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if business has platinum tier (logo only available for platinum)
+    // Check if business has platinum tier (logo only available for platinum, skip check for super admin)
     const tier = business.subscriptionTier || 'free'
-    if (tier !== 'platinum') {
+    if (tier !== 'platinum' && user.role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Logo upload requires platinum tier' },
         { status: 403 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
-import { Business, BusinessAd } from '@/models'
+import { Business, BusinessAd, User } from '@/models'
 import { AuthService } from '@/lib/auth'
 import type { ApiResponse } from '@/types'
 
@@ -51,11 +51,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Find and verify business ownership
-    const business = await Business.findOne({ 
-      id: businessId,
-      claimedByUserId: decoded.userId
-    })
+    // Get user information to check for super admin permissions
+    const user = await User.findOne({ id: decoded.userId })
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    // Find business - allow super admin to access any business
+    let business
+    if (user.role === 'super_admin') {
+      // Super admin can upload photos to any business
+      business = await Business.findOne({ id: businessId })
+    } else {
+      // Regular users can only access businesses they own
+      business = await Business.findOne({ 
+        id: businessId,
+        claimedByUserId: decoded.userId
+      })
+    }
 
     if (!business) {
       return NextResponse.json(
@@ -64,17 +80,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if business has eligible tier
+    // Check if business has eligible tier (skip check for super admin)
     const tier = business.subscriptionTier || 'free'
-    if (tier === 'free') {
+    if (tier === 'free' && user.role !== 'super_admin') {
       return NextResponse.json(
         { success: false, error: 'Photo upload requires silver tier or higher' },
         { status: 403 }
       )
     }
 
-    // Validate photo size
-    const maxSize = PHOTO_SIZE_LIMITS[tier as keyof typeof PHOTO_SIZE_LIMITS]
+    // Validate photo size (use platinum limits for super admin)
+    const effectiveTier = user.role === 'super_admin' ? 'platinum' : tier
+    const maxSize = PHOTO_SIZE_LIMITS[effectiveTier as keyof typeof PHOTO_SIZE_LIMITS]
     if (photo.size > maxSize) {
       return NextResponse.json(
         { 
@@ -111,16 +128,16 @@ export async function POST(request: NextRequest) {
       }
     )
 
-    // Create or update business ad
-    const adDimensions = AD_DIMENSIONS[tier as keyof typeof AD_DIMENSIONS]
-    const adId = `ad_${businessId}_${tier}`
+    // Create or update business ad (use effective tier for super admin)
+    const adDimensions = AD_DIMENSIONS[effectiveTier as keyof typeof AD_DIMENSIONS]
+    const adId = `ad_${businessId}_${effectiveTier}`
     
     await BusinessAd.findOneAndUpdate(
-      { businessId, tier },
+      { businessId, tier: effectiveTier },
       {
         id: adId,
         businessId,
-        tier,
+        tier: effectiveTier,
         photo: photoUrl,
         businessName: business.name,
         adSize: adDimensions,
@@ -186,11 +203,27 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    // Find and verify business ownership
-    const business = await Business.findOne({ 
-      id: businessId,
-      claimedByUserId: decoded.userId
-    })
+    // Get user information to check for super admin permissions
+    const user = await User.findOne({ id: decoded.userId })
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    // Find business - allow super admin to access any business
+    let business
+    if (user.role === 'super_admin') {
+      // Super admin can delete photos from any business
+      business = await Business.findOne({ id: businessId })
+    } else {
+      // Regular users can only access businesses they own
+      business = await Business.findOne({ 
+        id: businessId,
+        claimedByUserId: decoded.userId
+      })
+    }
 
     if (!business) {
       return NextResponse.json(
