@@ -1270,7 +1270,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                 File Access Permission
               </h3>
               <p className="text-gray-600 mb-6">
-                This app would like to access your device's photo gallery to upload{' '}
+                This app would like to access your device&apos;s photo gallery to upload{' '}
                 {pendingUploadType === 'photo' ? 'business photos' : 'your business logo'}.
                 Would you like to allow access?
               </p>
