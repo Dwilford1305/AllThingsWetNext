@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "AllThingsWetNext Docs": {
+      "type": "sse",
+      "url": "https://gitmcp.io/Dwilford1305/AllThingsWetNext"
+    }
+  }
+}
