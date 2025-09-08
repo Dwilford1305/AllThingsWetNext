@@ -113,6 +113,21 @@ if (!hasAll) {
 		const { handleAuth, handleCallback } = await import('@auth0/nextjs-auth0');
 		const wrapped = handleAuth({
 			async callback(reqInner: NextApiRequest, resInner: NextApiResponse) {
+				// Early recovery: if no state cookie present, likely user navigated directly or cookie stripped.
+				try {
+					const cookieHeader = reqInner.headers.cookie || '';
+					const hasState = /auth0\.state|state=/i.test(cookieHeader);
+					// Prevent infinite loop with a one-time retry marker
+					const url = new URL(reqInner.url ?? '', `http://${reqInner.headers.host}`);
+					const retried = url.searchParams.get('stateRetry');
+					if (!hasState && !retried) {
+						url.searchParams.set('stateRetry', '1');
+						// Redirect through login to establish fresh state cookie
+						return resInner.redirect(302, `/api/auth/login?returnTo=${encodeURIComponent(url.pathname + url.search)}`);
+					}
+				} catch (e) {
+					console.warn('[Auth0] state pre-check failed (continuing):', e);
+				}
 				try {
 					await handleCallback(reqInner, resInner, {
 						// Using any for session to avoid tight coupling to Auth0's Session type; runtime shape still validated lightly
