@@ -114,9 +114,30 @@ if (!hasAll) {
 			if (host) {
 				const configured = process.env.AUTH0_BASE_URL || '';
 				const configuredHost = configured.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+				
+				// Enhanced logging for preview environments
+				if (process.env.VERCEL_ENV === 'preview') {
+					console.log('[Auth0] Preview environment debugging:');
+					console.log('[Auth0] - Host:', host);
+					console.log('[Auth0] - Original AUTH0_BASE_URL:', configured);
+					console.log('[Auth0] - Configured host:', configuredHost);
+					console.log('[Auth0] - VERCEL_URL:', process.env.VERCEL_URL);
+					console.log('[Auth0] - Host match check:', configuredHost === host);
+				}
+				
 				if (!configuredHost || configuredHost !== host) {
 					const proto = (req.headers['x-forwarded-proto'] as string) || (configured.startsWith('http://') ? 'http' : 'https');
 					const newBaseUrl = `${proto}://${host}`;
+					
+					// For preview environments, don't override if AUTH0_BASE_URL is explicitly set to production URL
+					// This prevents issues where AUTH0_BASE_URL is hardcoded to production in environment variables
+					if (process.env.VERCEL_ENV === 'preview' && configured && configured.includes('allthingswetaskiwin.ca')) {
+						console.log('[Auth0] WARNING: AUTH0_BASE_URL is set to production URL in preview environment');
+						console.log('[Auth0] This may cause callback URL mismatches. Consider removing AUTH0_BASE_URL from preview environment variables.');
+						console.log('[Auth0] Production URL:', configured);
+						console.log('[Auth0] Preview URL would be:', newBaseUrl);
+					}
+					
 					process.env.AUTH0_BASE_URL = newBaseUrl;
 					
 					// Log for preview environments to help with debugging
@@ -198,38 +219,45 @@ if (!hasAll) {
 					});
 				} catch (error) {
 					logStateCookieDiagnostics(reqInner, error);
-					console.error('Auth0 callback error:', error);
 					
-					// Enhanced error handling for preview environments
+					// Enhanced error logging to see actual Auth0 error
+					console.error('[Auth0] Detailed callback error:', {
+						message: error instanceof Error ? error.message : String(error),
+						stack: error instanceof Error ? error.stack : undefined,
+						environment: process.env.VERCEL_ENV,
+						baseUrl: process.env.AUTH0_BASE_URL,
+						host: reqInner.headers.host,
+						url: reqInner.url,
+						method: reqInner.method
+					});
+					
+					// More specific error handling based on actual Auth0 errors
 					if (error instanceof Error) {
 						let errorMessage = 'Authentication error occurred';
-						let errorDetails = '';
+						let errorDetails = error.message;
 						
+						// Check for specific Auth0 error patterns
 						if (/Missing state cookie/i.test(error.message)) {
 							errorMessage = 'Auth0 state cookie missing';
-							errorDetails = 'This often occurs when the Auth0 callback URL is not properly configured.';
+							errorDetails = 'Authentication state was lost. Please try logging in again.';
+						} else if (/Callback URL mismatch|redirect_uri|Invalid redirect URI/i.test(error.message)) {
+							errorMessage = 'Auth0 callback URL mismatch';
 							
+							// Only show configuration instructions if wildcards might not be configured
 							if (process.env.VERCEL_ENV === 'preview') {
 								const host = reqInner.headers.host;
 								const baseUrl = process.env.AUTH0_BASE_URL;
-								errorDetails += ` For preview deployments, ensure your Auth0 application includes:
-								1. Callback URL: ${baseUrl}/api/auth/callback
-								2. Or wildcard pattern: https://*.vercel.app/api/auth/callback
-								3. Logout URL: ${baseUrl}/api/auth/logout
-								4. Or wildcard pattern: https://*.vercel.app/api/auth/logout
-								Current host: ${host}`;
-							}
-						} else if (/redirect_uri/i.test(error.message) || /callback/i.test(error.message)) {
-							errorMessage = 'Auth0 callback URL mismatch';
-							errorDetails = 'The callback URL in your Auth0 application settings does not match the current domain.';
-							
-							if (process.env.VERCEL_ENV === 'preview') {
-								const host = reqInner.headers.host;
-								errorDetails = `Auth0 configuration required for preview deployments. 
+								
+								errorDetails = `Auth0 callback URL validation failed for preview deployment.
 
-IMMEDIATE ACTION REQUIRED:
-1. Go to Auth0 Dashboard → Applications → Your Dev Application → Settings
-2. Add these EXACT patterns to your Auth0 application:
+Current details:
+- Preview URL: https://${host}
+- Configured base URL: ${baseUrl}
+- Auth0 error: ${error.message}
+
+VERIFICATION STEPS:
+1. Check Auth0 Dashboard → Applications → Your Dev Application → Settings
+2. Verify these patterns are present and SAVED:
 
 Allowed Callback URLs:
 https://allthingswetaskiwin.ca/api/auth/callback,
@@ -246,13 +274,20 @@ https://allthingswetaskiwin.ca,
 https://*.vercel.app,
 http://localhost:3000
 
-3. Click Save Changes
-4. Wait 1-2 minutes for Auth0 to update
-5. Try logging in again
+3. If patterns are already configured, wait 2-3 minutes and try again
+4. Check Auth0 application type is set to "Single Page Application" or "Regular Web Application"
 
-Current preview URL: https://${host}
-This URL will be covered by the *.vercel.app wildcard pattern.`;
+If issue persists with correct configuration, this may be an Auth0 service issue.`;
+							} else {
+								errorDetails = `Callback URL mismatch: ${error.message}`;
 							}
+						} else if (/audience|scope|client_id/i.test(error.message)) {
+							errorMessage = 'Auth0 configuration error';
+							errorDetails = `Auth0 application configuration issue: ${error.message}`;
+						} else {
+							// Unknown error - provide the actual error message for debugging
+							errorMessage = 'Auth0 authentication failed';
+							errorDetails = `Unexpected Auth0 error: ${error.message}`;
 						}
 						
 						return resInner.status(400).json({ 
@@ -260,7 +295,8 @@ This URL will be covered by the *.vercel.app wildcard pattern.`;
 							error: errorMessage,
 							details: errorDetails,
 							environment: process.env.VERCEL_ENV || 'development',
-							baseUrl: process.env.AUTH0_BASE_URL
+							baseUrl: process.env.AUTH0_BASE_URL,
+							actualError: error.message // Include actual error for debugging
 						});
 					}
 					
