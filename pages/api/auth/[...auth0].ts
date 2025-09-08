@@ -70,7 +70,47 @@ if (!hasAll) {
 	};
 } else {
 	const modPromise = import('@auth0/nextjs-auth0');
+
+	function logStateCookieDiagnostics(req: NextApiRequest, err: unknown) {
+		if (!(err instanceof Error)) return;
+		if (!/Missing state cookie/i.test(err.message)) return;
+		try {
+			const host = req.headers.host;
+			// @ts-expect-error internal header access
+			const origin = req.headers.origin || req.headers.referer;
+			const base = process.env.AUTH0_BASE_URL;
+			const cookieHeader = req.headers.cookie || ''; // may be undefined
+			const hasSession = /appSession|auth0\./i.test(cookieHeader);
+			console.warn('[Auth0] Missing state cookie diagnostics', {
+				AUTH0_BASE_URL: base,
+				reqHost: host,
+				reqOrigin: origin,
+				cookieLength: cookieHeader.length,
+				hasSessionLikeCookie: hasSession,
+				cookiesPreview: cookieHeader.slice(0, 160),
+			});
+			if (base && host && !base.includes(host)) {
+				console.warn('[Auth0] Potential baseURL/Host mismatch. Ensure AUTH0_BASE_URL matches actual request origin exactly.');
+			}
+		} catch (e) {
+			console.warn('[Auth0] Failed to produce diagnostics for missing state cookie', e);
+		}
+	}
 	handler = async function auth0Handler(req: NextApiRequest, res: NextApiResponse) {
+		// Dynamic base URL correction: if configured base doesn't match request host (preview/local), adjust on-the-fly
+		try {
+			const host = req.headers.host;
+			if (host) {
+				const configured = process.env.AUTH0_BASE_URL || '';
+				const configuredHost = configured.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+				if (!configuredHost || configuredHost !== host) {
+					const proto = (req.headers['x-forwarded-proto'] as string) || (configured.startsWith('http://') ? 'http' : 'https');
+					process.env.AUTH0_BASE_URL = `${proto}://${host}`;
+				}
+			}
+		} catch (e) {
+			console.warn('[Auth0] baseURL dynamic override failed (continuing):', e);
+		}
 		const { handleAuth, handleCallback } = await modPromise;
 		const wrapped = handleAuth({
 			async callback(reqInner: NextApiRequest, resInner: NextApiResponse) {
@@ -118,7 +158,12 @@ if (!hasAll) {
 						},
 					});
 				} catch (error) {
+					logStateCookieDiagnostics(reqInner, error);
 					console.error('Auth0 callback error:', error);
+					// If state cookie missing, surface clearer client error
+					if (error instanceof Error && /Missing state cookie/i.test(error.message)) {
+						return resInner.status(400).json({ success: false, error: 'Auth0 state cookie missing; verify AUTH0_BASE_URL, callback URL, and cookie settings.' });
+					}
 					resInner.status(500).end('Authentication error');
 				}
 			},
