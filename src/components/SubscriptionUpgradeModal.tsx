@@ -252,6 +252,7 @@ export const SubscriptionUpgradeModal: React.FC<SubscriptionUpgradeModalProps> =
                     onSuccess={handlePaymentSuccess}
                     onError={handlePaymentError}
                     onCancel={() => setShowPayment(false)}
+                    mode={process.env.NODE_ENV === 'development' && process.env.PAYPAL_CLIENT_ID ? 'sandbox' : 'simulation'}
                   />
 
                   <div className="mt-4 text-center">
