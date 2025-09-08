@@ -69,7 +69,6 @@ if (!hasAll) {
 		});
 	};
 } else {
-	const modPromise = import('@auth0/nextjs-auth0');
 
 	function logStateCookieDiagnostics(req: NextApiRequest, err: unknown) {
 		if (!(err instanceof Error)) return;
@@ -110,7 +109,8 @@ if (!hasAll) {
 		} catch (e) {
 			console.warn('[Auth0] baseURL dynamic override failed (continuing):', e);
 		}
-		const { handleAuth, handleCallback } = await modPromise;
+		// Import AFTER potential AUTH0_BASE_URL override so SDK picks up adjusted value
+		const { handleAuth, handleCallback } = await import('@auth0/nextjs-auth0');
 		const wrapped = handleAuth({
 			async callback(reqInner: NextApiRequest, resInner: NextApiResponse) {
 				try {
