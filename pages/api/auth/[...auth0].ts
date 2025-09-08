@@ -76,8 +76,7 @@ if (!hasAll) {
 		if (!/Missing state cookie/i.test(err.message)) return;
 		try {
 			const host = req.headers.host;
-			// @ts-expect-error internal header access
-			const origin = req.headers.origin || req.headers.referer;
+			const origin = (req.headers as Record<string, unknown>).origin || (req.headers as Record<string, unknown>).referer;
 			const base = process.env.AUTH0_BASE_URL;
 			const cookieHeader = req.headers.cookie || ''; // may be undefined
 			const hasSession = /appSession|auth0\./i.test(cookieHeader);
