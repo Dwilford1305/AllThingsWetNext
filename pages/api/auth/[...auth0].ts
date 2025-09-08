@@ -281,6 +281,57 @@ If issue persists with correct configuration, this may be an Auth0 service issue
 							} else {
 								errorDetails = `Callback URL mismatch: ${error.message}`;
 							}
+						} else if (/access_denied.*Unauthorized/i.test(error.message)) {
+							errorMessage = 'Auth0 application access denied';
+							
+							if (process.env.VERCEL_ENV === 'preview') {
+								errorDetails = `Auth0 application rejected the authentication request.
+
+COMMON CAUSES & SOLUTIONS:
+
+1. **Application Type Configuration**
+   → Go to Auth0 Dashboard → Applications → Your Dev Application → Settings
+   → Ensure "Application Type" is set to "Regular Web Application"
+   → NOT "Single Page Application" or "Machine to Machine"
+
+2. **Grant Types**
+   → In Application Settings → Advanced Settings → Grant Types
+   → Ensure these are CHECKED:
+     ✓ Authorization Code
+     ✓ Refresh Token
+     ✓ Client Credentials (optional)
+
+3. **Token Endpoint Authentication Method**
+   → In Advanced Settings → OAuth
+   → Set to "POST" (recommended) or "Basic"
+
+4. **Application Login URI** (if required)
+   → In Application Settings → Application Login URI
+   → Set to: https://${reqInner.headers.host || 'your-domain'}/api/auth/login
+
+5. **User Assignment** (if enabled)
+   → Go to Auth0 Dashboard → Applications → Your Dev Application → Users
+   → Ensure your user is assigned to this application
+   → Or disable "Require user consent" in Advanced Settings
+
+6. **Application Status**
+   → Verify the application is not disabled
+   → Check application is in the correct Auth0 tenant/environment
+
+7. **Environment Variables**
+   → Verify AUTH0_CLIENT_ID and AUTH0_CLIENT_SECRET match your DEV application
+   → NOT your production application credentials
+
+Current configuration:
+- Auth0 Domain: ${process.env.AUTH0_ISSUER_BASE_URL}
+- Client ID: ${process.env.AUTH0_CLIENT_ID ? `${process.env.AUTH0_CLIENT_ID.substring(0, 8)}...` : 'MISSING'}
+- Environment: ${process.env.VERCEL_ENV}
+- Base URL: ${process.env.AUTH0_BASE_URL}
+
+Auth0 Error: ${error.message}`;
+							} else {
+								errorDetails = `Auth0 application access denied: ${error.message}`;
+							}
 						} else if (/audience|scope|client_id/i.test(error.message)) {
 							errorMessage = 'Auth0 configuration error';
 							errorDetails = `Auth0 application configuration issue: ${error.message}`;
