@@ -43,9 +43,22 @@ function deriveBaseURL(): string | undefined {
 	// Allow automatic fallback so local dev doesn't break if AUTH0_BASE_URL not explicitly set
 	const direct = process.env.AUTH0_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL;
 	if (direct) return direct.replace(/\/$/, '');
-	// Common Vercel env vars
-	const vercel = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined;
-	return vercel?.replace(/\/$/, '');
+	
+	// For Vercel deployments, handle different environments
+	if (process.env.VERCEL_URL) {
+		const vercelUrl = `https://${process.env.VERCEL_URL}`;
+		
+		// For preview deployments, use wildcard pattern for Auth0 config
+		// Note: Auth0 dashboard must include *.vercel.app in allowed callback URLs
+		if (process.env.VERCEL_ENV === 'preview') {
+			console.log('[Auth0] Preview deployment detected:', vercelUrl);
+			console.log('[Auth0] Ensure your Auth0 application includes "*.vercel.app" in allowed callback URLs');
+		}
+		
+		return vercelUrl.replace(/\/$/, '');
+	}
+	
+	return undefined;
 }
 
 // If base URL missing but others present, we try to synthesize one for dev
@@ -103,7 +116,19 @@ if (!hasAll) {
 				const configuredHost = configured.replace(/^https?:\/\//i, '').replace(/\/$/, '');
 				if (!configuredHost || configuredHost !== host) {
 					const proto = (req.headers['x-forwarded-proto'] as string) || (configured.startsWith('http://') ? 'http' : 'https');
-					process.env.AUTH0_BASE_URL = `${proto}://${host}`;
+					const newBaseUrl = `${proto}://${host}`;
+					process.env.AUTH0_BASE_URL = newBaseUrl;
+					
+					// Log for preview environments to help with debugging
+					if (process.env.VERCEL_ENV === 'preview') {
+						console.log('[Auth0] Preview environment detected - Dynamic base URL correction applied');
+						console.log('[Auth0] Original base URL:', configured);
+						console.log('[Auth0] New base URL:', newBaseUrl);
+						console.log('[Auth0] Host:', host);
+						console.log('[Auth0] IMPORTANT: Ensure your Auth0 dashboard includes the following in allowed callback URLs:');
+						console.log(`[Auth0] - ${newBaseUrl}/api/auth/callback`);
+						console.log(`[Auth0] - Or add wildcard pattern: https://*.vercel.app/api/auth/callback`);
+					}
 				}
 			}
 		} catch (e) {
@@ -174,10 +199,44 @@ if (!hasAll) {
 				} catch (error) {
 					logStateCookieDiagnostics(reqInner, error);
 					console.error('Auth0 callback error:', error);
-					// If state cookie missing, surface clearer client error
-					if (error instanceof Error && /Missing state cookie/i.test(error.message)) {
-						return resInner.status(400).json({ success: false, error: 'Auth0 state cookie missing; verify AUTH0_BASE_URL, callback URL, and cookie settings.' });
+					
+					// Enhanced error handling for preview environments
+					if (error instanceof Error) {
+						let errorMessage = 'Authentication error occurred';
+						let errorDetails = '';
+						
+						if (/Missing state cookie/i.test(error.message)) {
+							errorMessage = 'Auth0 state cookie missing';
+							errorDetails = 'This often occurs when the Auth0 callback URL is not properly configured.';
+							
+							if (process.env.VERCEL_ENV === 'preview') {
+								const host = reqInner.headers.host;
+								const baseUrl = process.env.AUTH0_BASE_URL;
+								errorDetails += ` For preview deployments, ensure your Auth0 application includes:
+								1. Callback URL: ${baseUrl}/api/auth/callback
+								2. Or wildcard pattern: https://*.vercel.app/api/auth/callback
+								3. Logout URL: ${baseUrl}/api/auth/logout
+								4. Or wildcard pattern: https://*.vercel.app/api/auth/logout
+								Current host: ${host}`;
+							}
+						} else if (/redirect_uri/i.test(error.message) || /callback/i.test(error.message)) {
+							errorMessage = 'Auth0 callback URL mismatch';
+							errorDetails = 'The callback URL in your Auth0 application settings does not match the current domain.';
+							
+							if (process.env.VERCEL_ENV === 'preview') {
+								errorDetails += ' For preview deployments, add wildcard patterns to your Auth0 application settings.';
+							}
+						}
+						
+						return resInner.status(400).json({ 
+							success: false, 
+							error: errorMessage,
+							details: errorDetails,
+							environment: process.env.VERCEL_ENV || 'development',
+							baseUrl: process.env.AUTH0_BASE_URL
+						});
 					}
+					
 					resInner.status(500).end('Authentication error');
 				}
 			},
