@@ -224,7 +224,34 @@ if (!hasAll) {
 							errorDetails = 'The callback URL in your Auth0 application settings does not match the current domain.';
 							
 							if (process.env.VERCEL_ENV === 'preview') {
-								errorDetails += ' For preview deployments, add wildcard patterns to your Auth0 application settings.';
+								const host = reqInner.headers.host;
+								errorDetails = `Auth0 configuration required for preview deployments. 
+
+IMMEDIATE ACTION REQUIRED:
+1. Go to Auth0 Dashboard → Applications → Your Dev Application → Settings
+2. Add these EXACT patterns to your Auth0 application:
+
+Allowed Callback URLs:
+https://allthingswetaskiwin.ca/api/auth/callback,
+https://*.vercel.app/api/auth/callback,
+http://localhost:3000/api/auth/callback
+
+Allowed Logout URLs:
+https://allthingswetaskiwin.ca/api/auth/logout,
+https://*.vercel.app/api/auth/logout,
+http://localhost:3000/api/auth/logout
+
+Allowed Web Origins:
+https://allthingswetaskiwin.ca,
+https://*.vercel.app,
+http://localhost:3000
+
+3. Click Save Changes
+4. Wait 1-2 minutes for Auth0 to update
+5. Try logging in again
+
+Current preview URL: https://${host}
+This URL will be covered by the *.vercel.app wildcard pattern.`;
 							}
 						}
 						
