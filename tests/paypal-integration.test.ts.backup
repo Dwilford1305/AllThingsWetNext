@@ -165,7 +165,6 @@ describe('PayPal Integration Logic', () => {
       expect(result.status).toBe('cancelled');
       expect(result.refundEligible).toBe(false); // end_of_period = no refund
     });
-  });
 
   describe('Subscription tier validation', () => {
     const marketplaceTiers = [
