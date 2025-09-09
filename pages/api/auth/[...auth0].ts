@@ -1,7 +1,12 @@
-import { handleAuth, handleCallback } from '@auth0/nextjs-auth0';
+import { handleAuth, handleCallback, Session } from '@auth0/nextjs-auth0';
+import { NextApiRequest, NextApiResponse } from 'next';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/auth';
 import { randomUUID } from 'crypto';
+import { initializeAuth0Environment } from '@/lib/auth0-config';
+
+// Initialize Auth0 environment variables before using the SDK
+initializeAuth0Environment();
 
 type Auth0User = {
 	sub?: string;
@@ -30,10 +35,10 @@ const defaultPreferences = {
 
 // Customize Auth0 callback to ensure a local User record exists after login/signup
 export default handleAuth({
-	async callback(req, res) {
+	async callback(req: NextApiRequest, res: NextApiResponse) {
 		try {
 			await handleCallback(req, res, {
-				afterCallback: async (_req, _res, session) => {
+				afterCallback: async (_req: NextApiRequest, _res: NextApiResponse, session: Session | null | undefined): Promise<Session | undefined> => {
 					try {
 						await connectDB();
 						const auth0User = session?.user as Auth0User | undefined;
@@ -71,7 +76,7 @@ export default handleAuth({
 						// Don't block login if provisioning fails; log on server
 						console.error('Auth0 afterCallback provisioning error:', e);
 					}
-					return session;
+					return session || undefined;
 				},
 			});
 		} catch (error) {

@@ -7,5 +7,6 @@ export function Providers({ children }: { children: ReactNode }) {
   const { UserProvider } = Auth0Client as unknown as {
     UserProvider: React.ComponentType<{ children: ReactNode }>
   }
+  
   return <UserProvider>{children}</UserProvider>
 }
