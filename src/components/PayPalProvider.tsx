@@ -20,20 +20,14 @@ export const PayPalProvider: React.FC<PayPalProviderProps> = ({ children }) => {
     return <>{children}</>;
   }
 
-  try {
-    // Get PayPal options from configuration
-    const paypalOptions = getPayPalOptions();
+  // Always get PayPal options - they now provide safe defaults if configuration fails
+  const paypalOptions = getPayPalOptions();
 
-    return (
-      <PayPalScriptProvider options={paypalOptions}>
-        {children}
-      </PayPalScriptProvider>
-    );
-  } catch (error) {
-    // If PayPal configuration fails, render children without PayPal
-    console.warn('PayPal configuration not available:', error);
-    return <>{children}</>;
-  }
+  return (
+    <PayPalScriptProvider options={paypalOptions}>
+      {children}
+    </PayPalScriptProvider>
+  );
 };
 
 export default PayPalProvider;

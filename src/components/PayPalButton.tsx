@@ -1,23 +1,23 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 import { Button } from '@/components/ui/Button';
-import { CreditCard, Loader2, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
-import { handlePayPalError } from '@/lib/paypal-config';
+import { Loader2, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { handlePayPalError, getPayPalConfig } from '@/lib/paypal-config';
 
 interface PayPalButtonProps {
   amount: number;
   currency?: string;
   description: string;
-  onSuccess: (paymentId: string, details?: any) => void;
+  onSuccess: (paymentId: string, details?: unknown) => void;
   onError: (error: string) => void;
   onCancel?: () => void;
   disabled?: boolean;
   className?: string;
 }
 
-type PaymentStatus = 'idle' | 'loading' | 'processing' | 'success' | 'error' | 'cancelled';
+type PaymentStatus = 'idle' | 'loading' | 'processing' | 'success' | 'error' | 'cancelled' | 'config-error';
 
 export const PayPalButton: React.FC<PayPalButtonProps> = ({
   amount,
@@ -31,10 +31,37 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
 }) => {
   const [status, setStatus] = useState<PaymentStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [paypalConfigValid, setPaypalConfigValid] = useState<boolean | null>(null);
   const [{ isPending, isRejected }] = usePayPalScriptReducer();
+
+  // Check PayPal configuration on component mount
+  useEffect(() => {
+    try {
+      const config = getPayPalConfig();
+      if (config.clientId === 'build-time-placeholder') {
+        setPaypalConfigValid(false);
+        setStatus('config-error');
+        setErrorMessage('PayPal integration is not configured. Please contact support for assistance.');
+      } else {
+        setPaypalConfigValid(true);
+      }
+    } catch (error) {
+      setPaypalConfigValid(false);
+      setStatus('config-error');
+      setErrorMessage(`PayPal configuration error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }, []);
 
   // Handle PayPal payment creation
   const createOrder = useCallback(async () => {
+    if (!paypalConfigValid) {
+      const message = 'PayPal is not properly configured';
+      setStatus('config-error');
+      setErrorMessage(message);
+      onError(message);
+      return;
+    }
+
     setStatus('processing');
     
     try {
@@ -69,10 +96,10 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
       onError(message);
       throw error;
     }
-  }, [amount, currency, description, onError]);
+  }, [amount, currency, description, onError, paypalConfigValid]);
 
   // Handle PayPal payment approval/capture
-  const onApprove = useCallback(async (data: any) => {
+  const onApprove = useCallback(async (data: { orderID: string }) => {
     setStatus('processing');
     
     try {
@@ -117,7 +144,7 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
   }, [onCancel]);
 
   // Handle PayPal payment errors
-  const onErrorHandler = useCallback((error: any) => {
+  const onErrorHandler = useCallback((error: unknown) => {
     console.error('PayPal payment error:', error);
     const message = handlePayPalError(error);
     setStatus('error');
@@ -127,9 +154,9 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
 
   // Reset payment state
   const resetPayment = useCallback(() => {
-    setStatus('idle');
-    setErrorMessage('');
-  }, []);
+    setStatus(paypalConfigValid ? 'idle' : 'config-error');
+    setErrorMessage(paypalConfigValid ? '' : 'PayPal configuration is required');
+  }, [paypalConfigValid]);
 
   // Show loading state while PayPal script is loading
   if (isPending) {
@@ -160,6 +187,23 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
     );
   }
 
+  // Show configuration error if PayPal is not properly configured
+  if (status === 'config-error' || paypalConfigValid === false) {
+    return (
+      <div className="space-y-3">
+        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-center text-yellow-700">
+            <AlertTriangle className="h-5 w-5 mr-2" />
+            <strong>PayPal Configuration Required</strong>
+          </div>
+          <p className="text-sm text-yellow-600 mt-1">
+            PayPal payment processing is not currently available. Please contact support for assistance with subscription upgrades.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       {/* PayPal Buttons */}
@@ -172,7 +216,7 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
             label: 'pay',
             height: 40
           }}
-          disabled={disabled || status === 'processing' || status === 'success'}
+          disabled={disabled || status === 'processing' || status === 'success' || !paypalConfigValid}
           createOrder={createOrder}
           onApprove={onApprove}
           onCancel={onCancelHandler}
@@ -248,13 +292,15 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
       )}
 
       {/* PayPal Security Notice */}
-      <div className="text-xs text-gray-500 text-center space-y-1">
-        <p>💳 Secure payment powered by PayPal</p>
-        <p>🔒 Your payment information is encrypted and secure</p>
-        <p className="text-gray-400">
-          Amount: ${amount.toFixed(2)} {currency} • {description}
-        </p>
-      </div>
+      {paypalConfigValid && (
+        <div className="text-xs text-gray-500 text-center space-y-1">
+          <p>💳 Secure payment powered by PayPal</p>
+          <p>🔒 Your payment information is encrypted and secure</p>
+          <p className="text-gray-400">
+            Amount: ${amount.toFixed(2)} {currency} • {description}
+          </p>
+        </div>
+      )}
     </div>
   );
 };

@@ -67,19 +67,17 @@ export const getPayPalOptions = () => {
     };
   } catch (error) {
     // During build time or when PayPal is not configured, provide safe defaults
-    if (typeof window === 'undefined') {
-      return {
-        clientId: 'build-time-placeholder',
-        currency: 'CAD',
-        intent: 'capture' as const,
-        environment: 'sandbox' as const,
-        components: 'buttons,messages',
-        disableFunding: ['credit', 'paylater'],
-        debug: false
-      };
-    }
-    // Re-throw runtime errors
-    throw error;
+    // This ensures PayPalScriptProvider can always be initialized
+    console.warn('PayPal configuration not available:', error);
+    return {
+      clientId: 'build-time-placeholder',
+      currency: 'CAD',
+      intent: 'capture' as const,
+      environment: 'sandbox' as const,
+      components: 'buttons,messages',
+      disableFunding: ['credit', 'paylater'],
+      debug: false
+    };
   }
 };
 
@@ -145,26 +143,26 @@ export interface PayPalError {
   }>;
 }
 
-export const handlePayPalError = (error: any): string => {
+export const handlePayPalError = (error: unknown): string => {
   console.error('PayPal Error:', error);
 
   // Handle PayPal API errors
-  if (error.details && Array.isArray(error.details)) {
-    return error.details.map((detail: any) => detail.description).join('. ');
+  if (error && typeof error === 'object' && 'details' in error && Array.isArray((error as { details: unknown }).details)) {
+    return ((error as { details: Array<{ description: string }> }).details).map((detail: { description: string }) => detail.description).join('. ');
   }
 
   // Handle standard PayPal errors
-  if (error.message) {
-    return error.message;
+  if (error && typeof error === 'object' && 'message' in error && typeof (error as { message: unknown }).message === 'string') {
+    return (error as { message: string }).message;
   }
 
   // Handle network errors
-  if (error.name === 'NetworkError') {
+  if (error && typeof error === 'object' && 'name' in error && (error as { name: unknown }).name === 'NetworkError') {
     return 'Network connection failed. Please check your internet connection and try again.';
   }
 
   // Handle timeout errors
-  if (error.name === 'TimeoutError') {
+  if (error && typeof error === 'object' && 'name' in error && (error as { name: unknown }).name === 'TimeoutError') {
     return 'Payment processing timed out. Please try again.';
   }
 
