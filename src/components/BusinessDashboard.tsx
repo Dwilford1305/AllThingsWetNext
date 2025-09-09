@@ -5,6 +5,7 @@ import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 import SubscriptionUpgradeModal from './SubscriptionUpgradeModal';
+import { authenticatedFetch } from '@/lib/auth-fetch';
 import { 
   Building, 
   Star, 
@@ -210,7 +211,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
   const handleUpgradeSuccess = async (tier: string, paymentId: string) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/businesses/subscription', {
+      const response = await authenticatedFetch('/api/businesses/subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -260,7 +261,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
 
       const basePrice = tierPricing[selectedTier as keyof typeof tierPricing]?.annual || 0;
 
-      const response = await fetch('/api/businesses/validate-offer-code', {
+      const response = await authenticatedFetch('/api/businesses/validate-offer-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -294,7 +295,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
   const confirmUpgrade = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/businesses/subscription', {
+      const response = await authenticatedFetch('/api/businesses/subscription', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
