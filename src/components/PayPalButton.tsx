@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 import { Button } from '@/components/ui/Button';
 import { Loader2, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
-import { handlePayPalError, getPayPalConfig } from '@/lib/paypal-config';
+import { handlePayPalError } from '@/lib/paypal-config';
 
 interface PayPalButtonProps {
   amount: number;
@@ -36,20 +36,26 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
 
   // Check PayPal configuration on component mount
   useEffect(() => {
-    try {
-      const config = getPayPalConfig();
-      if (config.clientId === 'build-time-placeholder') {
+    const checkPayPalConfig = async () => {
+      try {
+        const response = await fetch('/api/paypal/config');
+        const data = await response.json();
+        
+        if (data.success && data.config && data.config.configured && data.config.clientId) {
+          setPaypalConfigValid(true);
+        } else {
+          setPaypalConfigValid(false);
+          setStatus('config-error');
+          setErrorMessage('PayPal integration is not configured. Please contact support for assistance.');
+        }
+      } catch (error) {
         setPaypalConfigValid(false);
         setStatus('config-error');
-        setErrorMessage('PayPal integration is not configured. Please contact support for assistance.');
-      } else {
-        setPaypalConfigValid(true);
+        setErrorMessage(`PayPal configuration error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
-    } catch (error) {
-      setPaypalConfigValid(false);
-      setStatus('config-error');
-      setErrorMessage(`PayPal configuration error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
+    };
+
+    checkPayPalConfig();
   }, []);
 
   // Handle PayPal payment creation
