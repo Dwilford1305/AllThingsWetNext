@@ -142,7 +142,7 @@ const MarketplaceSubscription = () => {
 
   const fetchSubscriptionInfo = async () => {
     try {
-      const response = await fetch('/api/marketplace/subscription');
+      const response = await authenticatedFetch('/api/marketplace/subscription');
       const data = await response.json();
       
       // Handle successful response
