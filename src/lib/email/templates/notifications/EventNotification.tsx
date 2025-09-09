@@ -95,12 +95,12 @@ export const EventNotification = ({
       </Section>
 
       <Text style={paragraph}>
-        <strong>Event organizer?</strong> List your event on AllThingsWet to reach more community members and boost attendance.
+        <strong>Event organizer?</strong> List your event on AllThingsWetaskiwinq to reach more community members and boost attendance.
       </Text>
 
       <Text style={paragraph}>
         Stay connected,<br />
-        The AllThingsWet Team
+        The AllThingsWetaskiwinq Team
       </Text>
 
       <Text style={unsubscribeNote}>

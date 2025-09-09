@@ -68,7 +68,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    site: '@AllThingsWet',
+    site: '@AllThingsWetaskiwinq',
     title: 'All Things Wetaskiwin - Your Community Hub | Wetaskiwin, Alberta',
     description: 'Discover events, businesses, and community news in Wetaskiwin, Alberta.',
     images: ['/WaterTower.png']

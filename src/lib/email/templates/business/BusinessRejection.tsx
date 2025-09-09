@@ -73,12 +73,12 @@ export const BusinessRejection = ({
       </Text>
 
       <Text style={paragraph}>
-        We appreciate your patience and look forward to featuring your business in the AllThingsWet directory soon.
+        We appreciate your patience and look forward to featuring your business in the AllThingsWetaskiwinq directory soon.
       </Text>
 
       <Text style={paragraph}>
         Best regards,<br />
-        The AllThingsWet Review Team
+        The AllThingsWetaskiwinq Review Team
       </Text>
 
       <Text style={footnote}>

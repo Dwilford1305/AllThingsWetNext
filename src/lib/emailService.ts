@@ -81,12 +81,12 @@ export class EmailService {
         </p>
         
         <p style="color: #666; font-size: 12px; margin-top: 30px;">
-          This is an automated notification from AllThingsWet Business Directory.
+          This is an automated notification from AllThingsWetaskiwinq Business Directory.
         </p>
       `
 
       const info = await this.transporter.sendMail({
-        from: `"AllThingsWet Directory" <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
+        from: `"AllThingsWetaskiwinq Directory" <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
         to: adminEmail,
         subject: `New Business Listing Request: ${data.businessName}`,
         html: emailContent,
@@ -154,16 +154,16 @@ export class EmailService {
         
         <p>
           Best regards,<br>
-          The AllThingsWet Team
+          The AllThingsWetaskiwinq Team
         </p>
         
         <p style="color: #666; font-size: 12px; margin-top: 30px;">
-          This is an automated confirmation from AllThingsWet Business Directory.
+          This is an automated confirmation from AllThingsWetaskiwinq Business Directory.
         </p>
       `
 
       const info = await this.transporter.sendMail({
-        from: `"AllThingsWet Directory" <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
+        from: `"AllThingsWetaskiwinq Directory" <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
         to: userEmail,
         subject: `Business Listing Request Received - ${businessName}`,
         html: emailContent,
@@ -210,20 +210,20 @@ export class EmailService {
         
         <p>
           Best regards,<br>
-          The AllThingsWet Team
+          The AllThingsWetaskiwinq Team
         </p>
         
         <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e5e5;">
         <p style="color: #666; font-size: 12px;">
           Business ID: ${businessId}<br>
-          This is an automated notification from AllThingsWet Business Directory.
+          This is an automated notification from AllThingsWetaskiwinq Business Directory.
         </p>
       `
 
       const info = await this.transporter.sendMail({
-        from: `"AllThingsWet Directory" <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
+        from: `"AllThingsWetaskiwinq Directory" <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
         to: userEmail,
-        subject: `🎉 ${businessName} is Now Live on AllThingsWet!`,
+        subject: `🎉 ${businessName} is Now Live on AllThingsWetaskiwinq!`,
         html: emailContent,
       })
 
@@ -256,15 +256,15 @@ export class EmailService {
       const verifyUrl = `${siteUrl}/verify-email?token=${encodeURIComponent(token)}`
       const html = `
         <h2>Verify Your Email Address</h2>
-        <p>Thanks for creating an account on AllThingsWet. Please confirm this email address to activate full functionality.</p>
+        <p>Thanks for creating an account on AllThingsWetaskiwinq. Please confirm this email address to activate full functionality.</p>
         <p><a href="${verifyUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600">Verify Email</a></p>
         <p>If the button above does not work, copy and paste this URL into your browser:</p>
         <p style="word-break:break-all;font-size:12px;color:#555">${verifyUrl}</p>
         <p>This link will expire in 60 minutes. If you did not request this, you can ignore this email.</p>
-        <p style="color:#666;font-size:12px;margin-top:32px">© ${new Date().getFullYear()} AllThingsWet</p>
+        <p style="color:#666;font-size:12px;margin-top:32px">© ${new Date().getFullYear()} AllThingsWetaskiwinq</p>
       `
       const info = await this.transporter.sendMail({
-        from: `AllThingsWet <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
+        from: `AllThingsWetaskiwinq <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
         to: userEmail,
         subject: 'Verify your email address',
         html
@@ -299,14 +299,14 @@ export class EmailService {
       const resetUrl = `${siteUrl}/reset-password?token=${encodeURIComponent(token)}`
       const html = `
         <h2>Reset Your Password</h2>
-        <p>We received a request to reset the password for your AllThingsWet account.</p>
+        <p>We received a request to reset the password for your AllThingsWetaskiwinq account.</p>
         <p><a href="${resetUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600">Reset Password</a></p>
         <p>If you did not request this, you can safely ignore this email. This link will expire in 60 minutes.</p>
         <p style="word-break:break-all;font-size:12px;color:#555">${resetUrl}</p>
-        <p style="color:#666;font-size:12px;margin-top:32px">© ${new Date().getFullYear()} AllThingsWet</p>
+        <p style="color:#666;font-size:12px;margin-top:32px">© ${new Date().getFullYear()} AllThingsWetaskiwinq</p>
       `
       const info = await this.transporter.sendMail({
-        from: `AllThingsWet <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
+        from: `AllThingsWetaskiwinq <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
         to: userEmail,
         subject: 'Password reset request',
         html
