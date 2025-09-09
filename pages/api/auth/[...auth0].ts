@@ -228,7 +228,9 @@ if (!hasAll) {
 						baseUrl: process.env.AUTH0_BASE_URL,
 						host: reqInner.headers.host,
 						url: reqInner.url,
-						method: reqInner.method
+						method: reqInner.method,
+						errorType: typeof error,
+						errorName: error instanceof Error ? error.name : 'Unknown'
 					});
 					
 					// More specific error handling based on actual Auth0 errors
@@ -236,52 +238,22 @@ if (!hasAll) {
 						let errorMessage = 'Authentication error occurred';
 						let errorDetails = error.message;
 						
-						// Check for specific Auth0 error patterns
+						// Log the raw error for debugging
+						console.log('[Auth0] Raw error analysis:', {
+							fullMessage: error.message,
+							stack: error.stack,
+							hasCallbackMismatch: /Callback URL|redirect_uri|Invalid redirect/i.test(error.message),
+							hasAccessDenied: /access_denied/i.test(error.message),
+							hasUnauthorized: /Unauthorized/i.test(error.message),
+							hasStateCookie: /Missing state cookie/i.test(error.message)
+						});
+						
+						// Check for specific Auth0 error patterns - be more specific about error matching
 						if (/Missing state cookie/i.test(error.message)) {
 							errorMessage = 'Auth0 state cookie missing';
 							errorDetails = 'Authentication state was lost. Please try logging in again.';
-						} else if (/Callback URL mismatch|redirect_uri|Invalid redirect URI/i.test(error.message)) {
-							errorMessage = 'Auth0 callback URL mismatch';
-							
-							// Only show configuration instructions if wildcards might not be configured
-							if (process.env.VERCEL_ENV === 'preview') {
-								const host = reqInner.headers.host;
-								const baseUrl = process.env.AUTH0_BASE_URL;
-								
-								errorDetails = `Auth0 callback URL validation failed for preview deployment.
-
-Current details:
-- Preview URL: https://${host}
-- Configured base URL: ${baseUrl}
-- Auth0 error: ${error.message}
-
-VERIFICATION STEPS:
-1. Check Auth0 Dashboard → Applications → Your Dev Application → Settings
-2. Verify these patterns are present and SAVED:
-
-Allowed Callback URLs:
-https://allthingswetaskiwin.ca/api/auth/callback,
-https://*.vercel.app/api/auth/callback,
-http://localhost:3000/api/auth/callback
-
-Allowed Logout URLs:
-https://allthingswetaskiwin.ca/api/auth/logout,
-https://*.vercel.app/api/auth/logout,
-http://localhost:3000/api/auth/logout
-
-Allowed Web Origins:
-https://allthingswetaskiwin.ca,
-https://*.vercel.app,
-http://localhost:3000
-
-3. If patterns are already configured, wait 2-3 minutes and try again
-4. Check Auth0 application type is set to "Single Page Application" or "Regular Web Application"
-
-If issue persists with correct configuration, this may be an Auth0 service issue.`;
-							} else {
-								errorDetails = `Callback URL mismatch: ${error.message}`;
-							}
-						} else if (/access_denied.*Unauthorized/i.test(error.message)) {
+						} else if (/access_denied/i.test(error.message)) {
+							// Handle access_denied errors first (more specific than callback URL issues)
 							errorMessage = 'Auth0 application access denied';
 							
 							if (process.env.VERCEL_ENV === 'preview') {
@@ -331,6 +303,77 @@ Current configuration:
 Auth0 Error: ${error.message}`;
 							} else {
 								errorDetails = `Auth0 application access denied: ${error.message}`;
+							}
+						} else if (/Callback URL|redirect_uri|Invalid redirect/i.test(error.message)) {
+							errorMessage = 'Auth0 callback URL mismatch';
+							
+							if (process.env.VERCEL_ENV === 'preview') {
+								const host = reqInner.headers.host;
+								const baseUrl = process.env.AUTH0_BASE_URL;
+								
+								// Check if wildcards are likely configured by looking for specific Auth0 error messages
+								const hasWildcardError = /wildcard|pattern|\*\.vercel\.app/i.test(error.message);
+								
+								if (hasWildcardError) {
+									errorDetails = `Auth0 wildcard pattern issue detected.
+
+Your Auth0 application may have wildcard patterns configured, but Auth0 is still rejecting the callback URL.
+
+ADVANCED TROUBLESHOOTING:
+1. **Verify wildcard syntax** - Ensure wildcards use EXACTLY this format:
+   - https://*.vercel.app/api/auth/callback (with asterisk)
+   - NOT https://www.vercel.app/api/auth/callback
+   - NOT https://{subdomain}.vercel.app/api/auth/callback
+
+2. **Check Auth0 Application Type**
+   → Must be "Regular Web Application" for wildcards to work
+   → "Single Page Application" may not support wildcards
+
+3. **Auth0 Cache Issue**
+   → Changes can take up to 5 minutes to propagate
+   → Try waiting longer or contact Auth0 support
+
+4. **Auth0 Plan Limitations**
+   → Some Auth0 plans may have wildcard restrictions
+   → Check your Auth0 plan supports wildcard callback URLs
+
+Current error: ${error.message}
+Preview URL: https://${host}
+Base URL: ${baseUrl}`;
+								} else {
+									errorDetails = `Auth0 callback URL validation failed for preview deployment.
+
+Current details:
+- Preview URL: https://${host}
+- Configured base URL: ${baseUrl}
+- Raw Auth0 error: ${error.message}
+
+VERIFICATION STEPS:
+1. Check Auth0 Dashboard → Applications → Your Dev Application → Settings
+2. Verify these patterns are present and SAVED:
+
+Allowed Callback URLs:
+https://allthingswetaskiwin.ca/api/auth/callback,
+https://*.vercel.app/api/auth/callback,
+http://localhost:3000/api/auth/callback
+
+Allowed Logout URLs:
+https://allthingswetaskiwin.ca/api/auth/logout,
+https://*.vercel.app/api/auth/logout,
+http://localhost:3000/api/auth/logout
+
+Allowed Web Origins:
+https://allthingswetaskiwin.ca,
+https://*.vercel.app,
+http://localhost:3000
+
+3. Click "Save Changes" and wait 2-3 minutes
+4. Ensure application type is "Regular Web Application"
+
+If patterns are configured correctly and issue persists, this may indicate an Auth0 service issue.`;
+								}
+							} else {
+								errorDetails = `Callback URL mismatch: ${error.message}`;
 							}
 						} else if (/audience|scope|client_id/i.test(error.message)) {
 							errorMessage = 'Auth0 configuration error';
