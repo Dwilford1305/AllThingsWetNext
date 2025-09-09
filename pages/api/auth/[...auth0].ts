@@ -62,20 +62,23 @@ function deriveBaseURL(): string | undefined {
 }
 
 // If base URL missing but others present, we try to synthesize one for dev
+let derivedBaseUrl: string | undefined;
 if (!process.env.AUTH0_BASE_URL) {
-	const synthesized = deriveBaseURL();
-	if (synthesized) {
-		process.env.AUTH0_BASE_URL = synthesized; // Mutate only at runtime, not build-time constant usage
+	derivedBaseUrl = deriveBaseURL();
+	if (derivedBaseUrl) {
+		process.env.AUTH0_BASE_URL = derivedBaseUrl; // Mutate only at runtime, not build-time constant usage
 	}
 }
 
-const hasAll = requiredVars.every((k) => !!process.env[k]) && !!process.env.AUTH0_BASE_URL;
+// Check if all required vars are present, considering derived base URL
+const hasBaseUrl = !!process.env.AUTH0_BASE_URL || !!derivedBaseUrl;
+const hasAll = requiredVars.every((k) => !!process.env[k]) && hasBaseUrl;
 
 let handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void> | void;
 
 if (!hasAll) {
 	const allMissing = requiredVars.filter((k) => !process.env[k]);
-	if (!process.env.AUTH0_BASE_URL) {
+	if (!hasBaseUrl) {
 		allMissing.push('AUTH0_BASE_URL (could not be auto-derived)');
 	}
 	
@@ -85,7 +88,8 @@ if (!hasAll) {
 			hasVercelUrl: !!process.env.VERCEL_URL,
 			vercelEnv: process.env.VERCEL_ENV,
 			derivedBaseUrl: deriveBaseURL(),
-			currentBaseUrl: process.env.AUTH0_BASE_URL
+			currentBaseUrl: process.env.AUTH0_BASE_URL,
+			hasBaseUrl
 		});
 		
 		res.status(503).json({

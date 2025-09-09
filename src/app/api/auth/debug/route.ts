@@ -106,6 +106,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Test Auth0 Management API access (basic connectivity test)
+    // NOTE: This tests client credentials for Management API access, which is optional for basic authentication
     let managementApiTest = null;
     if (auth0Config.hasIssuerBaseUrl && auth0Config.hasClientId && auth0Config.hasClientSecret) {
       try {
@@ -123,7 +124,11 @@ export async function GET(request: NextRequest) {
         });
 
         if (tokenResponse.ok) {
-          managementApiTest = { status: 'success', message: 'Client credentials are valid' };
+          managementApiTest = { 
+            status: 'success', 
+            message: 'Client credentials are valid for Management API access',
+            note: 'This indicates your application is configured as Regular Web Application with Client Credentials grant'
+          };
         } else {
           const errorData = await tokenResponse.text();
           let errorJson;
@@ -140,26 +145,28 @@ export async function GET(request: NextRequest) {
             errorCode: errorJson.error,
             errorDescription: errorJson.error_description,
             httpStatus: tokenResponse.status,
+            note: 'This test is for Management API access only. Basic login may still work if Application Type and Grant Types are configured correctly.',
             // Enhanced diagnostics for access_denied
             diagnostics: errorJson.error === 'access_denied' ? {
               likelyCauses: [
                 'Application Type is set to "Single Page Application" instead of "Regular Web Application"',
                 'Client Credentials grant type is not enabled in Auth0 application settings',
-                'Application does not have permission to access Auth0 Management API',
+                'Application does not have permission to access Auth0 Management API (this is optional for basic login)',
                 'Client ID or Client Secret is incorrect',
                 'Application is disabled or in wrong Auth0 tenant'
               ],
               requiredSteps: [
                 '1. Go to Auth0 Dashboard → Applications → Your Dev Application',
                 '2. Settings tab → Application Type → Set to "Regular Web Application"',
-                '3. Advanced Settings → Grant Types → Check "Client Credentials"',
-                '4. Advanced Settings → Grant Types → Check "Authorization Code"', 
-                '5. Advanced Settings → Grant Types → Check "Refresh Token"',
+                '3. Advanced Settings → Grant Types → Check "Authorization Code"', 
+                '4. Advanced Settings → Grant Types → Check "Refresh Token"',
+                '5. Optional: Advanced Settings → Grant Types → Check "Client Credentials" (for Management API access)',
                 '6. Save Changes and wait 2 minutes',
                 '7. Verify Client ID/Secret match exactly (no extra spaces)',
                 '8. Check application is enabled and in correct tenant'
               ],
-              criticalCheck: 'Most common cause: Application Type = "Single Page Application" should be "Regular Web Application"'
+              criticalCheck: 'Most common cause: Application Type = "Single Page Application" should be "Regular Web Application"',
+              loginMayStillWork: 'Even if this test fails, basic Auth0 login should work if Application Type is "Regular Web Application" and Authorization Code grant is enabled.'
             } : null
           };
         }
