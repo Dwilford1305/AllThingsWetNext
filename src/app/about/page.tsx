@@ -28,10 +28,10 @@ export const metadata: Metadata = {
   }
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
   const filePath = path.join(process.cwd(), 'public', 'about.md');
   const markdown = fs.readFileSync(filePath, 'utf-8');
-  const html = marked(markdown);
+  const html = await marked(markdown);
 
   return (
     <FoldableLayout>
