@@ -2,10 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import { marked } from 'marked';
 
-export default function TermsOfServicePage() {
+export default async function TermsOfServicePage() {
   const filePath = path.join(process.cwd(), 'public', 'terms-of-service.md');
   const markdown = fs.readFileSync(filePath, 'utf-8');
-  const html = marked(markdown);
+  const html = await marked(markdown);
 
   return (
     <main className="prose mx-auto p-6">
