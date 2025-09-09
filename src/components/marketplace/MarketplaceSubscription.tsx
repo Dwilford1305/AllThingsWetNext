@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import SubscriptionUpgradeModal from '@/components/SubscriptionUpgradeModal';
+import { authenticatedFetch } from '@/lib/auth-fetch';
 import { 
   Crown, 
   Star, 
@@ -141,7 +142,7 @@ const MarketplaceSubscription = () => {
 
   const fetchSubscriptionInfo = async () => {
     try {
-      const response = await fetch('/api/marketplace/subscription');
+      const response = await authenticatedFetch('/api/marketplace/subscription');
       const data = await response.json();
       
       // Handle successful response
@@ -170,7 +171,7 @@ const MarketplaceSubscription = () => {
     setUpgrading(tierId);
     try {
       const duration = billingPeriod === 'annual' ? 12 : 1;
-      const response = await fetch('/api/marketplace/subscription', {
+      const response = await authenticatedFetch('/api/marketplace/subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
