@@ -52,9 +52,44 @@ function buildFallbackProfile(auth0User: Auth0User) {
 
 export async function GET(request: NextRequest) {
   try {
-  const res = new NextResponse()
-  const session = await getSession(request, res)
+    console.log('[Auth0 ME] GET request started:', {
+      url: request.url,
+      host: request.headers.get('host'),
+      userAgent: request.headers.get('user-agent')?.substring(0, 50),
+      environment: process.env.VERCEL_ENV,
+      nodeEnv: process.env.NODE_ENV
+    });
+
+    const res = new NextResponse()
+    
+    // Enhanced session handling with proper error logging
+    let session;
+    try {
+      session = await getSession(request, res);
+      console.log('[Auth0 ME] Session retrieved:', {
+        hasSession: !!session,
+        hasUser: !!session?.user,
+        userEmail: session?.user?.email || 'none'
+      });
+    } catch (sessionError) {
+      console.error('[Auth0 ME] Session retrieval error:', {
+        error: sessionError instanceof Error ? sessionError.message : String(sessionError),
+        stack: sessionError instanceof Error ? sessionError.stack : undefined,
+        requestUrl: request.url,
+        host: request.headers.get('host')
+      });
+      
+      // If session retrieval fails, it's likely an Auth0 configuration issue
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Auth0 session error',
+        details: 'Failed to retrieve Auth0 session. This may indicate an Auth0 configuration issue.',
+        sessionError: sessionError instanceof Error ? sessionError.message : String(sessionError)
+      }, { status: 500 });
+    }
+    
     if (!session?.user) {
+      console.log('[Auth0 ME] No session or user found, returning unauthorized');
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
     await connectDB()
@@ -92,9 +127,35 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-  const res = new NextResponse()
-  const session = await getSession(request, res)
+    console.log('[Auth0 ME] PUT request started');
+    
+    const res = new NextResponse()
+    
+    // Enhanced session handling with proper error logging
+    let session;
+    try {
+      session = await getSession(request, res);
+      console.log('[Auth0 ME] Session retrieved for PUT:', {
+        hasSession: !!session,
+        hasUser: !!session?.user,
+        userEmail: session?.user?.email || 'none'
+      });
+    } catch (sessionError) {
+      console.error('[Auth0 ME] Session retrieval error in PUT:', {
+        error: sessionError instanceof Error ? sessionError.message : String(sessionError),
+        stack: sessionError instanceof Error ? sessionError.stack : undefined
+      });
+      
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Auth0 session error',
+        details: 'Failed to retrieve Auth0 session. This may indicate an Auth0 configuration issue.',
+        sessionError: sessionError instanceof Error ? sessionError.message : String(sessionError)
+      }, { status: 500 });
+    }
+    
     if (!session?.user) {
+      console.log('[Auth0 ME] No session or user found in PUT, returning unauthorized');
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
     await connectDB()
