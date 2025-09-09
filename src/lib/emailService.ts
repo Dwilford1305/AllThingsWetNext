@@ -1,4 +1,6 @@
 import nodemailer from 'nodemailer'
+import ComprehensiveEmailService from './email/services/ComprehensiveEmailService'
+import EmailAutomationService from './email/services/EmailAutomationService'
 
 interface EmailNotificationData {
   requestId: string
@@ -99,7 +101,31 @@ export class EmailService {
     }
   }
 
-  static async sendBusinessRequestConfirmation(userEmail: string, businessName: string): Promise<boolean> {
+  static async sendBusinessRequestConfirmation(userEmail: string, businessName: string, requestId?: string): Promise<boolean> {
+    try {
+      // Use the new comprehensive email service for better templates and tracking
+      await ComprehensiveEmailService.queueEmail({
+        to: userEmail,
+        subject: `Business listing request received - ${businessName}`,
+        templateType: 'business_request_confirmation',
+        templateData: {
+          businessName,
+          requestId: requestId || 'N/A'
+        },
+        priority: 'normal'
+      })
+
+      console.log('Business request confirmation queued for:', userEmail)
+      return true
+    } catch (error) {
+      console.error('Failed to queue business request confirmation:', error)
+      
+      // Fallback to legacy email for compatibility
+      return this.legacySendBusinessRequestConfirmation(userEmail, businessName)
+    }
+  }
+
+  private static async legacySendBusinessRequestConfirmation(userEmail: string, businessName: string): Promise<boolean> {
     try {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
       
@@ -213,6 +239,19 @@ export class EmailService {
   // === Auth / Account Emails ===
   static async sendEmailVerification(userEmail: string, token: string): Promise<boolean> {
     try {
+      // Use comprehensive email service with professional templates
+      await EmailAutomationService.triggerWelcomeEmail(userEmail)
+      return true
+    } catch (error) {
+      console.error('Failed to trigger welcome email, using fallback:', error)
+      
+      // Fallback to legacy implementation
+      return this.legacySendEmailVerification(userEmail, token)
+    }
+  }
+
+  private static async legacySendEmailVerification(userEmail: string, token: string): Promise<boolean> {
+    try {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
       const verifyUrl = `${siteUrl}/verify-email?token=${encodeURIComponent(token)}`
       const html = `
@@ -238,7 +277,23 @@ export class EmailService {
     }
   }
 
-  static async sendPasswordReset(userEmail: string, token: string): Promise<boolean> {
+  static async sendPasswordReset(userEmail: string, token: string, userId?: string): Promise<boolean> {
+    try {
+      // Use comprehensive email service if userId is available
+      if (userId) {
+        await EmailAutomationService.triggerPasswordResetEmail(userId, token)
+        return true
+      }
+      
+      // Fallback to legacy implementation
+      return this.legacySendPasswordReset(userEmail, token)
+    } catch (error) {
+      console.error('Failed to trigger password reset email, using fallback:', error)
+      return this.legacySendPasswordReset(userEmail, token)
+    }
+  }
+
+  private static async legacySendPasswordReset(userEmail: string, token: string): Promise<boolean> {
     try {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
       const resetUrl = `${siteUrl}/reset-password?token=${encodeURIComponent(token)}`
