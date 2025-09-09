@@ -31,9 +31,9 @@ const defaultPreferences = {
 };
 
 // Determine if required Auth0 env vars exist
+// AUTH0_BASE_URL is optional if we can derive it automatically
 const requiredVars = [
 	'AUTH0_SECRET',
-	'AUTH0_BASE_URL',
 	'AUTH0_ISSUER_BASE_URL',
 	'AUTH0_CLIENT_ID',
 	'AUTH0_CLIENT_SECRET',
@@ -69,16 +69,30 @@ if (!process.env.AUTH0_BASE_URL) {
 	}
 }
 
-const hasAll = requiredVars.every((k) => !!process.env[k]);
+const hasAll = requiredVars.every((k) => !!process.env[k]) && !!process.env.AUTH0_BASE_URL;
 
 let handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void> | void;
 
 if (!hasAll) {
+	const allMissing = requiredVars.filter((k) => !process.env[k]);
+	if (!process.env.AUTH0_BASE_URL) {
+		allMissing.push('AUTH0_BASE_URL (could not be auto-derived)');
+	}
+	
 	handler = function missingAuth0(req: NextApiRequest, res: NextApiResponse) {
+		console.error('[Auth0] Configuration error:', {
+			missing: allMissing,
+			hasVercelUrl: !!process.env.VERCEL_URL,
+			vercelEnv: process.env.VERCEL_ENV,
+			derivedBaseUrl: deriveBaseURL(),
+			currentBaseUrl: process.env.AUTH0_BASE_URL
+		});
+		
 		res.status(503).json({
 			success: false,
 			error: 'Auth0 not configured',
-			missing: requiredVars.filter((k) => !process.env[k]),
+			missing: allMissing,
+			help: 'Check your environment variables. AUTH0_BASE_URL can be auto-derived for Vercel deployments.'
 		});
 	};
 } else {

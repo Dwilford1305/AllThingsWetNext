@@ -2,11 +2,30 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    // Only allow in development/preview environments for security
-    if (process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV !== 'preview') {
+    // Enhanced environment detection for debugging
+    const nodeEnv = process.env.NODE_ENV;
+    const vercelEnv = process.env.VERCEL_ENV;
+    const isVercel = !!process.env.VERCEL_URL;
+    
+    // Log environment detection for debugging
+    console.log('[Auth0 Debug] Environment detection:', {
+      NODE_ENV: nodeEnv,
+      VERCEL_ENV: vercelEnv,
+      VERCEL_URL: process.env.VERCEL_URL,
+      isVercel,
+      allowAccess: !(nodeEnv === 'production' && vercelEnv !== 'preview')
+    });
+    
+    // Only restrict in true production (not preview environments)
+    if (nodeEnv === 'production' && vercelEnv !== 'preview' && !process.env.DEBUG_ENDPOINT_ENABLED) {
       return NextResponse.json({ 
         success: false, 
-        error: 'Debug endpoint not available in production' 
+        error: 'Debug endpoint not available in production',
+        environment: {
+          NODE_ENV: nodeEnv,
+          VERCEL_ENV: vercelEnv,
+          isVercel
+        }
       }, { status: 403 });
     }
 
