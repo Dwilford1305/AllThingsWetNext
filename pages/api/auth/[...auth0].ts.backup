@@ -364,9 +364,9 @@ Your Auth0 dev application is rejecting authentication requests due to a configu
 **🔧 STEP 2: Enable Required Grant Types**
 → Go to: Advanced Settings → Grant Types tab
 → **MUST CHECK ALL OF THESE:**
-  ✅ Authorization Code
-  ✅ Refresh Token
-  ✅ Client Credentials
+   ✅ Authorization Code
+   ✅ Refresh Token
+   ✅ Client Credentials
 → Save Changes
 
 **🔧 STEP 3: Verify Authentication Method**
@@ -382,9 +382,9 @@ Your Auth0 dev application is rejecting authentication requests due to a configu
 **🔧 STEP 5: Double-Check Client Credentials**
 → In Auth0 Dashboard → Applications → Your Dev Application → Settings
 → Copy EXACTLY (no extra spaces):
-  - Domain: Should match ${process.env.AUTH0_ISSUER_BASE_URL}
-  - Client ID: Should start with ${process.env.AUTH0_CLIENT_ID ? process.env.AUTH0_CLIENT_ID.substring(0, 8) : 'MISSING'}
-  - Client Secret: Copy the full secret carefully
+   - Domain: Should match ${process.env.AUTH0_ISSUER_BASE_URL}
+   - Client ID: Should start with ${process.env.AUTH0_CLIENT_ID ? process.env.AUTH0_CLIENT_ID.substring(0, 8) : 'MISSING'}
+   - Client Secret: Copy the full secret carefully
 → Update your Vercel environment variables if they don't match
 
 **🚨 ROOT CAUSE ANALYSIS:**
@@ -425,21 +425,21 @@ Your Auth0 application may have wildcard patterns configured, but Auth0 is still
 
 ADVANCED TROUBLESHOOTING:
 1. **Verify wildcard syntax** - Ensure wildcards use EXACTLY this format:
-  - https://*.vercel.app/api/auth/callback (with asterisk)
-  - NOT https://www.vercel.app/api/auth/callback
-  - NOT https://{subdomain}.vercel.app/api/auth/callback
+   - https://*.vercel.app/api/auth/callback (with asterisk)
+   - NOT https://www.vercel.app/api/auth/callback
+   - NOT https://{subdomain}.vercel.app/api/auth/callback
 
 2. **Check Auth0 Application Type**
-  → Must be "Regular Web Application" for wildcards to work
-  → "Single Page Application" may not support wildcards
+   → Must be "Regular Web Application" for wildcards to work
+   → "Single Page Application" may not support wildcards
 
 3. **Auth0 Cache Issue**
-  → Changes can take up to 5 minutes to propagate
-  → Try waiting longer or contact Auth0 support
+   → Changes can take up to 5 minutes to propagate
+   → Try waiting longer or contact Auth0 support
 
 4. **Auth0 Plan Limitations**
-  → Some Auth0 plans may have wildcard restrictions
-  → Check your Auth0 plan supports wildcard callback URLs
+   → Some Auth0 plans may have wildcard restrictions
+   → Check your Auth0 plan supports wildcard callback URLs
 
 Current error: ${error.message}
 Preview URL: https://${host}
@@ -532,6 +532,7 @@ If patterns are configured correctly and issue persists, this may indicate an Au
 			requestUrl: req.url
 		});
 	}
+	};
 };
 
 export default function wrappedExport(req: NextApiRequest, res: NextApiResponse) {
