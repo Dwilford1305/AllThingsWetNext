@@ -238,73 +238,113 @@ if (!hasAll) {
 						let errorMessage = 'Authentication error occurred';
 						let errorDetails = error.message;
 						
-						// Log the raw error for debugging
-						console.log('[Auth0] Raw error analysis:', {
+						// Enhanced error parsing for better debugging
+						const stackTrace = error.stack || '';
+						
+						// Extract Auth0 error details from nested error messages
+						const auth0ErrorMatch = error.message.match(/CAUSE:\s*([^(]+)\s*\(([^)]+)\)/);
+						const actualAuth0Error = auth0ErrorMatch ? auth0ErrorMatch[1].trim() : null;
+						const errorDescription = auth0ErrorMatch ? auth0ErrorMatch[2].trim() : null;
+						
+						// Log comprehensive error analysis
+						console.log('[Auth0] Enhanced error analysis:', {
 							fullMessage: error.message,
-							stack: error.stack,
-							hasCallbackMismatch: /Callback URL|redirect_uri|Invalid redirect/i.test(error.message),
+							actualAuth0Error,
+							errorDescription,
+							hasCallbackMismatch: /callback url|redirect_uri|invalid redirect|callback.*mismatch/i.test(error.message),
 							hasAccessDenied: /access_denied/i.test(error.message),
-							hasUnauthorized: /Unauthorized/i.test(error.message),
-							hasStateCookie: /Missing state cookie/i.test(error.message)
+							hasUnauthorized: /unauthorized/i.test(error.message),
+							hasStateCookie: /missing state cookie/i.test(error.message),
+							hasInvalidClient: /invalid_client/i.test(error.message),
+							hasInvalidGrant: /invalid_grant/i.test(error.message),
+							isAuth0ApiError: /auth0|oauth|openid/i.test(error.message),
+							stackContainsAuth0: /auth0/i.test(stackTrace)
 						});
 						
-						// Check for specific Auth0 error patterns - be more specific about error matching
-						if (/Missing state cookie/i.test(error.message)) {
+						// Check for specific Auth0 error patterns - enhanced error matching
+						if (/missing state cookie/i.test(error.message)) {
 							errorMessage = 'Auth0 state cookie missing';
 							errorDetails = 'Authentication state was lost. Please try logging in again.';
-						} else if (/access_denied/i.test(error.message)) {
-							// Handle access_denied errors first (more specific than callback URL issues)
+						} else if (actualAuth0Error === 'access_denied' || /access_denied/i.test(error.message)) {
+							// Handle access_denied errors with more specific guidance
 							errorMessage = 'Auth0 application access denied';
 							
+							// Provide enhanced troubleshooting based on environment and error details
 							if (process.env.VERCEL_ENV === 'preview') {
-								errorDetails = `Auth0 application rejected the authentication request.
+								errorDetails = `Auth0 rejected the authentication request with "access_denied" error.
 
-COMMON CAUSES & SOLUTIONS:
-
-1. **Application Type Configuration**
-   → Go to Auth0 Dashboard → Applications → Your Dev Application → Settings
-   → Ensure "Application Type" is set to "Regular Web Application"
-   → NOT "Single Page Application" or "Machine to Machine"
-
-2. **Grant Types**
-   → In Application Settings → Advanced Settings → Grant Types
-   → Ensure these are CHECKED:
-     ✓ Authorization Code
-     ✓ Refresh Token
-     ✓ Client Credentials (optional)
-
-3. **Token Endpoint Authentication Method**
-   → In Advanced Settings → OAuth
-   → Set to "POST" (recommended) or "Basic"
-
-4. **Application Login URI** (if required)
-   → In Application Settings → Application Login URI
-   → Set to: https://${reqInner.headers.host || 'your-domain'}/api/auth/login
-
-5. **User Assignment** (if enabled)
-   → Go to Auth0 Dashboard → Applications → Your Dev Application → Users
-   → Ensure your user is assigned to this application
-   → Or disable "Require user consent" in Advanced Settings
-
-6. **Application Status**
-   → Verify the application is not disabled
-   → Check application is in the correct Auth0 tenant/environment
-
-7. **Environment Variables**
-   → Verify AUTH0_CLIENT_ID and AUTH0_CLIENT_SECRET match your DEV application
-   → NOT your production application credentials
-
-Current configuration:
+🔍 **ENHANCED DIAGNOSTICS:**
+- Raw Auth0 Error: ${actualAuth0Error || 'access_denied'}
+- Error Description: ${errorDescription || 'Unauthorized'}
+- Client ID: ${process.env.AUTH0_CLIENT_ID ? `${process.env.AUTH0_CLIENT_ID.substring(0, 12)}...` : 'MISSING'}
 - Auth0 Domain: ${process.env.AUTH0_ISSUER_BASE_URL}
-- Client ID: ${process.env.AUTH0_CLIENT_ID ? `${process.env.AUTH0_CLIENT_ID.substring(0, 8)}...` : 'MISSING'}
 - Environment: ${process.env.VERCEL_ENV}
-- Base URL: ${process.env.AUTH0_BASE_URL}
+- Preview URL: https://${reqInner.headers.host}
 
-Auth0 Error: ${error.message}`;
+📋 **SYSTEMATIC TROUBLESHOOTING:**
+
+**STEP 1: Verify Application Configuration**
+→ Go to Auth0 Dashboard → Applications → Your Dev Application → Settings
+→ Confirm these EXACT settings:
+
+   📌 **Application Type:** "Regular Web Application" 
+      (NOT "Single Page Application" or "Machine to Machine")
+   
+   📌 **Token Endpoint Authentication Method:** "POST"
+      (Found in: Advanced Settings → OAuth tab)
+
+**STEP 2: Check Grant Types**
+→ Advanced Settings → Grant Types → Ensure CHECKED:
+   ✅ Authorization Code
+   ✅ Refresh Token  
+   ✅ Implicit (if needed)
+   ❌ Client Credentials (uncheck unless specifically needed)
+
+**STEP 3: Verify Client Credentials Match**
+→ Compare these values with your Auth0 Dev Application:
+   - Domain: ${process.env.AUTH0_ISSUER_BASE_URL}
+   - Client ID: ${process.env.AUTH0_CLIENT_ID ? `${process.env.AUTH0_CLIENT_ID.substring(0, 12)}...` : 'MISSING'}
+   
+   ⚠️  **CRITICAL:** Ensure you're using DEV application credentials, NOT production
+
+**STEP 4: User Assignment & Permissions**
+→ Applications → Your Dev Application → Users tab
+→ If user assignment is enabled, ensure your user is assigned
+→ OR: Advanced Settings → User Consent → Uncheck "Require User Consent"
+
+**STEP 5: Application Status**
+→ Verify the application is ENABLED (not disabled)
+→ Check you're in the correct Auth0 tenant/environment
+
+**STEP 6: Advanced Debugging**
+→ Auth0 Dashboard → Monitoring → Logs
+→ Look for recent failed login attempts
+→ Check for specific error details from Auth0's perspective
+
+**STEP 7: Wildcard Configuration (Already Done)**
+Your wildcards appear configured correctly:
+✅ https://*.vercel.app/api/auth/callback
+✅ https://*.vercel.app/api/auth/logout  
+✅ https://*.vercel.app (web origins)
+
+**🚨 MOST LIKELY CAUSES:**
+1. Application Type is "Single Page Application" instead of "Regular Web Application"
+2. Missing "Authorization Code" grant type
+3. Using wrong client credentials (production instead of dev)
+4. User not assigned to the dev application
+5. Application is disabled in Auth0 dashboard
+
+Try each step above systematically. The access_denied error specifically indicates Auth0 is rejecting the authentication at the application level, not due to callback URL issues.`;
 							} else {
-								errorDetails = `Auth0 application access denied: ${error.message}`;
+								errorDetails = `Auth0 application access denied: ${error.message}
+
+Check your Auth0 application configuration:
+1. Application Type: "Regular Web Application"  
+2. Grant Types: Authorization Code + Refresh Token enabled
+3. Client credentials match your environment
+4. User has access to the application`;
 							}
-						} else if (/Callback URL|redirect_uri|Invalid redirect/i.test(error.message)) {
+						} else if (/callback url|redirect_uri|invalid redirect|callback.*mismatch/i.test(error.message)) {
 							errorMessage = 'Auth0 callback URL mismatch';
 							
 							if (process.env.VERCEL_ENV === 'preview') {
