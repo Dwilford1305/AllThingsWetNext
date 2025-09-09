@@ -4,6 +4,10 @@ import { connectDB } from '@/lib/mongodb'
 import { User } from '@/models/auth'
 import { AuthService } from '@/lib/auth'
 import type { User as UserType, UserPreferences } from '@/types/auth'
+import { initializeAuth0Environment } from '@/lib/auth0-config'
+
+// Initialize Auth0 environment variables
+initializeAuth0Environment();
 
 type Auth0User = {
   sub?: string

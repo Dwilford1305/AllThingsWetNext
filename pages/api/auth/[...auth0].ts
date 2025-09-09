@@ -3,6 +3,10 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/auth';
 import { randomUUID } from 'crypto';
+import { initializeAuth0Environment } from '@/lib/auth0-config';
+
+// Initialize Auth0 environment variables before using the SDK
+initializeAuth0Environment();
 
 type Auth0User = {
 	sub?: string;
