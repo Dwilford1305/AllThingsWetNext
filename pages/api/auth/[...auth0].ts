@@ -39,7 +39,7 @@ const requiredVars = [
 	'AUTH0_CLIENT_SECRET',
 ];
 
-function deriveBaseURL(): string | undefined {
+function deriveBaseURL(req?: NextApiRequest): string | undefined {
 	// Allow automatic fallback so local dev doesn't break if AUTH0_BASE_URL not explicitly set
 	const direct = process.env.AUTH0_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL;
 	if (direct) return direct.replace(/\/$/, '');
@@ -58,48 +58,89 @@ function deriveBaseURL(): string | undefined {
 		return vercelUrl.replace(/\/$/, '');
 	}
 	
+	// For local development, derive from request if available
+	if (req && req.headers.host) {
+		const proto = req.headers['x-forwarded-proto'] as string || 'http';
+		const localUrl = `${proto}://${req.headers.host}`;
+		console.log('[Auth0] Local development detected, deriving base URL from request:', localUrl);
+		return localUrl.replace(/\/$/, '');
+	}
+	
 	return undefined;
 }
 
-// If base URL missing but others present, we try to synthesize one for dev
-let derivedBaseUrl: string | undefined;
-if (!process.env.AUTH0_BASE_URL) {
-	derivedBaseUrl = deriveBaseURL();
-	if (derivedBaseUrl) {
-		process.env.AUTH0_BASE_URL = derivedBaseUrl; // Mutate only at runtime, not build-time constant usage
+// Move validation to request time for serverless environments
+// This ensures environment variables are fully available when needed
+function validateAuth0Config(req?: NextApiRequest): { isValid: boolean; missing: string[]; derivedBaseUrl?: string } {
+	// If base URL missing but others present, we try to synthesize one for dev
+	let derivedBaseUrl: string | undefined;
+	if (!process.env.AUTH0_BASE_URL) {
+		derivedBaseUrl = deriveBaseURL(req);
+		if (derivedBaseUrl) {
+			process.env.AUTH0_BASE_URL = derivedBaseUrl; // Mutate only at runtime, not build-time constant usage
+		}
 	}
-}
 
-// Check if all required vars are present, considering derived base URL
-const hasBaseUrl = !!process.env.AUTH0_BASE_URL || !!derivedBaseUrl;
-const hasAll = requiredVars.every((k) => !!process.env[k]) && hasBaseUrl;
-
-let handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void> | void;
-
-if (!hasAll) {
-	const allMissing = requiredVars.filter((k) => !process.env[k]);
+	// Check if all required vars are present, considering derived base URL
+	const hasBaseUrl = !!process.env.AUTH0_BASE_URL || !!derivedBaseUrl;
+	const hasAll = requiredVars.every((k) => !!process.env[k]) && hasBaseUrl;
+	
+	const missing = requiredVars.filter((k) => !process.env[k]);
 	if (!hasBaseUrl) {
-		allMissing.push('AUTH0_BASE_URL (could not be auto-derived)');
+		missing.push('AUTH0_BASE_URL (could not be auto-derived)');
 	}
 	
-	handler = function missingAuth0(req: NextApiRequest, res: NextApiResponse) {
+	return {
+		isValid: hasAll,
+		missing,
+		derivedBaseUrl
+	};
+}
+
+let handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void> | void;
+// Main Auth0 handler with request-time validation
+handler = async function auth0Handler(req: NextApiRequest, res: NextApiResponse) {
+	// Enhanced logging for debugging
+	console.log('[Auth0] Handler called:', {
+		method: req.method,
+		url: req.url,
+		host: req.headers.host,
+		userAgent: req.headers['user-agent']?.substring(0, 50),
+		vercelEnv: process.env.VERCEL_ENV,
+		nodeEnv: process.env.NODE_ENV
+	});
+	
+	// Perform validation at request time to ensure all environment variables are available
+	const validation = validateAuth0Config(req);
+	
+	console.log('[Auth0] Validation result:', {
+		isValid: validation.isValid,
+		missing: validation.missing,
+		derivedBaseUrl: validation.derivedBaseUrl,
+		currentAuth0BaseUrl: process.env.AUTH0_BASE_URL,
+		hasVercelUrl: !!process.env.VERCEL_URL
+	});
+	
+	if (!validation.isValid) {
 		console.error('[Auth0] Configuration error:', {
-			missing: allMissing,
+			missing: validation.missing,
 			hasVercelUrl: !!process.env.VERCEL_URL,
 			vercelEnv: process.env.VERCEL_ENV,
-			derivedBaseUrl: deriveBaseURL(),
+			derivedBaseUrl: validation.derivedBaseUrl,
 			currentBaseUrl: process.env.AUTH0_BASE_URL,
-			hasBaseUrl
+			requestHost: req.headers.host,
+			requestUrl: req.url
 		});
 		
-		res.status(503).json({
+		return res.status(503).json({
 			success: false,
 			error: 'Auth0 not configured',
-			missing: allMissing,
+			missing: validation.missing,
 			help: 'Check your environment variables. AUTH0_BASE_URL can be auto-derived for Vercel deployments.'
 		});
-	};
-} else {
+	}
+
+	console.log('[Auth0] Configuration valid, proceeding with Auth0 SDK initialization');
 
 	function logStateCookieDiagnostics(req: NextApiRequest, err: unknown) {
 		if (!(err instanceof Error)) return;
@@ -174,8 +215,19 @@ if (!hasAll) {
 			console.warn('[Auth0] baseURL dynamic override failed (continuing):', e);
 		}
 		// Import AFTER potential AUTH0_BASE_URL override so SDK picks up adjusted value
-		const { handleAuth, handleCallback } = await import('@auth0/nextjs-auth0');
-		const wrapped = handleAuth({
+		console.log('[Auth0] Importing Auth0 SDK with final configuration:', {
+			AUTH0_BASE_URL: process.env.AUTH0_BASE_URL,
+			AUTH0_ISSUER_BASE_URL: process.env.AUTH0_ISSUER_BASE_URL,
+			AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID ? `${process.env.AUTH0_CLIENT_ID.substring(0, 8)}...` : 'MISSING',
+			hasClientSecret: !!process.env.AUTH0_CLIENT_SECRET,
+			hasSecret: !!process.env.AUTH0_SECRET
+		});
+		
+		try {
+			const { handleAuth, handleCallback } = await import('@auth0/nextjs-auth0');
+			console.log('[Auth0] SDK imported successfully, initializing handleAuth');
+			
+			const wrapped = handleAuth({
 			async callback(reqInner: NextApiRequest, resInner: NextApiResponse) {
 				// Early recovery: if no state cookie present, likely user navigated directly or cookie stripped.
 				try {
@@ -450,9 +502,38 @@ If patterns are configured correctly and issue persists, this may indicate an Au
 				}
 			},
 		});
+		
+		console.log('[Auth0] handleAuth configured successfully, calling wrapped function');
+		console.log('[Auth0] Request details:', {
+			method: req.method,
+			url: req.url,
+			query: req.query,
+			hasAuth0Params: !!(req.query.code || req.query.state || req.query.error)
+		});
+		
 		await wrapped(req, res);
+		
+		console.log('[Auth0] wrapped function completed');
+		
+	} catch (sdkError) {
+		console.error('[Auth0] SDK initialization or execution error:', {
+			error: sdkError instanceof Error ? sdkError.message : String(sdkError),
+			stack: sdkError instanceof Error ? sdkError.stack : undefined,
+			auth0BaseUrl: process.env.AUTH0_BASE_URL,
+			requestUrl: req.url,
+			requestHost: req.headers.host
+		});
+		
+		// Fallback error response
+		return res.status(500).json({
+			success: false,
+			error: 'Auth0 SDK error',
+			details: sdkError instanceof Error ? sdkError.message : 'Unknown SDK error',
+			requestUrl: req.url
+		});
+	}
 	};
-}
+};
 
 export default function wrappedExport(req: NextApiRequest, res: NextApiResponse) {
 	return handler(req, res);
