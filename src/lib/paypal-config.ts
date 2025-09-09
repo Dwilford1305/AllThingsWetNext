@@ -50,39 +50,37 @@ export const getPayPalConfig = (): PayPalConfig => {
 
 // Client-side PayPal options for React PayPal component
 export const getPayPalOptions = () => {
-  // For client-side usage, we need to use NEXT_PUBLIC_ variables or provide fallbacks
-  const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || process.env.PAYPAL_CLIENT_ID;
-  const environment = (process.env.NEXT_PUBLIC_PAYPAL_ENVIRONMENT || process.env.PAYPAL_ENVIRONMENT) as 'sandbox' | 'production' || 'sandbox';
-  
-  // During build time or when PayPal is not configured, provide safe defaults
-  if (!clientId && typeof window === 'undefined') {
+  try {
+    const config = getPayPalConfig();
+    
     return {
-      clientId: 'build-time-placeholder',
-      currency: 'CAD',
+      clientId: config.clientId,
+      currency: config.currency,
       intent: 'capture' as const,
-      environment: 'sandbox' as const,
+      environment: config.environment,
+      // Enable additional PayPal features
       components: 'buttons,messages',
+      // Disable funding options we don't want to show
       disableFunding: ['credit', 'paylater'],
-      debug: false
+      // Enable debug mode in development
+      debug: process.env.NODE_ENV === 'development'
     };
+  } catch (error) {
+    // During build time or when PayPal is not configured, provide safe defaults
+    if (typeof window === 'undefined') {
+      return {
+        clientId: 'build-time-placeholder',
+        currency: 'CAD',
+        intent: 'capture' as const,
+        environment: 'sandbox' as const,
+        components: 'buttons,messages',
+        disableFunding: ['credit', 'paylater'],
+        debug: false
+      };
+    }
+    // Re-throw runtime errors
+    throw error;
   }
-
-  if (!clientId && typeof window !== 'undefined') {
-    throw new Error('NEXT_PUBLIC_PAYPAL_CLIENT_ID environment variable is required for client-side PayPal integration');
-  }
-
-  return {
-    clientId: clientId!,
-    currency: 'CAD',
-    intent: 'capture' as const,
-    environment,
-    // Enable additional PayPal features
-    components: 'buttons,messages',
-    // Disable funding options we don't want to show
-    disableFunding: ['credit', 'paylater'],
-    // Enable debug mode in development
-    debug: process.env.NODE_ENV === 'development'
-  };
 };
 
 // Subscription tier configurations
