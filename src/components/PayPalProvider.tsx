@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { getPayPalOptions } from '@/lib/paypal-config';
 
@@ -9,14 +9,31 @@ interface PayPalProviderProps {
 }
 
 export const PayPalProvider: React.FC<PayPalProviderProps> = ({ children }) => {
-  // Get PayPal options from configuration
-  const paypalOptions = getPayPalOptions();
+  const [isClient, setIsClient] = useState(false);
 
-  return (
-    <PayPalScriptProvider options={paypalOptions}>
-      {children}
-    </PayPalScriptProvider>
-  );
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // During SSR, just render children
+  if (!isClient) {
+    return <>{children}</>;
+  }
+
+  try {
+    // Get PayPal options from configuration
+    const paypalOptions = getPayPalOptions();
+
+    return (
+      <PayPalScriptProvider options={paypalOptions}>
+        {children}
+      </PayPalScriptProvider>
+    );
+  } catch (error) {
+    // If PayPal configuration fails, render children without PayPal
+    console.warn('PayPal configuration not available:', error);
+    return <>{children}</>;
+  }
 };
 
 export default PayPalProvider;
