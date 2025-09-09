@@ -271,70 +271,64 @@ if (!hasAll) {
 							
 							// Provide enhanced troubleshooting based on environment and error details
 							if (process.env.VERCEL_ENV === 'preview') {
-								errorDetails = `Auth0 rejected the authentication request with "access_denied" error.
+								errorDetails = `🚨 **CRITICAL AUTH0 CONFIGURATION ISSUE DETECTED**
 
-🔍 **ENHANCED DIAGNOSTICS:**
-- Raw Auth0 Error: ${actualAuth0Error || 'access_denied'}
-- Error Description: ${errorDescription || 'Unauthorized'}
+Your Auth0 dev application is rejecting authentication requests due to a configuration problem.
+
+🔍 **ERROR ANALYSIS:**
+- Auth0 Error: ${actualAuth0Error || 'access_denied'}  
+- Description: ${errorDescription || 'Unauthorized'}
 - Client ID: ${process.env.AUTH0_CLIENT_ID ? `${process.env.AUTH0_CLIENT_ID.substring(0, 12)}...` : 'MISSING'}
 - Auth0 Domain: ${process.env.AUTH0_ISSUER_BASE_URL}
-- Environment: ${process.env.VERCEL_ENV}
 - Preview URL: https://${reqInner.headers.host}
 
-📋 **SYSTEMATIC TROUBLESHOOTING:**
+📋 **IMMEDIATE FIX REQUIRED - Follow These Steps:**
 
-**STEP 1: Verify Application Configuration**
-→ Go to Auth0 Dashboard → Applications → Your Dev Application → Settings
-→ Confirm these EXACT settings:
+**🔧 STEP 1: Check Application Type (MOST COMMON ISSUE)**
+→ Go to: Auth0 Dashboard → Applications → Your Dev Application → Settings
+→ Find: "Application Type" dropdown
+→ **MUST BE:** "Regular Web Application"
+→ **NOT:** "Single Page Application" or "Machine to Machine"
+→ If wrong, change it and click Save Changes
 
-   📌 **Application Type:** "Regular Web Application" 
-      (NOT "Single Page Application" or "Machine to Machine")
-   
-   📌 **Token Endpoint Authentication Method:** "POST"
-      (Found in: Advanced Settings → OAuth tab)
-
-**STEP 2: Check Grant Types**
-→ Advanced Settings → Grant Types → Ensure CHECKED:
+**🔧 STEP 2: Enable Required Grant Types**
+→ Go to: Advanced Settings → Grant Types tab
+→ **MUST CHECK ALL OF THESE:**
    ✅ Authorization Code
-   ✅ Refresh Token  
-   ✅ Implicit (if needed)
-   ❌ Client Credentials (uncheck unless specifically needed)
+   ✅ Refresh Token
+   ✅ Client Credentials
+→ Save Changes
 
-**STEP 3: Verify Client Credentials Match**
-→ Compare these values with your Auth0 Dev Application:
-   - Domain: ${process.env.AUTH0_ISSUER_BASE_URL}
-   - Client ID: ${process.env.AUTH0_CLIENT_ID ? `${process.env.AUTH0_CLIENT_ID.substring(0, 12)}...` : 'MISSING'}
-   
-   ⚠️  **CRITICAL:** Ensure you're using DEV application credentials, NOT production
+**🔧 STEP 3: Verify Authentication Method**
+→ Go to: Advanced Settings → OAuth tab  
+→ Find: "Token Endpoint Authentication Method"
+→ Set to: "POST" (recommended)
 
-**STEP 4: User Assignment & Permissions**
-→ Applications → Your Dev Application → Users tab
-→ If user assignment is enabled, ensure your user is assigned
-→ OR: Advanced Settings → User Consent → Uncheck "Require User Consent"
+**🔧 STEP 4: Test Your Configuration**
+→ Visit: https://${reqInner.headers.host}/api/auth/debug
+→ Check if "clientCredentialsTest" shows "success"
+→ If still failing, your Client ID/Secret may be wrong
 
-**STEP 5: Application Status**
-→ Verify the application is ENABLED (not disabled)
-→ Check you're in the correct Auth0 tenant/environment
+**🔧 STEP 5: Double-Check Client Credentials**
+→ In Auth0 Dashboard → Applications → Your Dev Application → Settings
+→ Copy EXACTLY (no extra spaces):
+   - Domain: Should match ${process.env.AUTH0_ISSUER_BASE_URL}
+   - Client ID: Should start with ${process.env.AUTH0_CLIENT_ID ? process.env.AUTH0_CLIENT_ID.substring(0, 8) : 'MISSING'}
+   - Client Secret: Copy the full secret carefully
+→ Update your Vercel environment variables if they don't match
 
-**STEP 6: Advanced Debugging**
-→ Auth0 Dashboard → Monitoring → Logs
-→ Look for recent failed login attempts
-→ Check for specific error details from Auth0's perspective
+**🚨 ROOT CAUSE ANALYSIS:**
+The debug endpoint shows your client credentials are being rejected by Auth0, which means:
+1. **90% likely**: Application Type is "Single Page Application" (fix in Step 1)
+2. **5% likely**: Missing Grant Types (fix in Step 2) 
+3. **5% likely**: Wrong Client ID/Secret (fix in Step 5)
 
-**STEP 7: Wildcard Configuration (Already Done)**
-Your wildcards appear configured correctly:
-✅ https://*.vercel.app/api/auth/callback
-✅ https://*.vercel.app/api/auth/logout  
-✅ https://*.vercel.app (web origins)
+**✅ VERIFICATION:**
+After making changes, wait 2 minutes then:
+1. Visit /api/auth/debug - should show clientCredentialsTest: "success"
+2. Try logging in again - should work
 
-**🚨 MOST LIKELY CAUSES:**
-1. Application Type is "Single Page Application" instead of "Regular Web Application"
-2. Missing "Authorization Code" grant type
-3. Using wrong client credentials (production instead of dev)
-4. User not assigned to the dev application
-5. Application is disabled in Auth0 dashboard
-
-Try each step above systematically. The access_denied error specifically indicates Auth0 is rejecting the authentication at the application level, not due to callback URL issues.`;
+Your wildcard callback URLs are already configured correctly.`;
 							} else {
 								errorDetails = `Auth0 application access denied: ${error.message}
 

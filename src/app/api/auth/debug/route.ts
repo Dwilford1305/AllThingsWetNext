@@ -107,10 +107,41 @@ export async function GET(request: NextRequest) {
           managementApiTest = { status: 'success', message: 'Client credentials are valid' };
         } else {
           const errorData = await tokenResponse.text();
+          let errorJson;
+          try {
+            errorJson = JSON.parse(errorData);
+          } catch {
+            errorJson = { error: 'parse_error', error_description: errorData.substring(0, 100) };
+          }
+          
           managementApiTest = { 
             status: 'error', 
             message: 'Client credentials test failed',
-            details: errorData.substring(0, 200) // Limit error details for security
+            details: errorData.substring(0, 200),
+            errorCode: errorJson.error,
+            errorDescription: errorJson.error_description,
+            httpStatus: tokenResponse.status,
+            // Enhanced diagnostics for access_denied
+            diagnostics: errorJson.error === 'access_denied' ? {
+              likelyCauses: [
+                'Application Type is set to "Single Page Application" instead of "Regular Web Application"',
+                'Client Credentials grant type is not enabled in Auth0 application settings',
+                'Application does not have permission to access Auth0 Management API',
+                'Client ID or Client Secret is incorrect',
+                'Application is disabled or in wrong Auth0 tenant'
+              ],
+              requiredSteps: [
+                '1. Go to Auth0 Dashboard → Applications → Your Dev Application',
+                '2. Settings tab → Application Type → Set to "Regular Web Application"',
+                '3. Advanced Settings → Grant Types → Check "Client Credentials"',
+                '4. Advanced Settings → Grant Types → Check "Authorization Code"', 
+                '5. Advanced Settings → Grant Types → Check "Refresh Token"',
+                '6. Save Changes and wait 2 minutes',
+                '7. Verify Client ID/Secret match exactly (no extra spaces)',
+                '8. Check application is enabled and in correct tenant'
+              ],
+              criticalCheck: 'Most common cause: Application Type = "Single Page Application" should be "Regular Web Application"'
+            } : null
           };
         }
       } catch (error) {
