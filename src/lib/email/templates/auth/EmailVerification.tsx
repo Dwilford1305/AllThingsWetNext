@@ -15,10 +15,10 @@ export const EmailVerification = ({
 }: EmailVerificationProps) => {
   return (
     <BaseTemplate 
-      preview={`Welcome to AllThingsWetaskiwinq, ${firstName}! Please verify your email address.`}
+      preview={`Welcome to AllThingsWetaskiwin, ${firstName}! Please verify your email address.`}
       trackingId={trackingId}
     >
-      <Text style={heading}>Welcome to AllThingsWetaskiwinq, {firstName}! 🎉</Text>
+      <Text style={heading}>Welcome to AllThingsWetaskiwin, {firstName}! 🎉</Text>
       
       <Text style={paragraph}>
         Thank you for joining the Wetaskiwin community! We're excited to have you as part of our growing network of residents, business owners, and community members.
@@ -61,7 +61,7 @@ export const EmailVerification = ({
 
       <Text style={paragraph}>
         Welcome to the community!<br />
-        The AllThingsWetaskiwinq Team
+        The AllThingsWetaskiwin Team
       </Text>
     </BaseTemplate>
   )

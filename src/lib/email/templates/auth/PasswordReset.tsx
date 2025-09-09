@@ -15,7 +15,7 @@ export const PasswordReset = ({
 }: PasswordResetProps) => {
   return (
     <BaseTemplate 
-      preview={`Password reset request for your AllThingsWetaskiwinq account`}
+      preview={`Password reset request for your AllThingsWetaskiwin account`}
       trackingId={trackingId}
     >
       <Text style={heading}>Password Reset Request</Text>
@@ -25,7 +25,7 @@ export const PasswordReset = ({
       </Text>
       
       <Text style={paragraph}>
-        We received a request to reset the password for your AllThingsWetaskiwinq account. If this was you, click the button below to create a new password:
+        We received a request to reset the password for your AllThingsWetaskiwin account. If this was you, click the button below to create a new password:
       </Text>
 
       <Section style={buttonContainer}>
@@ -59,7 +59,7 @@ export const PasswordReset = ({
 
       <Text style={paragraph}>
         Best regards,<br />
-        The AllThingsWetaskiwinq Team
+        The AllThingsWetaskiwin Team
       </Text>
     </BaseTemplate>
   )

@@ -21,7 +21,7 @@ export const BusinessApproval = ({
 }: BusinessApprovalProps) => {
   return (
     <BaseTemplate 
-      preview={`🎉 ${businessName} is now live on AllThingsWetaskiwinq!`}
+      preview={`🎉 ${businessName} is now live on AllThingsWetaskiwin!`}
       trackingId={trackingId}
     >
       <Text style={heading}>🎉 Great News! Your Business is Live!</Text>
@@ -84,8 +84,8 @@ export const BusinessApproval = ({
       </Text>
 
       <Text style={paragraph}>
-        Welcome to the AllThingsWetaskiwinq business community!<br />
-        The AllThingsWetaskiwinq Team
+        Welcome to the AllThingsWetaskiwin business community!<br />
+        The AllThingsWetaskiwin Team
       </Text>
 
       <Text style={footnote}>

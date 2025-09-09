@@ -57,7 +57,7 @@ export const BaseTemplate = ({
                   src={`${logoUrl}/logo.png`}
                   width="150"
                   height="40"
-                  alt="AllThingsWetaskiwinq"
+                  alt="AllThingsWetaskiwin"
                   style={logo}
                 />
               </Column>
@@ -75,7 +75,7 @@ export const BaseTemplate = ({
               <Hr style={hr} />
               <Section style={footer}>
                 <Text style={footerText}>
-                  <strong>AllThingsWetaskiwinq</strong> - Your Wetaskiwin Community Hub
+                  <strong>AllThingsWetaskiwin</strong> - Your Wetaskiwin Community Hub
                 </Text>
                 <Text style={footerText}>
                   Stay connected with local businesses, events, and news in Wetaskiwin, Alberta.

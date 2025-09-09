@@ -32,7 +32,7 @@ export class EmailAutomationService {
 
       await ComprehensiveEmailService.queueEmail({
         to: user.email,
-        subject: `Welcome to AllThingsWetaskiwinq, ${user.firstName}! Please verify your email`,
+        subject: `Welcome to AllThingsWetaskiwin, ${user.firstName}! Please verify your email`,
         templateType: 'email_verification',
         templateData: {
           firstName: user.firstName,
@@ -64,7 +64,7 @@ export class EmailAutomationService {
 
       await ComprehensiveEmailService.queueEmail({
         to: user.email,
-        subject: 'Password reset request for your AllThingsWetaskiwinq account',
+        subject: 'Password reset request for your AllThingsWetaskiwin account',
         templateType: 'password_reset',
         templateData: {
           firstName: user.firstName,
@@ -101,7 +101,7 @@ export class EmailAutomationService {
 
       await ComprehensiveEmailService.queueEmail({
         to: user.email,
-        subject: `🎉 ${business.name} is now live on AllThingsWetaskiwinq!`,
+        subject: `🎉 ${business.name} is now live on AllThingsWetaskiwin!`,
         templateType: 'business_approval',
         templateData: {
           firstName: user.firstName,

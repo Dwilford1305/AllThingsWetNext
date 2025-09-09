@@ -13,7 +13,7 @@ export const POST = withAuth(async (request: AuthenticatedRequest) => {
     if (!user) return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 })
     if (user.twoFactorEnabled) return NextResponse.json({ success: false, error: '2FA already enabled' }, { status: 400 })
     const secret = generateBase32Secret(20)
-    const otpauthUrl = `otpauth://totp/AllThingsWetaskiwinq:${encodeURIComponent(user.email)}?secret=${secret}&issuer=AllThingsWetaskiwinq`
+    const otpauthUrl = `otpauth://totp/AllThingsWetaskiwin:${encodeURIComponent(user.email)}?secret=${secret}&issuer=AllThingsWetaskiwin`
     const pendingUntil = new Date(Date.now() + 10 * 60 * 1000)
     user.twoFactorTempSecret = secret
     user.twoFactorPendingUntil = pendingUntil

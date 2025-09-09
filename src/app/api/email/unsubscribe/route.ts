@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Unsubscribe - AllThingsWetaskiwinq</title>
+          <title>Unsubscribe - AllThingsWetaskiwin</title>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1">
           <style>
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         </head>
         <body>
           <div class="header">
-            <h1>Unsubscribe from AllThingsWetaskiwinq Emails</h1>
+            <h1>Unsubscribe from AllThingsWetaskiwin Emails</h1>
           </div>
           <div class="form">
             <p>We're sorry to see you go! You are about to unsubscribe the email address:</p>
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Unsubscribed - AllThingsWetaskiwinq</title>
+          <title>Unsubscribed - AllThingsWetaskiwin</title>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1">
           <style>
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
             <p>You may still receive important account and security-related emails.</p>
             
             <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}" class="button">
-              Return to AllThingsWetaskiwinq
+              Return to AllThingsWetaskiwin
             </a>
             
             <p style="margin-top: 20px; font-size: 14px; color: #666;">
