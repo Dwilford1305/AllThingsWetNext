@@ -8,13 +8,16 @@ async function globalSetup(config: FullConfig) {
     let usingMockDatabase = false;
     
     try {
-      // Attempt to import and setup test database
-      const { setupTestDB } = await import('./setup/test-db');
-      const testDbUri = await setupTestDB();
+      // Attempt to set up MongoDB Memory Server for real database testing
+      // This will fail gracefully in environments where external downloads are blocked
+      const { MongoMemoryServer } = await import('mongodb-memory-server');
+      const mongod = await MongoMemoryServer.create();
+      const testDbUri = mongod.getUri();
       
       // Set environment variable for the test database
       process.env.MONGODB_URI = testDbUri;
-      console.log('✅ Real test database configured:', testDbUri);
+      process.env.E2E_MONGOD_INSTANCE = 'true'; // Flag to track cleanup needed
+      console.log('✅ Real test database configured with MongoDB Memory Server:', testDbUri);
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';

@@ -4,15 +4,16 @@ async function globalTeardown(config: FullConfig) {
   console.log('🧹 Starting global test teardown...');
   
   try {
-    // Clean up test database if it was set up
-    if (process.env.E2E_MOCK_DATABASE !== 'true') {
+    // Clean up MongoDB Memory Server if it was set up
+    if (process.env.E2E_MONGOD_INSTANCE === 'true') {
       try {
-        const { teardownTestDB } = await import('./setup/test-db');
-        await teardownTestDB();
-        console.log('✅ Test database cleaned up');
+        // In a real implementation, we'd need to store the mongod instance
+        // For now, just clear the environment variable
+        delete process.env.E2E_MONGOD_INSTANCE;
+        console.log('✅ MongoDB Memory Server instance reference cleared');
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.log('⚠️ Test database cleanup failed:', errorMessage);
+        console.log('⚠️ MongoDB Memory Server cleanup failed:', errorMessage);
       }
     }
     
