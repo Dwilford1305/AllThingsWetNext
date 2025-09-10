@@ -172,9 +172,16 @@ const Navigation = () => {
     <>
       {/* Foldable Sidebar Navigation (client-only) */}
       {hasMounted && isFoldableUnfolded() && (
-        <aside className={`fixed left-0 bottom-0 w-24 bg-white/80 backdrop-blur-lg border-r border-gray-200/50 shadow-xl z-40 flex flex-col items-center py-6 foldable-sidebar overflow-y-auto ${
-          isHomePage ? 'top-28' : 'top-16'
-        }`}>
+        <aside 
+          className="w-24 bg-white/80 backdrop-blur-lg border-r border-gray-200/50 shadow-xl flex flex-col items-center py-6 foldable-sidebar overflow-y-auto"
+          style={{
+            position: 'fixed',
+            left: '0',
+            bottom: '0',
+            top: isHomePage ? '112px' : '64px', // 48px banner + 64px nav = 112px for homepage, 64px nav for others
+            zIndex: 40
+          }}
+        >
           {/* Logo/Home */}
           <Link href="/" className="mb-6 p-3 rounded-xl hover:bg-blue-50 transition-all duration-300 hover-lift flex flex-col items-center flex-shrink-0 group">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300">
@@ -278,10 +285,8 @@ const Navigation = () => {
       )}
 
       {/* Traditional Navigation for non-foldable devices (always rendered) */}
-      <nav className={`fixed w-full max-w-full z-50 transition-all duration-500 nav-container overflow-x-hidden no-horizontal-scroll safe-width rounded-b-2xl` +
-        ` ${getNavStyles()} ${hasMounted && isFoldableUnfolded() ? 'hidden' : ''} ${
-          isHomePage ? 'top-12' : 'top-0'
-        }`}
+      <nav className={`w-full max-w-full transition-all duration-500 nav-container overflow-x-hidden no-horizontal-scroll safe-width rounded-b-2xl` +
+        ` ${getNavStyles()} ${hasMounted && isFoldableUnfolded() ? 'hidden' : ''}`}
         style={{
           position: 'fixed',
           top: isHomePage ? '48px' : '0px',

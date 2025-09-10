@@ -333,11 +333,10 @@ img {
 .nav-container {
   /* Ensure navigation stays fixed on all mobile devices */
   position: fixed !important;
-  top: 0;
   left: 0;
   right: 0;
   width: 100% !important;
-  z-index: 40 !important;
+  z-index: 9999 !important;
   
   /* iOS Safari specific fixes */
   -webkit-backface-visibility: hidden;
@@ -360,9 +359,6 @@ img {
     
     /* Prevent interference from parent containers */
     isolation: isolate;
-    
-    /* Ensure proper stacking */
-    z-index: 9999 !important;
   }
   
   /* Ensure foldable sidebar also stays properly positioned */
