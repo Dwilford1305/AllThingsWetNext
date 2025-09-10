@@ -177,6 +177,28 @@ const EmailPreferencesSchema = new Schema({
       default: 'morning'
     }
   },
+
+  // Push notification preferences
+  pushNotifications: {
+    enabled: { type: Boolean, default: false },
+    types: {
+      marketplace: { type: Boolean, default: true }, // Marketplace comments, messages
+      events: { type: Boolean, default: true }, // Event reminders, updates
+      business: { type: Boolean, default: true }, // Business inquiries, updates
+      news: { type: Boolean, default: true }, // Breaking news, important updates
+      general: { type: Boolean, default: true } // General community notifications
+    },
+    quietHours: {
+      enabled: { type: Boolean, default: true },
+      start: { type: String, default: '22:00' }, // 10 PM
+      end: { type: String, default: '08:00' } // 8 AM
+    },
+    frequency: {
+      type: String,
+      enum: ['immediate', 'bundled', 'daily'],
+      default: 'immediate'
+    }
+  },
   
   // Global unsubscribe
   unsubscribedFromAll: { type: Boolean, default: false },

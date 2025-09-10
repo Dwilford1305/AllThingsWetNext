@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - AllThingsWetaskiwin</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1e293b 0%, #1e40af 50%, #1e293b 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            text-align: center;
+            max-width: 400px;
+            padding: 2rem;
+        }
+        .icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 2rem;
+            background: #3b82f6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+        p {
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+        .button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+        .button:hover {
+            background: #2563eb;
+        }
+        .features {
+            margin-top: 2rem;
+            text-align: left;
+        }
+        .feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+        }
+        .feature::before {
+            content: "✓";
+            color: #10b981;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">📶</div>
+        <h1>You're Offline</h1>
+        <p>
+            No internet connection detected. Some features of AllThingsWetaskiwin 
+            may not be available right now.
+        </p>
+        
+        <button class="button" onclick="window.location.reload()">
+            Try Again
+        </button>
+        
+        <div class="features">
+            <div class="feature">Cached pages still available</div>
+            <div class="feature">Push notifications still work</div>
+            <div class="feature">Data syncs when you're back online</div>
+        </div>
+    </div>
+
+    <script>
+        // Check for online status and auto-reload when back online
+        window.addEventListener('online', function() {
+            window.location.reload();
+        });
+        
+        // Update button text based on connection status
+        function updateStatus() {
+            const button = document.querySelector('.button');
+            if (navigator.onLine) {
+                button.textContent = 'You\'re Back Online!';
+                button.style.background = '#10b981';
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                button.textContent = 'Try Again';
+            }
+        }
+        
+        setInterval(updateStatus, 2000);
+    </script>
+</body>
+</html>

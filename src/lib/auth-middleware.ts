@@ -241,3 +241,26 @@ export function withPermission(requiredPermission: string, handler: (request: Au
     return handler(request as AuthenticatedRequest, context)
   }
 }
+
+// Admin verification function for simple admin checks
+export async function verifyAdmin(request: NextRequest): Promise<{
+  success: boolean;
+  error?: string;
+  status?: number;
+  user?: UserType;
+}> {
+  const authResult = await authorizeRole(request, ['admin', 'super_admin']);
+  
+  if (authResult.error) {
+    return {
+      success: false,
+      error: authResult.error,
+      status: authResult.status
+    };
+  }
+
+  return {
+    success: true,
+    user: authResult.user
+  };
+}
