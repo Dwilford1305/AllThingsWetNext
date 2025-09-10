@@ -200,12 +200,6 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
     }
   };
 
-  // Old upgrade flow - kept for backward compatibility but now unused
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleUpgrade = async (newTier: string) => {
-    setSelectedTier(newTier);
-    setShowUpgradeModal(true);
-  };
 
   const handleNewUpgrade = (tier?: string) => {
     setPreSelectedTier(tier);
