@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import ComprehensiveEmailService from '../../../../lib/email/services/ComprehensiveEmailService'
 import EmailAutomationService from '../../../../lib/email/services/EmailAutomationService'
 
+// NOTE: This standalone email cron is NOT configured in vercel.json for Hobby plan users
+// Email processing is combined with the scrape cron job to stay within the 2 cron job limit
+// This endpoint remains available for:
+// - Pro plan users who want separate email processing
+// - Manual email queue processing via admin interface
+// - Testing email functionality in development
+
 export async function POST(request: NextRequest) {
   try {
     // Verify cron secret for security
@@ -40,7 +47,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Allow GET for testing purposes
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // In development, allow GET requests without auth for testing
     if (process.env.NODE_ENV !== 'development') {

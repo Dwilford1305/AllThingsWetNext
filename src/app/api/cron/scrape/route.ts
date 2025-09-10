@@ -6,6 +6,8 @@ import { ComprehensiveScraperService } from '@/lib/comprehensiveScraperService'
 import { NewsScraperService, type NewsScrapingResult } from '@/lib/newsScraperService'
 import { ScraperService } from '@/lib/scraperService'
 import { BusinessScraperService } from '@/lib/businessScraperService'
+import ComprehensiveEmailService from '@/lib/email/services/ComprehensiveEmailService'
+import EmailAutomationService from '@/lib/email/services/EmailAutomationService'
 
 // Ensure this route is always dynamic and never cached
 export const dynamic = 'force-dynamic'
@@ -24,6 +26,10 @@ interface ScraperResults {
     total: number
     new: number 
     updated: number
+    errors: string[]
+  }
+  emailProcessing?: {
+    processed: number
     errors: string[]
   }
 }
@@ -227,15 +233,35 @@ async function executeCron(request: NextRequest) {
     }
   }
 
+  // Process email queue after scraping (combined cron job to stay within Vercel Hobby limits)
+  console.log('📧 Processing email queue...')
+  try {
+    await ComprehensiveEmailService.processQueue(20) // Process up to 20 emails
+    await EmailAutomationService.processAutomatedCampaigns()
+    
+    results.emailProcessing = {
+      processed: 20, // Max batch size
+      errors: []
+    }
+    
+    console.log('✅ Email queue processing completed')
+  } catch (error) {
+    console.error('❌ Email queue processing failed:', error)
+    results.emailProcessing = {
+      processed: 0,
+      errors: [error instanceof Error ? error.message : 'Email processing failed']
+    }
+  }
+
   const totalDuration = Date.now() - startTime
-  console.log(`✅ Cron job completed successfully in ${totalDuration}ms`)
+  console.log(`✅ Combined cron job completed successfully in ${totalDuration}ms`)
 
   return NextResponse.json(
     {
       success: true,
       data: results,
       timestamp: new Date().toISOString(),
-      message: `Scheduled scraping completed for ${type}`,
+      message: `Combined scraping and email processing completed for ${type}`,
       duration: totalDuration
     },
     { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
@@ -267,7 +293,8 @@ export async function GET(request: NextRequest) {
           lastEventsRun: stats.events.lastRun,
           lastNewsRun: stats.news.lastRun,
           systemHealth: stats.overall.systemHealth,
-          nextScheduled: '6:00 AM Mountain Time daily'
+          nextScheduled: '6:00 AM Mountain Time daily (includes email processing)',
+          emailProcessing: 'Combined with scraping cron job'
         }
       },
       { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
