@@ -34,6 +34,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
   const [loading, setLoading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showNewUpgradeModal, setShowNewUpgradeModal] = useState(false);
+  const [preSelectedTier, setPreSelectedTier] = useState<string | undefined>(undefined);
   const [selectedTier, setSelectedTier] = useState<string>('');
   const [offerCode, setOfferCode] = useState('');
   const [offerCodeValidation, setOfferCodeValidation] = useState<OfferCodeValidationResult | null>(null);
@@ -204,7 +205,8 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
     setShowUpgradeModal(true);
   };
 
-  const handleNewUpgrade = () => {
+  const handleNewUpgrade = (tier?: string) => {
+    setPreSelectedTier(tier);
     setShowNewUpgradeModal(true);
   };
 
@@ -717,7 +719,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                   size="sm" 
                   variant="outline" 
                   className="w-full"
-                  onClick={handleNewUpgrade}
+                  onClick={() => handleNewUpgrade('silver')}
                   disabled={loading}
                 >
                   Upgrade with PayPal
@@ -741,7 +743,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                   size="sm" 
                   variant="primary" 
                   className="w-full"
-                  onClick={() => handleUpgrade('gold')}
+                  onClick={() => handleNewUpgrade('gold')}
                   disabled={loading}
                 >
                   Upgrade to Gold
@@ -764,7 +766,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                   size="sm" 
                   variant="outline" 
                   className="w-full"
-                  onClick={() => handleUpgrade('platinum')}
+                  onClick={() => handleNewUpgrade('platinum')}
                   disabled={loading}
                 >
                   Upgrade to Platinum
@@ -781,14 +783,14 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                   <>
                     <Button 
                       variant="primary" 
-                      onClick={() => handleUpgrade('gold')}
+                      onClick={() => handleNewUpgrade('gold')}
                       disabled={loading}
                     >
                       Upgrade to Gold
                     </Button>
                     <Button 
                       variant="outline" 
-                      onClick={() => handleUpgrade('platinum')}
+                      onClick={() => handleNewUpgrade('platinum')}
                       disabled={loading}
                     >
                       Upgrade to Platinum
@@ -798,7 +800,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                 {currentTier === 'gold' && (
                   <Button 
                     variant="primary" 
-                    onClick={() => handleUpgrade('platinum')}
+                    onClick={() => handleNewUpgrade('platinum')}
                     disabled={loading}
                   >
                     Upgrade to Platinum
@@ -1199,11 +1201,15 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
       {/* New PayPal Upgrade Modal */}
       <SubscriptionUpgradeModal
         isOpen={showNewUpgradeModal}
-        onClose={() => setShowNewUpgradeModal(false)}
+        onClose={() => {
+          setShowNewUpgradeModal(false);
+          setPreSelectedTier(undefined);
+        }}
         tiers={businessTiers}
         currentTier={currentTier}
         onUpgradeSuccess={handleUpgradeSuccess}
         type="business"
+        preSelectedTier={preSelectedTier}
       />
 
       {/* Ad Preview Modal */}

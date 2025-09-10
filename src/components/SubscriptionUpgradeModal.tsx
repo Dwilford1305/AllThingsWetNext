@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -25,6 +25,7 @@ interface SubscriptionUpgradeModalProps {
   currentTier?: string;
   onUpgradeSuccess: (tier: string, paymentId: string) => void;
   type: 'marketplace' | 'business';
+  preSelectedTier?: string; // Pre-select a specific tier to skip tier selection
 }
 
 export const SubscriptionUpgradeModal: React.FC<SubscriptionUpgradeModalProps> = ({
@@ -33,11 +34,27 @@ export const SubscriptionUpgradeModal: React.FC<SubscriptionUpgradeModalProps> =
   tiers,
   currentTier = 'free',
   onUpgradeSuccess,
-  type
+  type,
+  preSelectedTier
 }) => {
   const [selectedTier, setSelectedTier] = useState<SubscriptionTier | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [showPayment, setShowPayment] = useState(false);
+
+  // When modal opens and preSelectedTier is provided, auto-select tier and go to payment
+  useEffect(() => {
+    if (isOpen && preSelectedTier) {
+      const preSelected = tiers.find(tier => tier.id === preSelectedTier);
+      if (preSelected) {
+        setSelectedTier(preSelected);
+        setShowPayment(true);
+      }
+    } else if (isOpen && !preSelectedTier) {
+      // Reset state when modal opens without preselection
+      setSelectedTier(null);
+      setShowPayment(false);
+    }
+  }, [isOpen, preSelectedTier, tiers]);
 
   const handleTierSelect = (tier: SubscriptionTier) => {
     setSelectedTier(tier);
@@ -258,10 +275,10 @@ export const SubscriptionUpgradeModal: React.FC<SubscriptionUpgradeModalProps> =
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setShowPayment(false)}
+                      onClick={() => preSelectedTier ? onClose() : setShowPayment(false)}
                       className="text-gray-600"
                     >
-                      ← Back to Plans
+                      {preSelectedTier ? '← Cancel' : '← Back to Plans'}
                     </Button>
                   </div>
                 </div>
