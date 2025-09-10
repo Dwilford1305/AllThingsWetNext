@@ -3,7 +3,10 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/tests'],
   transform: {
-    '^.+\\.(t|j)sx?$': ['ts-jest', { tsconfig: 'tsconfig.json' }]
+    '^.+\\.(t|j)sx?$': ['ts-jest', { 
+      tsconfig: 'tsconfig.json',
+      useESM: true
+    }]
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
@@ -12,10 +15,5 @@ module.exports = {
   transformIgnorePatterns: [
     'node_modules/(?!(uuid|@react-email)/)'
   ],
-  extensionsToTreatAsEsm: ['.ts', '.tsx'],
-  globals: {
-    'ts-jest': {
-      useESM: true
-    }
-  }
+  extensionsToTreatAsEsm: ['.ts', '.tsx']
 };
