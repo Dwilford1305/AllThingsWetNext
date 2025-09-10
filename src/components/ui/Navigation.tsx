@@ -278,10 +278,17 @@ const Navigation = () => {
       )}
 
       {/* Traditional Navigation for non-foldable devices (always rendered) */}
-      <nav className={`fixed w-full max-w-full z-40 transition-all duration-500 nav-container overflow-x-hidden no-horizontal-scroll safe-width rounded-b-2xl` +
+      <nav className={`fixed w-full max-w-full z-50 transition-all duration-500 nav-container overflow-x-hidden no-horizontal-scroll safe-width rounded-b-2xl` +
         ` ${getNavStyles()} ${hasMounted && isFoldableUnfolded() ? 'hidden' : ''} ${
           isHomePage ? 'top-12' : 'top-0'
         }`}
+        style={{
+          position: 'fixed',
+          top: isHomePage ? '48px' : '0px',
+          left: '0',
+          right: '0',
+          zIndex: 9999
+        }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-hidden no-horizontal-scroll safe-width">
           <div className="flex justify-between items-center h-16 sm:h-18 min-w-0 flex-between w-full overflow-x-hidden no-horizontal-scroll safe-width">
