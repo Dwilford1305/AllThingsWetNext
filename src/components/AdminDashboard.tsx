@@ -27,7 +27,10 @@ import {
   TestTube,
   EyeOff,
   Monitor,
-  Zap
+  Zap,
+  Mail,
+  Send,
+  TrendingUp
 } from 'lucide-react';
 import type { Business, Event, NewsArticle, BusinessCategory, SubscriptionTier, Report as ReportType } from '@/types';
 import ScraperLogs from './ScraperLogs';
@@ -59,7 +62,7 @@ interface ScraperConfig {
 }
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'business-requests' | 'content' | 'users' | 'offer-codes' | 'ads' | 'scrapers' | 'settings' | 'reports' | 'test-business'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'businesses' | 'business-requests' | 'content' | 'users' | 'offer-codes' | 'ads' | 'scrapers' | 'email-analytics' | 'settings' | 'reports' | 'test-business'>('overview');
   const [data, setData] = useState<ContentStats | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -92,6 +95,17 @@ const AdminDashboard = () => {
     businesses: { status: 'idle' }
   });
 
+  // Comprehensive scraper status
+  const [comprehensiveScraperStatus, setComprehensiveScraperStatus] = useState<{
+    isRunning: boolean;
+    lastRun: Date | null;
+    stats: any;
+  }>({
+    isRunning: false,
+    lastRun: null,
+    stats: null
+  });
+
   // Business management state
   const [businessFilter, setBusinessFilter] = useState<'all' | 'claimed' | 'premium' | 'unclaimed'>('all');
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
@@ -121,25 +135,59 @@ const AdminDashboard = () => {
   });
 
   // Comprehensive scraper state
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [comprehensiveScraperStatus, setComprehensiveScraperStatus] = useState<{
-    isRunning: boolean;
-    lastRun: Date | null;
-    stats: {
-      events: { lastRun: Date | null; isRunning: boolean; totalRuns: number; lastErrors: string[] };
-      news: { lastRun: Date | null; isRunning: boolean; totalRuns: number; lastErrors: string[] };
-      businesses: { lastRun: Date | null; isRunning: boolean; totalRuns: number; lastErrors: string[] };
-      overall: { totalItems: number; lastFullScrape: Date | null; systemHealth: 'healthy' | 'warning' | 'error' };
+  // Email analytics state
+  const [emailAnalytics, setEmailAnalytics] = useState<{
+    overview: {
+      totalEmailsSent: number;
+      overallOpenRate: number;
+      overallClickRate: number;
+      overallBounceRate: number;
+      timeRange: number;
     };
+    emailsByTemplate: Array<{ _id: string; count: number }>;
+    openRates: Array<{ _id: string; total: number; opened: number; openRate: number }>;
+    clickRates: Array<{ _id: string; total: number; clicked: number; clickRate: number }>;
+    queueStats: Record<string, number>;
+    preferencesStats: {
+      totalUsers: number;
+      marketingOptIn: number;
+      newsletterOptIn: number;
+      eventNotificationsOptIn: number;
+      pushNotificationsEnabled: number;
+      unsubscribedAll: number;
+    };
+    pushStats: {
+      totalSubscriptions: number;
+      activeSubscriptions: number;
+      totalSent: number;
+    };
+    dailyActivity: Array<{
+      _id: { year: number; month: number; day: number };
+      sent: number;
+      opened: number;
+      clicked: number;
+      bounced: number;
+    }>;
+    recentEmails: Array<{
+      templateType: string;
+      recipientEmail: string;
+      sentAt: string;
+      opened: boolean;
+      clicked: boolean;
+      deliveryStatus: string;
+    }>;
+    loading: boolean;
   }>({
-    isRunning: false,
-    lastRun: null,
-    stats: {
-      events: { lastRun: null, isRunning: false, totalRuns: 0, lastErrors: [] },
-      news: { lastRun: null, isRunning: false, totalRuns: 0, lastErrors: [] },
-      businesses: { lastRun: null, isRunning: false, totalRuns: 0, lastErrors: [] },
-      overall: { totalItems: 0, lastFullScrape: null, systemHealth: 'healthy' }
-    }
+    overview: { totalEmailsSent: 0, overallOpenRate: 0, overallClickRate: 0, overallBounceRate: 0, timeRange: 30 },
+    emailsByTemplate: [],
+    openRates: [],
+    clickRates: [],
+    queueStats: {},
+    preferencesStats: { totalUsers: 0, marketingOptIn: 0, newsletterOptIn: 0, eventNotificationsOptIn: 0, pushNotificationsEnabled: 0, unsubscribedAll: 0 },
+    pushStats: { totalSubscriptions: 0, activeSubscriptions: 0, totalSent: 0 },
+    dailyActivity: [],
+    recentEmails: [],
+    loading: true
   });
 
 
@@ -148,6 +196,10 @@ const AdminDashboard = () => {
     fetchData();
     fetchScraperConfigs();
     fetchTestBusinessStatus();
+    // Fetch email analytics when email analytics tab is active
+    if (activeTab === 'email-analytics') {
+      fetchEmailAnalytics();
+    }
     // Poll scraper configs every 60s to show near real-time status & next run countdown
     const interval = setInterval(() => {
       fetchScraperConfigs();
@@ -431,6 +483,59 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error toggling ad visibility:', error);
       alert('❌ Error toggling ad visibility');
+    }
+  };
+
+  // Fetch email analytics
+  const fetchEmailAnalytics = async (days = 30) => {
+    setEmailAnalytics(prev => ({ ...prev, loading: true }));
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/admin/email?days=${days}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setEmailAnalytics({
+          ...result.data,
+          loading: false
+        });
+      } else {
+        console.error('Failed to fetch email analytics:', result.error);
+        setEmailAnalytics(prev => ({ ...prev, loading: false }));
+      }
+    } catch (error) {
+      console.error('Error fetching email analytics:', error);
+      setEmailAnalytics(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  // Handle email queue actions
+  const handleEmailAction = async (action: string) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch('/api/admin/email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ action })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert(result.message);
+        fetchEmailAnalytics(); // Refresh data
+      } else {
+        alert(`Failed: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Error performing email action:', error);
+      alert('Error performing action');
     }
   };
 
@@ -1020,12 +1125,13 @@ const AdminDashboard = () => {
     { id: 'businesses', label: 'Businesses', icon: Building },
     { id: 'business-requests', label: 'Business Requests', icon: UserCheck },
     { id: 'content', label: 'Content', icon: Newspaper },
-  { id: 'reports', label: 'Reports', icon: Flag },
+    { id: 'reports', label: 'Reports', icon: Flag },
     { id: 'users', label: 'Users', icon: Users },
     { id: 'offer-codes', label: 'Offer Codes', icon: Ticket },
     { id: 'ads', label: 'Ad Management', icon: Zap },
     { id: 'test-business', label: 'Test Business', icon: TestTube },
     { id: 'scrapers', label: 'Scrapers', icon: Activity },
+    { id: 'email-analytics', label: 'Email Analytics', icon: Mail },
     { id: 'settings', label: 'Settings', icon: Settings },
   ] as const;
 
@@ -1995,68 +2101,447 @@ const AdminDashboard = () => {
         </div>
       )}
 
+      {activeTab === 'email-analytics' && (
+        <div className="space-y-6">
+          {/* Email Analytics Overview */}
+          <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-semibold text-white flex items-center">
+                  <Mail className="h-5 w-5 mr-2" />
+                  Email & Push Notification Analytics
+                </h3>
+                <p className="text-sm text-blue-200 mt-1">
+                  Email campaign performance, user preferences, and push notification statistics
+                </p>
+              </div>
+              <div className="flex space-x-2">
+                <select
+                  className="px-3 py-2 text-sm bg-white/20 text-white border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  onChange={(e) => fetchEmailAnalytics(parseInt(e.target.value))}
+                  defaultValue="30"
+                >
+                  <option value="7" className="bg-slate-800">Last 7 days</option>
+                  <option value="30" className="bg-slate-800">Last 30 days</option>
+                  <option value="90" className="bg-slate-800">Last 90 days</option>
+                </select>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => fetchEmailAnalytics()}
+                  className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh
+                </Button>
+              </div>
+            </div>
+
+            {emailAnalytics.loading ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="h-6 w-6 animate-spin text-blue-400 mr-2" />
+                <span className="text-blue-200">Loading email analytics...</span>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Key Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="bg-blue-500/20 p-4 rounded-lg backdrop-blur-sm border border-blue-400/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-2xl font-bold text-blue-300">
+                          {emailAnalytics.overview.totalEmailsSent.toLocaleString()}
+                        </div>
+                        <div className="text-sm text-blue-200">Emails Sent</div>
+                      </div>
+                      <Send className="h-8 w-8 text-blue-400" />
+                    </div>
+                  </div>
+                  
+                  <div className="bg-green-500/20 p-4 rounded-lg backdrop-blur-sm border border-green-400/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-2xl font-bold text-green-300">
+                          {emailAnalytics.overview.overallOpenRate}%
+                        </div>
+                        <div className="text-sm text-green-200">Open Rate</div>
+                      </div>
+                      <Eye className="h-8 w-8 text-green-400" />
+                    </div>
+                  </div>
+                  
+                  <div className="bg-purple-500/20 p-4 rounded-lg backdrop-blur-sm border border-purple-400/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-2xl font-bold text-purple-300">
+                          {emailAnalytics.overview.overallClickRate}%
+                        </div>
+                        <div className="text-sm text-purple-200">Click Rate</div>
+                      </div>
+                      <TrendingUp className="h-8 w-8 text-purple-400" />
+                    </div>
+                  </div>
+                  
+                  <div className="bg-orange-500/20 p-4 rounded-lg backdrop-blur-sm border border-orange-400/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-2xl font-bold text-orange-300">
+                          {emailAnalytics.pushStats.activeSubscriptions.toLocaleString()}
+                        </div>
+                        <div className="text-sm text-orange-200">Push Subscribers</div>
+                      </div>
+                      <Users className="h-8 w-8 text-orange-400" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Email Queue Status */}
+                <Card className="p-4 bg-white/5 backdrop-blur-sm border border-white/10">
+                  <h4 className="font-semibold text-white mb-3 flex items-center">
+                    <Activity className="h-4 w-4 mr-2" />
+                    Email Queue Status
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-yellow-300">{emailAnalytics.queueStats.pending || 0}</div>
+                      <div className="text-xs text-yellow-200">Pending</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-blue-300">{emailAnalytics.queueStats.processing || 0}</div>
+                      <div className="text-xs text-blue-200">Processing</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-green-300">{emailAnalytics.queueStats.sent || 0}</div>
+                      <div className="text-xs text-green-200">Sent</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-red-300">{emailAnalytics.queueStats.failed || 0}</div>
+                      <div className="text-xs text-red-200">Failed</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-orange-300">{emailAnalytics.queueStats.retrying || 0}</div>
+                      <div className="text-xs text-orange-200">Retrying</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => handleEmailAction('process_queue')}
+                      className="bg-blue-500 text-white hover:bg-blue-600"
+                    >
+                      Process Queue
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEmailAction('retry_failed')}
+                      className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900"
+                    >
+                      Retry Failed
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEmailAction('clear_failed')}
+                      className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 hover:text-gray-900"
+                    >
+                      Clear Failed
+                    </Button>
+                  </div>
+                </Card>
+
+                {/* User Preferences Overview */}
+                <Card className="p-4 bg-white/5 backdrop-blur-sm border border-white/10">
+                  <h4 className="font-semibold text-white mb-3 flex items-center">
+                    <Settings className="h-4 w-4 mr-2" />
+                    User Preferences
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-white">{emailAnalytics.preferencesStats.totalUsers}</div>
+                      <div className="text-xs text-gray-300">Total Users</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-green-300">{emailAnalytics.preferencesStats.newsletterOptIn}</div>
+                      <div className="text-xs text-green-200">Newsletter Subscribers</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-blue-300">{emailAnalytics.preferencesStats.eventNotificationsOptIn}</div>
+                      <div className="text-xs text-blue-200">Event Notifications</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-purple-300">{emailAnalytics.preferencesStats.pushNotificationsEnabled}</div>
+                      <div className="text-xs text-purple-200">Push Enabled</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-yellow-300">{emailAnalytics.preferencesStats.marketingOptIn}</div>
+                      <div className="text-xs text-yellow-200">Marketing Opt-in</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-red-300">{emailAnalytics.preferencesStats.unsubscribedAll}</div>
+                      <div className="text-xs text-red-200">Unsubscribed</div>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Email Performance by Template */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card className="p-4 bg-white/5 backdrop-blur-sm border border-white/10">
+                    <h4 className="font-semibold text-white mb-3">Emails by Template Type</h4>
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {emailAnalytics.emailsByTemplate.map((template) => (
+                        <div key={template._id} className="flex items-center justify-between">
+                          <span className="text-sm text-gray-300 capitalize">
+                            {template._id.replace(/_/g, ' ')}
+                          </span>
+                          <Badge variant="secondary" className="bg-white/20 text-blue-200 border-white/20">
+                            {template.count}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+
+                  <Card className="p-4 bg-white/5 backdrop-blur-sm border border-white/10">
+                    <h4 className="font-semibold text-white mb-3">Open Rates by Template</h4>
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {emailAnalytics.openRates.map((rate) => (
+                        <div key={rate._id} className="flex items-center justify-between">
+                          <div>
+                            <span className="text-sm text-gray-300 capitalize">
+                              {rate._id.replace(/_/g, ' ')}
+                            </span>
+                            <div className="text-xs text-gray-400">
+                              {rate.opened}/{rate.total} opened
+                            </div>
+                          </div>
+                          <Badge 
+                            className={`${
+                              rate.openRate >= 20 ? 'bg-green-500' : 
+                              rate.openRate >= 10 ? 'bg-yellow-500' : 
+                              'bg-red-500'
+                            } text-white`}
+                          >
+                            {rate.openRate}%
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                </div>
+
+                {/* Recent Email Activity */}
+                <Card className="p-4 bg-white/5 backdrop-blur-sm border border-white/10">
+                  <h4 className="font-semibold text-white mb-3">Recent Email Activity</h4>
+                  <div className="space-y-2">
+                    {emailAnalytics.recentEmails.slice(0, 10).map((email, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-white/5 rounded">
+                        <div>
+                          <span className="text-sm font-medium text-white capitalize">
+                            {email.templateType.replace(/_/g, ' ')}
+                          </span>
+                          <div className="text-xs text-gray-400">
+                            To: {email.recipientEmail} • {new Date(email.sentAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          {email.opened && (
+                            <Badge className="bg-green-500 text-white text-xs">Opened</Badge>
+                          )}
+                          {email.clicked && (
+                            <Badge className="bg-blue-500 text-white text-xs">Clicked</Badge>
+                          )}
+                          {email.deliveryStatus === 'bounced' && (
+                            <Badge className="bg-red-500 text-white text-xs">Bounced</Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
+
       {activeTab === 'settings' && (
-        <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
-          <h3 className="text-lg font-semibold text-white mb-4">System Settings</h3>
-          <div className="space-y-6">
-            <div>
-              <h4 className="font-medium text-white mb-2">Scraper Configuration</h4>
-              <div className="space-y-2">
-                <label className="flex items-center">
-                  <input type="checkbox" className="mr-2" defaultChecked />
-                  <span className="text-blue-200">Enable automated news scraping</span>
-                  <span className="text-sm text-gray-800">Auto-run news scraper every 6 hours</span>
-                </label>
-                <label className="flex items-center">
-                  <input type="checkbox" className="mr-2" defaultChecked />
-                  <span className="text-sm text-gray-800">Auto-run events scraper every 6 hours</span>
-                </label>
-                <label className="flex items-center">
-                  <input type="checkbox" className="mr-2" defaultChecked />
-                  <span className="text-sm text-gray-800">Auto-run business scraper weekly</span>
-                </label>
+        <div className="space-y-6">
+          {/* System Settings */}
+          <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">
+            <h3 className="text-lg font-semibold text-white mb-4">System Settings</h3>
+            <div className="space-y-6">
+              {/* Email System Configuration */}
+              <div>
+                <h4 className="font-medium text-white mb-4 flex items-center">
+                  <Mail className="h-4 w-4 mr-2" />
+                  Email System Configuration
+                </h4>
+                <div className="space-y-3 bg-white/5 p-4 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Email Template System</span>
+                    <Badge className="bg-green-500 text-white">Active</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Email Analytics Tracking</span>
+                    <Badge className="bg-green-500 text-white">Enabled</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Email Queue Processing</span>
+                    <Badge className="bg-green-500 text-white">Daily at 6 AM MT</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Combined Cron Architecture</span>
+                    <Badge className="bg-blue-500 text-white">Hobby Plan Compatible</Badge>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">Email Notifications</h4>
-              <div className="space-y-2">
-                <label className="flex items-center">
-                  <input type="checkbox" className="mr-2" defaultChecked />
-                  <span className="text-sm text-gray-800">Business claim notifications</span>
-                </label>
-                <label className="flex items-center">
-                  <input type="checkbox" className="mr-2" defaultChecked />
-                  <span className="text-sm text-gray-800">Scraper error alerts</span>
-                </label>
-                <label className="flex items-center">
-                  <input type="checkbox" className="mr-2" />
-                  <span className="text-sm text-gray-800">Daily summary reports</span>
-                </label>
+              {/* Push Notification Configuration */}
+              <div>
+                <h4 className="font-medium text-white mb-4 flex items-center">
+                  <Send className="h-4 w-4 mr-2" />
+                  Push Notification System
+                </h4>
+                <div className="space-y-3 bg-white/5 p-4 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Service Worker</span>
+                    <Badge className="bg-green-500 text-white">Registered</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Web Push API</span>
+                    <Badge className="bg-green-500 text-white">Available</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">PWA Support</span>
+                    <Badge className="bg-green-500 text-white">Enabled</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">VAPID Configuration</span>
+                    <Badge className="bg-blue-500 text-white">Environment Variables</Badge>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">Content Moderation</h4>
-              <div className="space-y-2">
-                <label className="flex items-center">
-                  <input type="checkbox" className="mr-2" />
-                  <span className="text-sm text-gray-800">Require approval for new events</span>
-                </label>
-                <label className="flex items-center">
-                  <input type="checkbox" className="mr-2" />
-                  <span className="text-sm text-gray-800">Require approval for news articles</span>
-                </label>
-                <label className="flex items-center">
-                  <input type="checkbox" className="mr-2" defaultChecked />
-                  <span className="text-sm text-gray-800">Auto-approve scraped content</span>
-                </label>
+              {/* Scraper Configuration */}
+              <div>
+                <h4 className="font-medium text-white mb-4 flex items-center">
+                  <Activity className="h-4 w-4 mr-2" />
+                  Scraper Configuration
+                </h4>
+                <div className="space-y-3 bg-white/5 p-4 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">News Scraper</span>
+                    <Badge className="bg-green-500 text-white">Daily at 6 AM MT</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Events Scraper</span>
+                    <Badge className="bg-green-500 text-white">Daily at 6 AM MT</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Business Scraper</span>
+                    <Badge className="bg-orange-500 text-white">Weekly on Mondays</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Combined Processing</span>
+                    <Badge className="bg-blue-500 text-white">Vercel Hobby Compatible</Badge>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <Button className="mt-4">Save Settings</Button>
-          </div>
-        </Card>
+              {/* Business System */}
+              <div>
+                <h4 className="font-medium text-white mb-4 flex items-center">
+                  <Building className="h-4 w-4 mr-2" />
+                  Business Management
+                </h4>
+                <div className="space-y-3 bg-white/5 p-4 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Business Claims</span>
+                    <Badge className="bg-green-500 text-white">Enabled</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Subscription Tiers</span>
+                    <Badge className="bg-green-500 text-white">Silver, Gold, Platinum</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">PayPal Integration</span>
+                    <Badge className="bg-green-500 text-white">Active</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Ad Management</span>
+                    <Badge className="bg-green-500 text-white">Premium Feature</Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Security & Moderation */}
+              <div>
+                <h4 className="font-medium text-white mb-4 flex items-center">
+                  <Flag className="h-4 w-4 mr-2" />
+                  Content Moderation
+                </h4>
+                <div className="space-y-3 bg-white/5 p-4 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Content Reporting</span>
+                    <Badge className="bg-green-500 text-white">Enabled</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Admin Review System</span>
+                    <Badge className="bg-green-500 text-white">Active</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Auto-approve Scraped Content</span>
+                    <Badge className="bg-green-500 text-white">Enabled</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">CSRF Protection</span>
+                    <Badge className="bg-green-500 text-white">Enabled</Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Environment Status */}
+              <div>
+                <h4 className="font-medium text-white mb-4 flex items-center">
+                  <Monitor className="h-4 w-4 mr-2" />
+                  Environment Status
+                </h4>
+                <div className="space-y-3 bg-white/5 p-4 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Database Connection</span>
+                    <Badge className="bg-green-500 text-white">MongoDB Atlas</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Authentication</span>
+                    <Badge className="bg-green-500 text-white">Auth0</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Deployment</span>
+                    <Badge className="bg-green-500 text-white">Vercel</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">CDN & Images</span>
+                    <Badge className="bg-green-500 text-white">Next.js Image Optimization</Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Configuration Notes */}
+              <Card className="p-4 bg-blue-500/10 backdrop-blur-sm border border-blue-400/20">
+                <h5 className="font-medium text-blue-300 mb-2">📋 Configuration Notes</h5>
+                <div className="space-y-2 text-sm text-blue-200">
+                  <p><strong>Email System:</strong> Uses React Email templates with comprehensive analytics and automation</p>
+                  <p><strong>Push Notifications:</strong> Requires VAPID keys in environment variables (VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)</p>
+                  <p><strong>Combined Cron:</strong> Processes both scraping and email queue to stay within Vercel Hobby plan limits</p>
+                  <p><strong>Business Features:</strong> Full subscription management with PayPal integration for premium tiers</p>
+                  <p><strong>Moderation:</strong> Community-driven reporting with admin review capabilities</p>
+                </div>
+              </Card>
+            </div>
+          </Card>
+        </div>
       )}
 
       {activeTab === 'scrapers' && (

@@ -1,4 +1,6 @@
 import nodemailer from 'nodemailer'
+import ComprehensiveEmailService from './email/services/ComprehensiveEmailService'
+import EmailAutomationService from './email/services/EmailAutomationService'
 
 interface EmailNotificationData {
   requestId: string
@@ -79,12 +81,12 @@ export class EmailService {
         </p>
         
         <p style="color: #666; font-size: 12px; margin-top: 30px;">
-          This is an automated notification from AllThingsWet Business Directory.
+          This is an automated notification from AllThingsWetaskiwin Business Directory.
         </p>
       `
 
       const info = await this.transporter.sendMail({
-        from: `"AllThingsWet Directory" <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
+        from: `"AllThingsWetaskiwin Directory" <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
         to: adminEmail,
         subject: `New Business Listing Request: ${data.businessName}`,
         html: emailContent,
@@ -99,7 +101,31 @@ export class EmailService {
     }
   }
 
-  static async sendBusinessRequestConfirmation(userEmail: string, businessName: string): Promise<boolean> {
+  static async sendBusinessRequestConfirmation(userEmail: string, businessName: string, requestId?: string): Promise<boolean> {
+    try {
+      // Use the new comprehensive email service for better templates and tracking
+      await ComprehensiveEmailService.queueEmail({
+        to: userEmail,
+        subject: `Business listing request received - ${businessName}`,
+        templateType: 'business_request_confirmation',
+        templateData: {
+          businessName,
+          requestId: requestId || 'N/A'
+        },
+        priority: 'normal'
+      })
+
+      console.log('Business request confirmation queued for:', userEmail)
+      return true
+    } catch (error) {
+      console.error('Failed to queue business request confirmation:', error)
+      
+      // Fallback to legacy email for compatibility
+      return this.legacySendBusinessRequestConfirmation(userEmail, businessName)
+    }
+  }
+
+  private static async legacySendBusinessRequestConfirmation(userEmail: string, businessName: string): Promise<boolean> {
     try {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
       
@@ -128,16 +154,16 @@ export class EmailService {
         
         <p>
           Best regards,<br>
-          The AllThingsWet Team
+          The AllThingsWetaskiwin Team
         </p>
         
         <p style="color: #666; font-size: 12px; margin-top: 30px;">
-          This is an automated confirmation from AllThingsWet Business Directory.
+          This is an automated confirmation from AllThingsWetaskiwin Business Directory.
         </p>
       `
 
       const info = await this.transporter.sendMail({
-        from: `"AllThingsWet Directory" <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
+        from: `"AllThingsWetaskiwin Directory" <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
         to: userEmail,
         subject: `Business Listing Request Received - ${businessName}`,
         html: emailContent,
@@ -184,20 +210,20 @@ export class EmailService {
         
         <p>
           Best regards,<br>
-          The AllThingsWet Team
+          The AllThingsWetaskiwin Team
         </p>
         
         <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e5e5;">
         <p style="color: #666; font-size: 12px;">
           Business ID: ${businessId}<br>
-          This is an automated notification from AllThingsWet Business Directory.
+          This is an automated notification from AllThingsWetaskiwin Business Directory.
         </p>
       `
 
       const info = await this.transporter.sendMail({
-        from: `"AllThingsWet Directory" <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
+        from: `"AllThingsWetaskiwin Directory" <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
         to: userEmail,
-        subject: `🎉 ${businessName} is Now Live on AllThingsWet!`,
+        subject: `🎉 ${businessName} is Now Live on AllThingsWetaskiwin!`,
         html: emailContent,
       })
 
@@ -213,19 +239,32 @@ export class EmailService {
   // === Auth / Account Emails ===
   static async sendEmailVerification(userEmail: string, token: string): Promise<boolean> {
     try {
+      // Use comprehensive email service with professional templates
+      await EmailAutomationService.triggerWelcomeEmail(userEmail)
+      return true
+    } catch (error) {
+      console.error('Failed to trigger welcome email, using fallback:', error)
+      
+      // Fallback to legacy implementation
+      return this.legacySendEmailVerification(userEmail, token)
+    }
+  }
+
+  private static async legacySendEmailVerification(userEmail: string, token: string): Promise<boolean> {
+    try {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
       const verifyUrl = `${siteUrl}/verify-email?token=${encodeURIComponent(token)}`
       const html = `
         <h2>Verify Your Email Address</h2>
-        <p>Thanks for creating an account on AllThingsWet. Please confirm this email address to activate full functionality.</p>
+        <p>Thanks for creating an account on AllThingsWetaskiwin. Please confirm this email address to activate full functionality.</p>
         <p><a href="${verifyUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600">Verify Email</a></p>
         <p>If the button above does not work, copy and paste this URL into your browser:</p>
         <p style="word-break:break-all;font-size:12px;color:#555">${verifyUrl}</p>
         <p>This link will expire in 60 minutes. If you did not request this, you can ignore this email.</p>
-        <p style="color:#666;font-size:12px;margin-top:32px">© ${new Date().getFullYear()} AllThingsWet</p>
+        <p style="color:#666;font-size:12px;margin-top:32px">© ${new Date().getFullYear()} AllThingsWetaskiwin</p>
       `
       const info = await this.transporter.sendMail({
-        from: `AllThingsWet <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
+        from: `AllThingsWetaskiwin <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
         to: userEmail,
         subject: 'Verify your email address',
         html
@@ -238,20 +277,36 @@ export class EmailService {
     }
   }
 
-  static async sendPasswordReset(userEmail: string, token: string): Promise<boolean> {
+  static async sendPasswordReset(userEmail: string, token: string, userId?: string): Promise<boolean> {
+    try {
+      // Use comprehensive email service if userId is available
+      if (userId) {
+        await EmailAutomationService.triggerPasswordResetEmail(userId, token)
+        return true
+      }
+      
+      // Fallback to legacy implementation
+      return this.legacySendPasswordReset(userEmail, token)
+    } catch (error) {
+      console.error('Failed to trigger password reset email, using fallback:', error)
+      return this.legacySendPasswordReset(userEmail, token)
+    }
+  }
+
+  private static async legacySendPasswordReset(userEmail: string, token: string): Promise<boolean> {
     try {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
       const resetUrl = `${siteUrl}/reset-password?token=${encodeURIComponent(token)}`
       const html = `
         <h2>Reset Your Password</h2>
-        <p>We received a request to reset the password for your AllThingsWet account.</p>
+        <p>We received a request to reset the password for your AllThingsWetaskiwin account.</p>
         <p><a href="${resetUrl}" style="display:inline-block;background:#2563eb;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600">Reset Password</a></p>
         <p>If you did not request this, you can safely ignore this email. This link will expire in 60 minutes.</p>
         <p style="word-break:break-all;font-size:12px;color:#555">${resetUrl}</p>
-        <p style="color:#666;font-size:12px;margin-top:32px">© ${new Date().getFullYear()} AllThingsWet</p>
+        <p style="color:#666;font-size:12px;margin-top:32px">© ${new Date().getFullYear()} AllThingsWetaskiwin</p>
       `
       const info = await this.transporter.sendMail({
-        from: `AllThingsWet <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
+        from: `AllThingsWetaskiwin <${process.env.SMTP_FROM || 'noreply@allthingswet.ca'}>`,
         to: userEmail,
         subject: 'Password reset request',
         html
