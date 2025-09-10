@@ -203,10 +203,195 @@ img {
   height: auto;
 }
 
-/* Mobile-friendly touch targets */
+/* Enhanced Mobile-Friendly Touch Targets & Form Optimizations */
 @media (max-width: 768px) {
-  button, a, [role="button"] {
+  /* Touch targets meet 44px minimum accessibility guidelines */
+  button, a, [role="button"], 
+  input[type="submit"], input[type="button"], 
+  select, .clickable {
     min-height: 44px;
     min-width: 44px;
+  }
+  
+  /* Enhanced form inputs for mobile */
+  input[type="text"], input[type="email"], input[type="tel"], 
+  input[type="password"], input[type="url"], input[type="number"],
+  select, textarea {
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px 16px;
+    border-radius: 8px;
+    /* Better tap highlighting */
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+  }
+  
+  /* Better textarea sizing on mobile */
+  textarea {
+    min-height: 88px; /* 2x touch target for better usability */
+    resize: vertical;
+  }
+  
+  /* Enhanced navigation touch targets */
+  nav a, nav button {
+    padding: 12px 16px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  /* Better card touch interactions */
+  .card, .hover-lift {
+    /* Larger touch area for cards */
+    padding: 16px;
+  }
+  
+  /* Improved button spacing and sizing */
+  .button-group {
+    gap: 12px;
+  }
+  
+  .button-group button,
+  .button-group a {
+    flex: 1;
+    min-height: 48px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  /* Better modal and overlay interactions */
+  .modal-content, .dialog-content {
+    margin: 16px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+  }
+  
+  /* Enhanced search and filter inputs */
+  .search-input, .filter-select {
+    min-height: 48px;
+    font-size: 16px;
+    padding: 12px 16px;
+  }
+  
+  /* Better spacing for mobile layouts */
+  .mobile-padding {
+    padding: 16px;
+  }
+  
+  .mobile-margin {
+    margin: 16px 0;
+  }
+}
+
+/* Enhanced hover and touch interactions */
+@media (hover: hover) {
+  /* Only apply hover effects on devices that support hover */
+  .hover-lift:hover {
+    transform: translateY(-4px) scale(1.03);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .hover-scale:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Touch feedback for all devices */
+.hover-lift:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+.hover-scale:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+/* Better button press feedback */
+button:active, 
+a:active, 
+[role="button"]:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+  transition: all 0.1s ease;
+}
+/* Improved contrast and readability */
+@media (max-width: 768px) {
+  /* Ensure text meets WCAG contrast requirements */
+  .text-gray-500 {
+    color: #6b7280; /* Improved contrast */
+  }
+  
+  .text-gray-400 {
+    color: #9ca3af; /* Better contrast on mobile */
+  }
+  
+  /* Better focus indicators for accessibility */
+  input:focus, select:focus, textarea:focus, button:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+  
+  /* Enhanced error states */
+  .error-input {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 1px #dc2626;
+  }
+  
+  .error-text {
+    color: #dc2626;
+    font-weight: 500;
+  }
+}
+
+/* Enhanced mobile navigation */
+@media (max-width: 640px) {
+  /* Stack navigation items vertically when needed */
+  .nav-mobile-stack {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .nav-mobile-stack > * {
+    width: 100%;
+    text-align: center;
+  }
+  
+  /* Better mobile menu animations */
+  .mobile-menu-enter {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  
+  .mobile-menu-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  
+  /* Improved mobile card layouts */
+  .mobile-card-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+  }
+}
+
+/* Tablet-specific optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Optimize for tablet touch interactions */
+  button, a, [role="button"] {
+    min-height: 40px;
+    min-width: 40px;
+  }
+  
+  /* Better two-column layouts on tablets */
+  .tablet-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
   }
 }

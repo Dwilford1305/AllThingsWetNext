@@ -308,7 +308,8 @@ export default function BusinessRequestForm() {
               value={formData.businessName}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('businessName')(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base md:text-sm"
+              autoComplete="organization"
             />
           </div>
 
@@ -322,7 +323,7 @@ export default function BusinessRequestForm() {
               value={formData.businessType} 
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleInputChange('businessType')(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base md:text-sm"
             >
               <option value="">Select business type</option>
               {businessTypes.map((type) => (
@@ -344,7 +345,7 @@ export default function BusinessRequestForm() {
               value={formData.description}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange('description')(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base md:text-sm resize-vertical"
             />
           </div>
 
@@ -361,7 +362,8 @@ export default function BusinessRequestForm() {
               value={formData.address}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('address')(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base md:text-sm"
+              autoComplete="street-address"
             />
           </div>
 
@@ -379,7 +381,8 @@ export default function BusinessRequestForm() {
                 value={formData.phone}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('phone')(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base md:text-sm"
+                autoComplete="tel"
               />
             </div>
 
@@ -395,7 +398,8 @@ export default function BusinessRequestForm() {
                 value={formData.email}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('email')(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base md:text-sm"
+                autoComplete="email"
               />
             </div>
           </div>
@@ -412,7 +416,8 @@ export default function BusinessRequestForm() {
               placeholder="https://your-website.com (optional)"
               value={formData.website}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('website')(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base md:text-sm"
+              autoComplete="url"
             />
           </div>
 
@@ -428,13 +433,13 @@ export default function BusinessRequestForm() {
               value={formData.requestMessage}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange('requestMessage')(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base md:text-sm resize-vertical"
             />
           </div>
 
           <Button 
             type="submit" 
-            className="w-full" 
+            className="w-full min-h-12 text-base font-semibold" 
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Submitting...' : 'Submit Request'}

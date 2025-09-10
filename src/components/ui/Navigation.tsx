@@ -168,11 +168,17 @@ const Navigation = () => {
     return isScrolled ? 'text-gray-900' : 'text-white';
   };
 
+  // Get navigation top positioning based on banner presence
+  const getNavTopPosition = () => {
+    // Only show banner on home page, so only add top spacing on home page
+    return isHomePage ? 'top-20 sm:top-16 md:top-12' : 'top-0';
+  };
+
   return (
     <>
       {/* Foldable Sidebar Navigation (client-only) */}
       {hasMounted && isFoldableUnfolded() && (
-        <aside className="fixed left-0 top-20 sm:top-16 md:top-12 bottom-0 w-24 bg-white/80 backdrop-blur-lg border-r border-gray-200/50 shadow-xl z-40 flex flex-col items-center py-6 foldable-sidebar overflow-y-auto">
+        <aside className={`fixed left-0 ${getNavTopPosition()} bottom-0 w-24 bg-white/80 backdrop-blur-lg border-r border-gray-200/50 shadow-xl z-40 flex flex-col items-center py-6 foldable-sidebar overflow-y-auto`}>
           {/* Logo/Home */}
           <Link href="/" className="mb-6 p-3 rounded-xl hover:bg-blue-50 transition-all duration-300 hover-lift flex flex-col items-center flex-shrink-0 group">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300">
@@ -276,7 +282,7 @@ const Navigation = () => {
       )}
 
       {/* Traditional Navigation for non-foldable devices (always rendered) */}
-      <nav className={`fixed w-full max-w-full top-20 sm:top-16 md:top-12 z-40 transition-all duration-500 nav-container overflow-x-hidden no-horizontal-scroll safe-width rounded-b-2xl` +
+      <nav className={`fixed w-full max-w-full ${getNavTopPosition()} z-40 transition-all duration-500 nav-container overflow-x-hidden no-horizontal-scroll safe-width rounded-b-2xl` +
         ` ${getNavStyles()} ${hasMounted && isFoldableUnfolded() ? 'hidden' : ''}`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-hidden no-horizontal-scroll safe-width">
