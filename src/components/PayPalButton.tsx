@@ -167,10 +167,10 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
   // Show loading state while PayPal script is loading
   if (isPending) {
     return (
-      <div className="space-y-3">
-        <div className="w-full h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-          <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
-          <span className="ml-2 text-gray-600">Loading PayPal...</span>
+      <div className="space-y-3 w-full">
+        <div className="w-full h-10 sm:h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+          <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin text-gray-500" />
+          <span className="ml-2 text-gray-600 text-xs sm:text-sm">Loading PayPal...</span>
         </div>
       </div>
     );
@@ -179,13 +179,13 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
   // Show error state if PayPal script failed to load
   if (isRejected) {
     return (
-      <div className="space-y-3">
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+      <div className="space-y-3 w-full">
+        <div className="p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
           <div className="flex items-center text-red-700">
-            <XCircle className="h-5 w-5 mr-2" />
-            <strong>PayPal Loading Error</strong>
+            <XCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+            <strong className="text-xs sm:text-sm">PayPal Loading Error</strong>
           </div>
-          <p className="text-sm text-red-600 mt-1">
+          <p className="text-xs text-red-600 mt-1">
             Failed to load PayPal. Please refresh the page and try again.
           </p>
         </div>
@@ -196,13 +196,13 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
   // Show configuration error if PayPal is not properly configured
   if (status === 'config-error' || paypalConfigValid === false) {
     return (
-      <div className="space-y-3">
-        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+      <div className="space-y-3 w-full">
+        <div className="p-2 sm:p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <div className="flex items-center text-yellow-700">
-            <AlertTriangle className="h-5 w-5 mr-2" />
-            <strong>PayPal Configuration Required</strong>
+            <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+            <strong className="text-xs sm:text-sm">PayPal Configuration Required</strong>
           </div>
-          <p className="text-sm text-yellow-600 mt-1">
+          <p className="text-xs text-yellow-600 mt-1">
             PayPal payment processing is not currently available. Please contact support for assistance with subscription upgrades.
           </p>
         </div>
@@ -211,16 +211,17 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 w-full">
       {/* PayPal Buttons */}
-      <div className={`${className}`}>
+      <div className={`w-full ${className}`}>
         <PayPalButtons
           style={{
             layout: 'vertical',
             color: 'blue',
             shape: 'rect',
             label: 'pay',
-            height: 40
+            height: 40,
+            disableMaxWidth: true
           }}
           disabled={disabled || status === 'processing' || status === 'success' || !paypalConfigValid}
           createOrder={createOrder}
@@ -232,19 +233,19 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
 
       {/* Status Messages */}
       {status === 'error' && errorMessage && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+        <div className="p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
           <div className="flex items-start">
-            <XCircle className="h-5 w-5 text-red-500 mt-0.5 mr-2 flex-shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm text-red-700">
+            <XCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 mt-0.5 mr-2 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs sm:text-sm text-red-700 break-words">
                 <strong>Payment Error:</strong> {errorMessage}
               </p>
-              <div className="mt-2 flex gap-2">
+              <div className="mt-2 flex flex-col sm:flex-row gap-2">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={resetPayment}
-                  className="text-red-700 border-red-300 hover:bg-red-50"
+                  className="text-red-700 border-red-300 hover:bg-red-50 w-full sm:w-auto text-xs sm:text-sm"
                 >
                   Try Again
                 </Button>
@@ -253,7 +254,7 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
                     size="sm"
                     variant="ghost"
                     onClick={onCancel}
-                    className="text-gray-600"
+                    className="text-gray-600 w-full sm:w-auto text-xs sm:text-sm"
                   >
                     Cancel
                   </Button>
@@ -265,10 +266,10 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
       )}
 
       {status === 'success' && (
-        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+        <div className="p-2 sm:p-3 bg-green-50 border border-green-200 rounded-lg">
           <div className="flex items-center">
-            <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-            <p className="text-sm text-green-700">
+            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2" />
+            <p className="text-xs sm:text-sm text-green-700">
               <strong>Payment Successful!</strong> Your subscription has been activated.
             </p>
           </div>
@@ -276,10 +277,10 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
       )}
 
       {status === 'processing' && (
-        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="p-2 sm:p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <div className="flex items-center">
-            <Loader2 className="h-5 w-5 animate-spin text-blue-500 mr-2" />
-            <p className="text-sm text-blue-700">
+            <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin text-blue-500 mr-2" />
+            <p className="text-xs sm:text-sm text-blue-700">
               Processing your payment securely through PayPal...
             </p>
           </div>
@@ -287,10 +288,10 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
       )}
 
       {status === 'cancelled' && (
-        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="p-2 sm:p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <div className="flex items-center">
-            <AlertTriangle className="h-5 w-5 text-yellow-500 mr-2" />
-            <p className="text-sm text-yellow-700">
+            <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 mr-2" />
+            <p className="text-xs sm:text-sm text-yellow-700">
               Payment was cancelled. You can try again when ready.
             </p>
           </div>
@@ -299,10 +300,10 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
 
       {/* PayPal Security Notice */}
       {paypalConfigValid && (
-        <div className="text-xs text-gray-500 text-center space-y-1">
+        <div className="text-xs text-gray-500 text-center space-y-1 px-1 sm:px-2">
           <p>💳 Secure payment powered by PayPal</p>
           <p>🔒 Your payment information is encrypted and secure</p>
-          <p className="text-gray-400">
+          <p className="text-gray-400 break-words text-xs">
             Amount: ${amount.toFixed(2)} {currency} • {description}
           </p>
         </div>

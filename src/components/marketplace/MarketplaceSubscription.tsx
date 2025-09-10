@@ -114,6 +114,7 @@ const MarketplaceSubscription = () => {
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [preSelectedTier, setPreSelectedTier] = useState<string | undefined>(undefined);
 
   // Transform API response to component format
   const transformApiResponse = (apiData: ApiSubscriptionResponse): UserSubscription => {
@@ -204,13 +205,15 @@ const MarketplaceSubscription = () => {
     }
   };
 
-  const handleUpgradeClick = () => {
+  const handleUpgradeClick = (tier?: string) => {
+    setPreSelectedTier(tier);
     setShowUpgradeModal(true);
   };
 
   const handleUpgradeSuccess = async (tier: string, paymentId: string) => {
     await handleUpgrade(tier, paymentId);
     setShowUpgradeModal(false);
+    setPreSelectedTier(undefined);
   };
 
   const formatQuotaText = (quota: number) => {
@@ -376,7 +379,7 @@ const MarketplaceSubscription = () => {
               </div>
 
               <Button
-                onClick={() => tier.id === 'free' ? undefined : handleUpgradeClick()}
+                onClick={() => tier.id === 'free' ? undefined : handleUpgradeClick(tier.id)}
                 disabled={isCurrentTier || upgrading === tier.id || tier.id === 'free'}
                 className={`w-full ${
                   isCurrentTier 
@@ -465,7 +468,10 @@ const MarketplaceSubscription = () => {
       {/* Subscription Upgrade Modal */}
       <SubscriptionUpgradeModal
         isOpen={showUpgradeModal}
-        onClose={() => setShowUpgradeModal(false)}
+        onClose={() => {
+          setShowUpgradeModal(false);
+          setPreSelectedTier(undefined);
+        }}
         tiers={SUBSCRIPTION_TIERS.map(tier => ({
           id: tier.id,
           name: tier.name,
@@ -483,6 +489,7 @@ const MarketplaceSubscription = () => {
         currentTier={currentSubscription?.tier}
         onUpgradeSuccess={handleUpgradeSuccess}
         type="marketplace"
+        preSelectedTier={preSelectedTier}
       />
     </div>
   );
