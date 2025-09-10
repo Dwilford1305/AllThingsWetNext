@@ -95,7 +95,7 @@ export const SubscriptionUpgradeModal: React.FC<SubscriptionUpgradeModalProps> =
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="bg-white rounded-none sm:rounded-xl shadow-2xl w-full max-w-full sm:max-w-md md:max-w-lg lg:max-w-4xl xl:max-w-6xl h-full sm:h-auto sm:max-h-[90vh] overflow-hidden flex flex-col"
+            className="bg-white rounded-none sm:rounded-xl shadow-2xl w-full max-w-full sm:max-w-md md:max-w-lg lg:max-w-4xl xl:max-w-6xl h-screen sm:h-auto sm:max-h-[90vh] min-h-screen sm:min-h-0 overflow-hidden flex flex-col"
           >
             <div className="p-4 sm:p-6 border-b border-gray-200 flex-shrink-0">
               <div className="flex items-center justify-between">
