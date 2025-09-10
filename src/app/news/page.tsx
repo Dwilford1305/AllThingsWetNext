@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Navigation from '@/components/ui/Navigation';
-import FoldableLayout from '@/components/FoldableLayout';
+import ConditionalLayout from '@/components/ConditionalLayout';
 import AnimatedSection from '@/components/AnimatedSection';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -70,7 +70,7 @@ const NewsPage = () => {
   }
 
   return (
-    <FoldableLayout>
+    <ConditionalLayout>
       <Navigation />
       <div className="min-h-screen bg-gradient-to-br from-slate-800 via-blue-800 to-slate-800 relative">
         {/* Modern Background Effects */}
@@ -353,7 +353,7 @@ const NewsPage = () => {
           </div>
         </div>
       </div>
-    </FoldableLayout>
+    </ConditionalLayout>
   );
 };
 

@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import Navigation from '@/components/ui/Navigation';
-import FoldableLayout from '@/components/FoldableLayout';
+import ConditionalLayout from '@/components/ConditionalLayout';
 import RequireAuth from '@/components/RequireAuth';
 import MarketplaceSubscription from '@/components/marketplace/MarketplaceSubscription';
 import { 
@@ -209,7 +209,7 @@ export default function ProfilePage() {
   if (authLoading || isLoading) {
     return (
       <RequireAuth>
-        <FoldableLayout>
+        <ConditionalLayout>
           <Navigation />
           <div className={`min-h-screen bg-gray-50 flex items-center justify-center ${getTopPadding()}`}>
             <div className="flex items-center space-x-2">
@@ -217,7 +217,7 @@ export default function ProfilePage() {
               <span>Loading profile...</span>
             </div>
           </div>
-        </FoldableLayout>
+        </ConditionalLayout>
       </RequireAuth>
     );
   }
@@ -225,14 +225,14 @@ export default function ProfilePage() {
   if (!user || !profileData) {
     return (
       <RequireAuth>
-        <FoldableLayout>
+        <ConditionalLayout>
           <Navigation />
           <div className={`min-h-screen bg-gray-50 flex items-center justify-center ${getTopPadding()}`}>
             <Card className="p-8">
               <p className="text-center text-gray-600">Unable to load profile data.</p>
             </Card>
           </div>
-        </FoldableLayout>
+        </ConditionalLayout>
       </RequireAuth>
     );
   }
@@ -248,7 +248,7 @@ export default function ProfilePage() {
 
   return (
     <RequireAuth>
-      <FoldableLayout>
+      <ConditionalLayout>
         <Navigation />
       <div className={`min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50 profile-page ${getTopPadding()}`}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -406,7 +406,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-      </FoldableLayout>
+      </ConditionalLayout>
     </RequireAuth>
   );
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import Navigation from '@/components/ui/Navigation'
-import FoldableLayout from '@/components/FoldableLayout'
+import ConditionalLayout from '@/components/ConditionalLayout'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { User, LogOut } from 'lucide-react'
@@ -16,7 +16,7 @@ export default function AuthTestPage() {
   };
 
   return (
-    <FoldableLayout>
+    <ConditionalLayout>
       <Navigation />
       <div className="max-w-2xl mx-auto py-8 px-4">
         <div className="mb-8">
@@ -66,6 +66,6 @@ export default function AuthTestPage() {
           </div>
         )}
       </div>
-    </FoldableLayout>
+    </ConditionalLayout>
   );
 }

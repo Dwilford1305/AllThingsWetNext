@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Navigation from '@/components/ui/Navigation';
-import FoldableLayout from '@/components/FoldableLayout';
+import ConditionalLayout from '@/components/ConditionalLayout';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -129,7 +129,7 @@ const MarketplacePage = () => {
   });
 
   return (
-    <FoldableLayout>
+    <ConditionalLayout>
       <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-purple-900">
         <Navigation />
         
@@ -506,7 +506,7 @@ const MarketplacePage = () => {
         title="Report Listing"
         description="Help us maintain a safe marketplace by reporting inappropriate listings."
       />
-    </FoldableLayout>
+    </ConditionalLayout>
   );
 };
 

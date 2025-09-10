@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { AlertTriangle } from 'lucide-react';
 
 const DevelopmentBanner = () => {
   const [viewportWidth, setViewportWidth] = useState(0);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleResize = () => {
@@ -48,6 +50,11 @@ const DevelopmentBanner = () => {
     
     return isDefinitelyFoldable || aspectRatioDetection();
   };
+
+  // Only show on home page
+  if (pathname !== '/') {
+    return null;
+  }
 
   return (
     <div className="fixed top-0 left-0 right-0 bg-red-600 text-white px-4 py-3 z-50 border-b-2 border-red-700">

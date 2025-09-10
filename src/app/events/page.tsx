@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Navigation from '@/components/ui/Navigation';
-import FoldableLayout from '@/components/FoldableLayout';
+import ConditionalLayout from '@/components/ConditionalLayout';
 import AnimatedSection from '@/components/AnimatedSection';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -80,7 +80,7 @@ const EventsPage = () => {
 
   if (loading) {
     return (
-      <FoldableLayout>
+      <ConditionalLayout>
         <Navigation />
         <div className="min-h-screen bg-gradient-to-br from-slate-800 via-blue-800 to-slate-800 flex items-center justify-center">
           <div className="text-center">
@@ -88,12 +88,12 @@ const EventsPage = () => {
             <p className="text-blue-200">Loading events...</p>
           </div>
         </div>
-      </FoldableLayout>
+      </ConditionalLayout>
     );
   }
 
   return (
-    <FoldableLayout>
+    <ConditionalLayout>
       <Navigation />
       <div className="min-h-screen bg-gradient-to-br from-slate-800 via-blue-800 to-slate-800 relative">
         {/* Modern Background Effects */}
@@ -401,7 +401,7 @@ const EventsPage = () => {
           </AnimatedSection>
         </main>
       </div>
-    </FoldableLayout>
+    </ConditionalLayout>
   );
 };
 

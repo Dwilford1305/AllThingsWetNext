@@ -4,7 +4,7 @@ import { marked } from 'marked';
 import { Metadata } from 'next';
 import Navigation from '@/components/ui/Navigation';
 import Footer from '@/components/Footer';
-import FoldableLayout from '@/components/FoldableLayout';
+import ConditionalLayout from '@/components/ConditionalLayout';
 import AnimatedSection from '@/components/AnimatedSection';
 
 export const metadata: Metadata = {
@@ -34,7 +34,7 @@ export default async function AboutPage() {
   const html = await marked(markdown);
 
   return (
-    <FoldableLayout>
+    <ConditionalLayout>
       <div className="relative">
         <Navigation />
         
@@ -66,6 +66,6 @@ export default async function AboutPage() {
 
         <Footer />
       </div>
-    </FoldableLayout>
+    </ConditionalLayout>
   );
 }

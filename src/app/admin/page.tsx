@@ -7,7 +7,7 @@ import { AdminAuth } from '@/components/AdminAuth';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import FoldableLayout from '@/components/FoldableLayout';
+import ConditionalLayout from '@/components/ConditionalLayout';
 import { 
   Shield, 
   Users, 
@@ -73,18 +73,18 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <FoldableLayout>
+      <ConditionalLayout>
         <Navigation />
         <div className="min-h-screen bg-gradient-to-br from-slate-800 via-blue-800 to-slate-800 flex items-center justify-center pt-24 sm:pt-20 md:pt-16">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
         </div>
-      </FoldableLayout>
+      </ConditionalLayout>
     );
   }
 
   return (
     <AdminAuth>
-      <FoldableLayout>
+      <ConditionalLayout>
         <Navigation />
         <div className="min-h-screen bg-gradient-to-br from-slate-800 via-blue-800 to-slate-800 py-8 pt-24 sm:pt-20 md:pt-16 relative">
           {/* Modern Background Effects */}
@@ -195,7 +195,7 @@ export default function AdminPage() {
           )}
         </div>
       </div>
-      </FoldableLayout>
+      </ConditionalLayout>
     </AdminAuth>
   );
 }
