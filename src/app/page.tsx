@@ -17,11 +17,11 @@ export default function Home() {
       
       {/* Top Banner Ad - High visibility */}
       <AnimatedSection delay={0}>
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-2 sm:py-4 lg:py-6">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-2 sm:py-4 lg:py-6 mobile:px-4 mobile:py-3">
           <AdPlaceholder 
             type="google" 
             size="leaderboard" 
-            className="w-full max-w-4xl mx-auto" 
+            className="w-full max-w-4xl mx-auto mobile:max-w-full mobile:rounded-lg" 
           />
         </div>
       </AnimatedSection>
@@ -32,16 +32,16 @@ export default function Home() {
 
       {/* Platinum Tier - Premium positioning near top */}
       <AnimatedSection delay={0.15}>
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6">
-          <div className="text-center mb-4 sm:mb-6">
-            <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Premium Business Spotlight</h3>
-            <p className="text-sm text-gray-300">Experience the highest tier of business promotion</p>
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4 lg:py-6 mobile:px-4 mobile:py-4">
+          <div className="text-center mb-4 sm:mb-6 mobile:mb-5">
+            <h3 className="text-lg sm:text-xl font-semibold text-white mb-2 mobile:text-xl mobile:mb-3">Premium Business Spotlight</h3>
+            <p className="text-sm text-gray-300 mobile:text-base">Experience the highest tier of business promotion</p>
           </div>
           <div className="flex justify-center">
             <AdPlaceholder 
               type="platinum" 
               size="large" 
-              className="w-full max-w-md" 
+              className="w-full max-w-md mobile:max-w-sm mobile:rounded-xl" 
             />
           </div>
         </div>

@@ -118,4 +118,31 @@ describe('Mobile UX Enhancements', () => {
       expect(mobileUtils.touchFeedback).toContain('duration-100')
     })
   })
+
+  describe('Mobile Component Implementation', () => {
+    test('mobile form components are properly structured', () => {
+      // Test that mobile form utilities exist for comprehensive form optimization
+      expect(mobileUtils.mobileInput).toBeTruthy()
+      expect(mobileUtils.mobileInput).toContain('mobile:')
+    })
+
+    test('mobile image optimization utilities exist', () => {
+      // Test that image optimization is available
+      expect(imageSizes.full).toContain('(max-width: 768px)')
+      expect(imageSizes.mobile).toBeTruthy()
+    })
+
+    test('mobile navigation patterns are supported', () => {
+      // Test that mobile utilities support navigation patterns
+      expect(mobileUtils.touchTarget).toContain('min-h-touch-target')
+      expect(mobileUtils.touchFeedback).toContain('active:scale-95')
+    })
+
+    test('mobile layout utilities are comprehensive', () => {
+      // Test that mobile layout utilities cover common use cases
+      expect(mobileUtils.mobileSpacing).toBeTruthy()
+      expect(mobileUtils.mobileButton).toBeTruthy()
+      expect(mobileUtils.getMobileClasses).toBeTruthy()
+    })
+  })
 })

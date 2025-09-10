@@ -97,17 +97,17 @@ const ParallaxHero = () => {
       />
       
       {/* Content - Professional Layout */}
-      <div className="relative z-10 flex flex-col h-full text-white px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 flex flex-col h-full text-white px-4 sm:px-6 lg:px-8 mobile:px-6">
         {/* Top Section - Clean Professional Title */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-          className="flex-1 flex items-center justify-center pt-24 sm:pt-20 md:pt-16"
+          className="flex-1 flex items-center justify-center pt-24 sm:pt-20 md:pt-16 mobile:pt-20"
         >
-          <div className="text-center max-w-4xl">
+          <div className="text-center max-w-4xl mobile:max-w-full">
             <motion.h1 
-              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-none mb-6"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight leading-none mb-6 mobile:text-5xl mobile:mb-4 mobile:leading-tight"
               style={{ 
                 textShadow: '3px 3px 0px rgba(0, 0, 0, 0.8), 6px 6px 12px rgba(0, 0, 0, 0.6), 0px 0px 24px rgba(0, 0, 0, 0.4)',
                 WebkitTextStroke: '1px rgba(0, 0, 0, 0.3)'
@@ -116,7 +116,7 @@ const ParallaxHero = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
             >
-              <span className="block text-white mb-2">
+              <span className="block text-white mb-2 mobile:mb-1">
                 All Things
               </span>
               <motion.span 
@@ -135,7 +135,7 @@ const ParallaxHero = () => {
             
             {/* Clean Professional Subtitle */}
             <motion.p 
-              className="text-lg sm:text-xl md:text-2xl text-gray-100 leading-relaxed max-w-3xl mx-auto"
+              className="text-lg sm:text-xl md:text-2xl text-gray-100 leading-relaxed max-w-3xl mx-auto mobile:text-xl mobile:leading-relaxed mobile:px-2"
               style={{ 
                 textShadow: '2px 2px 0px rgba(0, 0, 0, 0.9), 4px 4px 8px rgba(0, 0, 0, 0.7), 0px 0px 16px rgba(0, 0, 0, 0.5)' 
               }}
@@ -155,10 +155,10 @@ const ParallaxHero = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1.1, ease: [0.25, 0.1, 0.25, 1] }}
-          className="flex-1 flex flex-col items-center justify-end pb-16 sm:pb-20 text-center px-4"
+          className="flex-1 flex flex-col items-center justify-end pb-16 sm:pb-20 text-center px-4 mobile:pb-12 mobile:px-6"
         >
           <motion.div 
-            className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 w-full max-w-2xl"
+            className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 w-full max-w-2xl mobile:flex-col mobile:gap-4 mobile:max-w-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 1.4 }}
@@ -169,10 +169,11 @@ const ParallaxHero = () => {
                 y: -3
               }}
               whileTap={{ scale: 0.98 }}
+              className="mobile:w-full"
             >
               <Link 
                 href="/events"
-                className="inline-flex items-center gap-3 px-8 py-4 bg-white/10 backdrop-blur-md border border-white/30 rounded-xl font-semibold text-lg text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300"
+                className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white/10 backdrop-blur-md border border-white/30 rounded-xl font-semibold text-lg text-white hover:bg-white/20 hover:border-white/40 transition-all duration-300 mobile:w-full mobile:min-h-touch-target mobile:text-xl mobile:py-5"
                 style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' }}
               >
                 <span>Explore Events</span>
@@ -191,10 +192,11 @@ const ParallaxHero = () => {
                 y: -3
               }}
               whileTap={{ scale: 0.98 }}
+              className="mobile:w-full"
             >
               <Link 
                 href="/businesses"
-                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl mobile:w-full mobile:min-h-touch-target mobile:text-xl mobile:py-5"
                 style={{ textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)' }}
               >
                 <span>Browse Businesses</span>
