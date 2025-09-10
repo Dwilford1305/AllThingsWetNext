@@ -1,0 +1,151 @@
+name: End-to-End Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: 'Browser to test with'
+        required: false
+        default: 'chromium'
+        type: choice
+        options:
+        - chromium
+        - firefox
+        - webkit
+        - all
+
+jobs:
+  e2e-tests:
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps ${{ matrix.browser }}
+
+    - name: Build application
+      run: npm run build
+      env:
+        NEXTAUTH_URL: http://localhost:3000
+        NEXTAUTH_SECRET: test-secret-for-ci
+        JWT_SECRET: test-jwt-secret-for-ci
+        JWT_REFRESH_SECRET: test-jwt-refresh-secret-for-ci
+
+    - name: Run E2E tests
+      run: npx playwright test --project=${{ matrix.browser }}
+      env:
+        PLAYWRIGHT_BASE_URL: http://localhost:3000
+        NODE_ENV: test
+        NEXTAUTH_URL: http://localhost:3000
+        NEXTAUTH_SECRET: test-secret-for-ci
+        JWT_SECRET: test-jwt-secret-for-ci
+        JWT_REFRESH_SECRET: test-jwt-refresh-secret-for-ci
+        # Test database connection (optional)
+        # MONGODB_URI_TEST: ${{ secrets.MONGODB_URI_TEST }}
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report-${{ matrix.browser }}
+        path: |
+          playwright-report/
+          test-results/
+        retention-days: 30
+
+    - name: Upload screenshots
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: playwright-screenshots-${{ matrix.browser }}
+        path: test-results/screenshots/
+        retention-days: 30
+
+  mobile-e2e-tests:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    needs: e2e-tests
+    if: success() || failure()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps chromium
+
+    - name: Build application
+      run: npm run build
+      env:
+        NEXTAUTH_URL: http://localhost:3000
+        NEXTAUTH_SECRET: test-secret-for-ci
+        JWT_SECRET: test-jwt-secret-for-ci
+        JWT_REFRESH_SECRET: test-jwt-refresh-secret-for-ci
+
+    - name: Run Mobile E2E tests
+      run: npm run test:e2e:mobile
+      env:
+        PLAYWRIGHT_BASE_URL: http://localhost:3000
+        NODE_ENV: test
+        NEXTAUTH_URL: http://localhost:3000
+        NEXTAUTH_SECRET: test-secret-for-ci
+        JWT_SECRET: test-jwt-secret-for-ci
+        JWT_REFRESH_SECRET: test-jwt-refresh-secret-for-ci
+
+    - name: Upload mobile test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report-mobile
+        path: |
+          playwright-report/
+          test-results/
+        retention-days: 30
+
+  test-summary:
+    runs-on: ubuntu-latest
+    needs: [e2e-tests, mobile-e2e-tests]
+    if: always()
+    
+    steps:
+    - name: Test Summary
+      run: |
+        echo "## E2E Test Results Summary" >> $GITHUB_STEP_SUMMARY
+        echo "| Browser | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Chromium | ${{ needs.e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Firefox | ${{ needs.e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| WebKit | ${{ needs.e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Mobile | ${{ needs.mobile-e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Total Duration:** ${{ github.event.workflow_run.conclusion == 'success' && 'Under 20 minutes' || 'May have exceeded timeout' }}" >> $GITHUB_STEP_SUMMARY
