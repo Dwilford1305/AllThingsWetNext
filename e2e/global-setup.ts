@@ -12,8 +12,10 @@ async function globalSetup(config: FullConfig) {
   console.log('🔧 Setting up E2E test environment...');
   
   // Set up test environment variables
-  process.env.NODE_ENV = 'test';
-  process.env.NEXT_PUBLIC_E2E_TESTING = 'true';
+  if (!process.env.NODE_ENV) {
+    (process.env as any).NODE_ENV = 'test';
+  }
+  (process.env as any).NEXT_PUBLIC_E2E_TESTING = 'true';
   
   // Use test database if specified
   if (process.env.MONGODB_URI_TEST) {
