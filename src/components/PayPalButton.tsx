@@ -213,14 +213,15 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
   return (
     <div className="space-y-3">
       {/* PayPal Buttons */}
-      <div className={`${className}`}>
+      <div className={`w-full ${className}`}>
         <PayPalButtons
           style={{
             layout: 'vertical',
             color: 'blue',
             shape: 'rect',
             label: 'pay',
-            height: 40
+            height: 40,
+            disableMaxWidth: true
           }}
           disabled={disabled || status === 'processing' || status === 'success' || !paypalConfigValid}
           createOrder={createOrder}
@@ -235,16 +236,16 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
           <div className="flex items-start">
             <XCircle className="h-5 w-5 text-red-500 mt-0.5 mr-2 flex-shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm text-red-700">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-red-700 break-words">
                 <strong>Payment Error:</strong> {errorMessage}
               </p>
-              <div className="mt-2 flex gap-2">
+              <div className="mt-2 flex flex-col sm:flex-row gap-2">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={resetPayment}
-                  className="text-red-700 border-red-300 hover:bg-red-50"
+                  className="text-red-700 border-red-300 hover:bg-red-50 w-full sm:w-auto"
                 >
                   Try Again
                 </Button>
@@ -253,7 +254,7 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
                     size="sm"
                     variant="ghost"
                     onClick={onCancel}
-                    className="text-gray-600"
+                    className="text-gray-600 w-full sm:w-auto"
                   >
                     Cancel
                   </Button>
@@ -299,10 +300,10 @@ export const PayPalButton: React.FC<PayPalButtonProps> = ({
 
       {/* PayPal Security Notice */}
       {paypalConfigValid && (
-        <div className="text-xs text-gray-500 text-center space-y-1">
+        <div className="text-xs text-gray-500 text-center space-y-1 px-2">
           <p>💳 Secure payment powered by PayPal</p>
           <p>🔒 Your payment information is encrypted and secure</p>
-          <p className="text-gray-400">
+          <p className="text-gray-400 break-words">
             Amount: ${amount.toFixed(2)} {currency} • {description}
           </p>
         </div>

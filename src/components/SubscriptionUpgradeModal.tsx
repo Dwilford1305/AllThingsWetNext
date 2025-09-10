@@ -88,36 +88,36 @@ export const SubscriptionUpgradeModal: React.FC<SubscriptionUpgradeModalProps> =
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4"
           onClick={(e) => e.target === e.currentTarget && onClose()}
         >
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-xl shadow-2xl w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-4xl xl:max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto"
           >
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-4 sm:p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
                     Upgrade Your {type === 'marketplace' ? 'Marketplace' : 'Business'} Subscription
                   </h2>
-                  <p className="text-gray-600 mt-1">
+                  <p className="text-gray-600 mt-1 text-sm sm:text-base">
                     Choose the perfect plan to unlock premium features and grow your presence
                   </p>
                 </div>
-                <Button variant="ghost" size="sm" onClick={onClose}>
+                <Button variant="ghost" size="sm" onClick={onClose} className="shrink-0">
                   <X className="h-5 w-5" />
                 </Button>
               </div>
 
               {/* Billing Cycle Toggle */}
-              <div className="mt-6 flex items-center justify-center">
+              <div className="mt-4 sm:mt-6 flex items-center justify-center">
                 <div className="bg-gray-100 rounded-lg p-1 flex">
                   <button
                     onClick={() => setBillingCycle('monthly')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       billingCycle === 'monthly'
                         ? 'bg-white text-gray-900 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
@@ -127,7 +127,7 @@ export const SubscriptionUpgradeModal: React.FC<SubscriptionUpgradeModalProps> =
                   </button>
                   <button
                     onClick={() => setBillingCycle('annual')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       billingCycle === 'annual'
                         ? 'bg-white text-gray-900 shadow-sm'
                         : 'text-gray-600 hover:text-gray-900'
@@ -142,10 +142,10 @@ export const SubscriptionUpgradeModal: React.FC<SubscriptionUpgradeModalProps> =
               </div>
             </div>
 
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               {!showPayment ? (
                 /* Tier Selection */
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {tiers.filter(tier => tier.id !== 'free').map((tier) => {
                     const isCurrentTier = tier.id === currentTier;
                     const price = billingCycle === 'monthly' ? tier.price.monthly : tier.price.annual;
@@ -154,7 +154,7 @@ export const SubscriptionUpgradeModal: React.FC<SubscriptionUpgradeModalProps> =
                     return (
                       <Card
                         key={tier.id}
-                        className={`relative p-6 cursor-pointer transition-all duration-200 ${
+                        className={`relative p-4 sm:p-6 cursor-pointer transition-all duration-200 ${
                           tier.popular 
                             ? 'ring-2 ring-blue-500 shadow-lg scale-105' 
                             : 'hover:shadow-lg hover:scale-102'
@@ -174,15 +174,15 @@ export const SubscriptionUpgradeModal: React.FC<SubscriptionUpgradeModalProps> =
                           </div>
                         )}
 
-                        <div className="text-center mb-6">
-                          <h3 className={`text-xl font-bold mb-2 ${tier.color}`}>
+                        <div className="text-center mb-4 sm:mb-6">
+                          <h3 className={`text-lg sm:text-xl font-bold mb-2 ${tier.color}`}>
                             {tier.name}
                           </h3>
                           <div className="mb-2">
-                            <span className="text-3xl font-bold text-gray-900">
+                            <span className="text-2xl sm:text-3xl font-bold text-gray-900">
                               ${price.toFixed(2)}
                             </span>
-                            <span className="text-gray-600">
+                            <span className="text-gray-600 text-sm sm:text-base">
                               /{billingCycle === 'monthly' ? 'month' : 'year'}
                             </span>
                           </div>
@@ -196,7 +196,7 @@ export const SubscriptionUpgradeModal: React.FC<SubscriptionUpgradeModalProps> =
                           </p>
                         </div>
 
-                        <ul className="space-y-3 mb-6">
+                        <ul className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                           {tier.features.map((feature, index) => (
                             <li key={index} className="flex items-start gap-2">
                               <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
@@ -223,28 +223,28 @@ export const SubscriptionUpgradeModal: React.FC<SubscriptionUpgradeModalProps> =
                 </div>
               ) : (
                 /* Payment Processing */
-                <div className="max-w-md mx-auto">
+                <div className="max-w-sm sm:max-w-md mx-auto">
                   <div className="text-center mb-6">
                     <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${selectedTier?.color.replace('text-', 'bg-').replace('-600', '-100')} mb-4`}>
                       <CreditCard className={`h-8 w-8 ${selectedTier?.color}`} />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
                       Complete Your Upgrade
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 text-sm sm:text-base">
                       Upgrading to <strong>{selectedTier?.name}</strong> plan
                     </p>
                   </div>
 
                   {selectedTier && (
-                    <Card className="p-6 mb-6 bg-gray-50">
+                    <Card className="p-4 sm:p-6 mb-6 bg-gray-50">
                       <div className="flex justify-between items-center mb-4">
-                        <span className="font-medium">Subscription Plan:</span>
-                        <span className="font-bold">{selectedTier.name}</span>
+                        <span className="font-medium text-sm sm:text-base">Subscription Plan:</span>
+                        <span className="font-bold text-sm sm:text-base">{selectedTier.name}</span>
                       </div>
                       <div className="flex justify-between items-center mb-4">
-                        <span className="font-medium">Billing Cycle:</span>
-                        <span className="capitalize">{billingCycle}</span>
+                        <span className="font-medium text-sm sm:text-base">Billing Cycle:</span>
+                        <span className="capitalize text-sm sm:text-base">{billingCycle}</span>
                       </div>
                       <div className="border-t pt-4">
                         <div className="flex justify-between items-center text-lg font-bold">
@@ -260,16 +260,19 @@ export const SubscriptionUpgradeModal: React.FC<SubscriptionUpgradeModalProps> =
                     </Card>
                   )}
 
-                  <PayPalButton
-                    amount={selectedTier ? (billingCycle === 'monthly' 
-                      ? selectedTier.price.monthly 
-                      : selectedTier.price.annual
-                    ) : 0}
-                    description={`${type === 'marketplace' ? 'Marketplace' : 'Business'} Subscription - ${selectedTier?.name} Plan`}
-                    onSuccess={handlePaymentSuccess}
-                    onError={handlePaymentError}
-                    onCancel={() => setShowPayment(false)}
-                  />
+                  <div className="w-full">
+                    <PayPalButton
+                      amount={selectedTier ? (billingCycle === 'monthly' 
+                        ? selectedTier.price.monthly 
+                        : selectedTier.price.annual
+                      ) : 0}
+                      description={`${type === 'marketplace' ? 'Marketplace' : 'Business'} Subscription - ${selectedTier?.name} Plan`}
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
+                      onCancel={() => setShowPayment(false)}
+                      className="w-full"
+                    />
+                  </div>
 
                   <div className="mt-4 text-center">
                     <Button
