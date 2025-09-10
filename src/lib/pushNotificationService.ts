@@ -1,5 +1,6 @@
 import webpush from 'web-push';
-import { connectToDatabase } from './mongodb';
+import { connectDB } from './mongodb';
+import { PushSubscriptionModel } from '@/models/pushSubscription';
 
 // VAPID Keys Configuration
 const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;
@@ -79,24 +80,21 @@ export class PushNotificationService {
     userAgent?: string
   ): Promise<boolean> {
     try {
-      const { db } = await connectToDatabase();
-      const collection = db.collection('pushSubscriptions');
+      await connectDB();
 
-      const subscriptionDoc: UserPushSubscription = {
+      const subscriptionDoc = {
         userId,
         email,
         subscription,
         userAgent,
-        createdAt: new Date(),
-        updatedAt: new Date(),
         isActive: true
       };
 
       // Upsert subscription (replace if exists for this user)
-      await collection.replaceOne(
+      await PushSubscriptionModel.findOneAndUpdate(
         { userId },
         subscriptionDoc,
-        { upsert: true }
+        { upsert: true, new: true }
       );
 
       console.log(`✅ User ${userId} subscribed to push notifications`);
@@ -110,16 +108,12 @@ export class PushNotificationService {
   // Unsubscribe a user from push notifications
   public async unsubscribeUser(userId: string): Promise<boolean> {
     try {
-      const { db } = await connectToDatabase();
-      const collection = db.collection('pushSubscriptions');
+      await connectDB();
 
-      await collection.updateOne(
+      await PushSubscriptionModel.findOneAndUpdate(
         { userId },
         { 
-          $set: { 
-            isActive: false,
-            updatedAt: new Date()
-          }
+          isActive: false
         }
       );
 
@@ -134,11 +128,10 @@ export class PushNotificationService {
   // Get user's push subscription
   public async getUserSubscription(userId: string): Promise<UserPushSubscription | null> {
     try {
-      const { db } = await connectToDatabase();
-      const collection = db.collection('pushSubscriptions');
+      await connectDB();
 
-      const subscription = await collection.findOne({ userId, isActive: true });
-      return subscription as UserPushSubscription | null;
+      const subscription = await PushSubscriptionModel.findOne({ userId, isActive: true });
+      return subscription?.toObject() as UserPushSubscription | null;
     } catch (error) {
       console.error('❌ Failed to get user push subscription:', error);
       return null;
@@ -183,10 +176,9 @@ export class PushNotificationService {
   // Send push notification to all subscribed users
   public async sendToAll(notification: PushNotificationData): Promise<{ successful: number; failed: number }> {
     try {
-      const { db } = await connectToDatabase();
-      const collection = db.collection('pushSubscriptions');
+      await connectDB();
 
-      const subscriptions = await collection.find({ isActive: true }).toArray();
+      const subscriptions = await PushSubscriptionModel.find({ isActive: true });
       
       const results = await Promise.allSettled(
         subscriptions.map(sub => this.sendNotification(sub.subscription, notification))
@@ -267,16 +259,12 @@ export class PushNotificationService {
   // Remove invalid subscription from database
   private async removeInvalidSubscription(subscription: PushSubscription): Promise<void> {
     try {
-      const { db } = await connectToDatabase();
-      const collection = db.collection('pushSubscriptions');
+      await connectDB();
 
-      await collection.updateOne(
+      await PushSubscriptionModel.findOneAndUpdate(
         { 'subscription.endpoint': subscription.endpoint },
         { 
-          $set: { 
-            isActive: false,
-            updatedAt: new Date()
-          }
+          isActive: false
         }
       );
     } catch (error) {
@@ -326,11 +314,10 @@ export class PushNotificationService {
     }>;
   }> {
     try {
-      const { db } = await connectToDatabase();
-      const subscriptionsCollection = db.collection('pushSubscriptions');
+      await connectDB();
       
-      const totalSubscriptions = await subscriptionsCollection.countDocuments({});
-      const activeSubscriptions = await subscriptionsCollection.countDocuments({ isActive: true });
+      const totalSubscriptions = await PushSubscriptionModel.countDocuments({});
+      const activeSubscriptions = await PushSubscriptionModel.countDocuments({ isActive: true });
 
       // TODO: Implement actual statistics tracking
       return {

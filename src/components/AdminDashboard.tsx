@@ -95,6 +95,17 @@ const AdminDashboard = () => {
     businesses: { status: 'idle' }
   });
 
+  // Comprehensive scraper status
+  const [comprehensiveScraperStatus, setComprehensiveScraperStatus] = useState<{
+    isRunning: boolean;
+    lastRun: Date | null;
+    stats: any;
+  }>({
+    isRunning: false,
+    lastRun: null,
+    stats: null
+  });
+
   // Business management state
   const [businessFilter, setBusinessFilter] = useState<'all' | 'claimed' | 'premium' | 'unclaimed'>('all');
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import PushNotificationService from '../../../../lib/pushNotificationService';
+import PushNotificationService from '@/lib/pushNotificationService';
 
 // Get push notification configuration (VAPID public key)
 export async function GET() {

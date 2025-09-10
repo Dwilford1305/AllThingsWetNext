@@ -247,7 +247,7 @@ export async function verifyAdmin(request: NextRequest): Promise<{
   success: boolean;
   error?: string;
   status?: number;
-  user?: UserType;
+  user?: Partial<UserType>;
 }> {
   const authResult = await authorizeRole(request, ['admin', 'super_admin']);
   

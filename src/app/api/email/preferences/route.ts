@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@auth0/nextjs-auth0/edge'
-import { EmailPreferences } from '../../../models/email'
-import { connectToDatabase } from '../../../lib/mongodb'
+import { EmailPreferences } from '@/models/email'
+import { connectDB } from '@/lib/mongodb'
 import { v4 as uuidv4 } from 'uuid'
 
 // Get user email preferences
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    await connectToDatabase()
+    await connectDB()
     
     // Get user preferences from database
     let preferences = await EmailPreferences.findOne({ userId: session.user.sub })
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    await connectToDatabase()
+    await connectDB()
 
     // Find existing preferences or create new
     let preferences = await EmailPreferences.findOne({ userId: session.user.sub })

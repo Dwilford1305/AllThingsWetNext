@@ -58,7 +58,7 @@ export class PushNotificationManager {
         return false;
       }
 
-      this.publicKey = config.publicKey;
+      this.publicKey = config.publicKey || null;
       return true;
     } catch (error) {
       console.error('❌ Failed to initialize push notifications:', error);
@@ -125,7 +125,7 @@ export class PushNotificationManager {
       // Subscribe to push manager
       const subscription = await this.registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(this.publicKey)
+        applicationServerKey: this.urlBase64ToUint8Array(this.publicKey) as BufferSource
       });
 
       // Send subscription to server
@@ -259,7 +259,7 @@ export class PushNotificationManager {
       .replace(/_/g, '/');
 
     const rawData = window.atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
+    const outputArray = new Uint8Array(new ArrayBuffer(rawData.length));
 
     for (let i = 0; i < rawData.length; ++i) {
       outputArray[i] = rawData.charCodeAt(i);

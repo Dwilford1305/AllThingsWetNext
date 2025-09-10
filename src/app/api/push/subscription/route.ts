@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@auth0/nextjs-auth0/edge';
-import PushNotificationService from '../../../../../lib/pushNotificationService';
+import PushNotificationService from '@/lib/pushNotificationService';
 
 // Subscribe to push notifications
 export async function POST(request: NextRequest) {

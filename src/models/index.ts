@@ -436,3 +436,6 @@ export * from './auth'
 
 // Re-export email models
 export * from './email'
+
+// Re-export push subscription model
+export * from './pushSubscription'

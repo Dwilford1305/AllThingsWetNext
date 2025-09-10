@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdmin } from '../../../../lib/auth-middleware';
-import { connectToDatabase } from '../../../../lib/mongodb';
-import { EmailAnalytics, EmailQueue, EmailPreferences } from '../../../../models/email';
-import PushNotificationService from '../../../../lib/pushNotificationService';
+import { verifyAdmin } from '@/lib/auth-middleware';
+import { connectDB } from '@/lib/mongodb';
+import { EmailAnalytics, EmailQueue, EmailPreferences } from '@/models/email';
+import PushNotificationService from '@/lib/pushNotificationService';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: authResult.error }, { status: authResult.status });
     }
 
-    await connectToDatabase();
+    await connectDB();
 
     const { searchParams } = new URL(request.url);
     const days = parseInt(searchParams.get('days') || '30');
@@ -264,7 +264,7 @@ export async function POST(request: NextRequest) {
         });
 
       case 'clear_failed':
-        await connectToDatabase();
+        await connectDB();
         const result = await EmailQueue.deleteMany({
           status: 'failed',
           attempts: { $gte: 3 }
@@ -276,7 +276,7 @@ export async function POST(request: NextRequest) {
         });
 
       case 'retry_failed':
-        await connectToDatabase();
+        await connectDB();
         await EmailQueue.updateMany(
           { status: 'failed', attempts: { $lt: 3 } },
           { 
