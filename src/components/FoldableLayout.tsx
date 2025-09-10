@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 interface FoldableLayoutProps {
   children: React.ReactNode;
@@ -8,6 +9,8 @@ interface FoldableLayoutProps {
 
 const FoldableLayout = ({ children }: FoldableLayoutProps) => {
   const [viewportWidth, setViewportWidth] = useState(0);
+  const pathname = usePathname();
+  const isHomePage = pathname === '/';
 
   useEffect(() => {
     const handleResize = () => {
@@ -68,8 +71,19 @@ const FoldableLayout = ({ children }: FoldableLayoutProps) => {
     return isFoldable;
   };
 
+  // Calculate top padding based on page type and navigation
+  const getTopPadding = () => {
+    if (isHomePage) {
+      // Homepage has banner (48px) + navigation (64px) = 112px total
+      return 'pt-28'; // 112px
+    } else {
+      // Non-homepage only has navigation (64px)
+      return 'pt-16'; // 64px
+    }
+  };
+
   return (
-    <div className={`min-h-screen w-full max-w-full box-border pt-12 ${isFoldableUnfolded() && viewportWidth > 480 ? 'pl-24' : ''}`}>
+    <div className={`min-h-screen w-full max-w-full box-border ${getTopPadding()} ${isFoldableUnfolded() && viewportWidth > 480 ? 'pl-24' : ''}`}>
       {children}
     </div>
   );
