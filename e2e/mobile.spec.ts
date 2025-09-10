@@ -1,9 +1,6 @@
-import { test, expect, devices } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 test.describe('Mobile E2E Tests', () => {
-  test.use({
-    ...devices['iPhone 12'],
-  });
 
   test('mobile homepage navigation and layout', async ({ page }) => {
     await page.goto('/');
