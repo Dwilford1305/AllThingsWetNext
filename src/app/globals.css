@@ -284,38 +284,39 @@ img {
   }
 }
 
-/* Enhanced touch interactions for all devices */
-@media (hover: none) and (pointer: coarse) {
-  /* Remove hover states on touch devices */
+/* Enhanced hover and touch interactions */
+@media (hover: hover) {
+  /* Only apply hover effects on devices that support hover */
   .hover-lift:hover {
-    transform: none;
+    transform: translateY(-4px) scale(1.03);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
+
   .hover-scale:hover {
-    transform: none;
-  }
-  
-  /* Add touch feedback instead */
-  .hover-lift:active {
-    transform: scale(0.98);
-    transition: transform 0.1s ease;
-  }
-  
-  .hover-scale:active {
-    transform: scale(0.95);
-    transition: transform 0.1s ease;
-  }
-  
-  /* Better button press feedback */
-  button:active, 
-  a:active, 
-  [role="button"]:active {
-    opacity: 0.8;
-    transform: scale(0.98);
-    transition: all 0.1s ease;
+    transform: scale(1.05);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
+/* Touch feedback for all devices */
+.hover-lift:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+.hover-scale:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+/* Better button press feedback */
+button:active, 
+a:active, 
+[role="button"]:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+  transition: all 0.1s ease;
+}
 /* Improved contrast and readability */
 @media (max-width: 768px) {
   /* Ensure text meets WCAG contrast requirements */
