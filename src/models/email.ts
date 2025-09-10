@@ -214,7 +214,7 @@ const EmailPreferencesSchema = new Schema({
 })
 
 // Add indexes for performance
-EmailAnalyticsSchema.index({ emailId: 1 })
+// emailId already has unique: true, so no need for explicit index
 EmailAnalyticsSchema.index({ recipientEmail: 1 })
 EmailAnalyticsSchema.index({ templateType: 1 })
 EmailAnalyticsSchema.index({ sentAt: -1 })
@@ -225,7 +225,7 @@ EmailQueueSchema.index({ priority: 1, scheduledFor: 1 })
 EmailQueueSchema.index({ userId: 1 })
 EmailQueueSchema.index({ businessId: 1 })
 
-EmailPreferencesSchema.index({ userId: 1 })
+// userId already has unique: true, so no need for explicit index
 EmailPreferencesSchema.index({ email: 1 })
 
 // Pre-save middleware to update timestamps
