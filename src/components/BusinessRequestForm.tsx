@@ -324,7 +324,6 @@ export default function BusinessRequestForm() {
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleInputChange('businessType')(e.target.value)}
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base md:text-sm"
-              autoComplete="organization-title"
             >
               <option value="">Select business type</option>
               {businessTypes.map((type) => (
