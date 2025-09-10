@@ -15,6 +15,9 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
+  /* Global setup and teardown */
+  globalSetup: require.resolve('./e2e/global-setup.ts'),
+  globalTeardown: require.resolve('./e2e/global-teardown.ts'),
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -75,10 +78,10 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:3000',
-    reuseExistingServer: true, // Always reuse existing server for development
+    reuseExistingServer: !process.env.CI, // Reuse in development, start fresh in CI
     timeout: 120 * 1000, // 2 minutes
     env: {
-      // Use test environment configuration
+      // Environment variables will be set by global setup
       NODE_ENV: 'test',
     },
   },
