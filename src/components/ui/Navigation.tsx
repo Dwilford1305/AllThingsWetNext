@@ -386,12 +386,13 @@ const Navigation = () => {
             <div className="md:hidden flex items-center flex-shrink-0">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`p-2 min-w-[44px] min-h-[44px] transition-colors touch-manipulation ${
+                className={`p-3 min-w-[48px] min-h-[48px] rounded-lg transition-all duration-200 touch-manipulation focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:scale-95 ${
                   !isHomePage || (hasMounted && isScrolled)
-                    ? 'text-gray-900 hover:text-blue-600' 
-                    : 'text-white hover:text-white'
+                    ? 'text-gray-900 hover:text-blue-600 hover:bg-blue-50' 
+                    : 'text-white hover:text-white hover:bg-white/10'
                 }`}
                 aria-label="Toggle navigation menu"
+                aria-expanded={isOpen}
               >
                 {isOpen 
                   ? <X size={24} color={(!isHomePage || (hasMounted && isScrolled)) ? undefined : '#fff'} /> 
@@ -404,12 +405,14 @@ const Navigation = () => {
         {/* Mobile Navigation */}
         {isOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white/95 backdrop-blur-md border-t max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-5rem)] md:max-h-[calc(100vh-4rem)] overflow-y-auto">
+            <div className="px-4 pt-4 pb-6 space-y-2 bg-white/95 backdrop-blur-md border-t max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-5rem)] md:max-h-[calc(100vh-4rem)] overflow-y-auto">
               {navItems.map(({ href, label, icon: Icon }) => (
                 <Link
                   key={href}
                   href={href}
-                  className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2"
+                  className={`text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 flex items-center gap-3 min-h-[48px] touch-manipulation active:scale-95 ${
+                    pathname === href ? 'bg-blue-50 text-blue-600 font-semibold' : ''
+                  }`}
                   onClick={() => setIsOpen(false)}
                 >
                   <Icon size={20} />
@@ -418,12 +421,12 @@ const Navigation = () => {
               ))}
               
               {/* Mobile Authentication */}
-              <div className="border-t pt-3 mt-3">
+              <div className="border-t pt-4 mt-4 space-y-2">
                 {user ? (
                   <>
                     <Link
                       href="/profile"
-                      className="w-full text-left text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2"
+                      className="w-full text-left text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 flex items-center gap-3 min-h-[48px] touch-manipulation active:scale-95"
                       onClick={() => setIsOpen(false)}
                     >
                       {displayPicture ? (
@@ -444,7 +447,7 @@ const Navigation = () => {
                     <a
                       href={logoutHref}
                       onClick={() => setIsOpen(false)}
-                      className="w-full text-left text-gray-600 hover:text-red-600 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2"
+                      className="w-full text-left text-gray-600 hover:text-red-600 hover:bg-red-50 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 flex items-center gap-3 min-h-[48px] touch-manipulation active:scale-95"
                     >
                       <LogOut size={20} />
                       Logout
@@ -455,7 +458,7 @@ const Navigation = () => {
                     <a
                       href={loginHref}
                       onClick={() => setIsOpen(false)}
-                      className="w-full text-left text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2"
+                      className="w-full text-left text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 flex items-center gap-3 min-h-[48px] touch-manipulation active:scale-95"
                     >
                       <LogIn size={20} />
                       Login
@@ -463,7 +466,7 @@ const Navigation = () => {
                     <a
                       href={signupHref}
                       onClick={() => setIsOpen(false)}
-                      className="w-full text-left text-blue-600 hover:text-blue-700 px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center gap-2 border border-blue-600 mt-2"
+                      className="w-full text-left text-white bg-blue-600 hover:bg-blue-700 px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 flex items-center gap-3 min-h-[48px] touch-manipulation active:scale-95 border border-blue-600"
                     >
                       <UserPlus size={20} />
                       Register

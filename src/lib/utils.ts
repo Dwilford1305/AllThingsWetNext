@@ -88,3 +88,59 @@ export function formatDateRelative(date: Date | string): string {
     return formatDate(d)
   }
 }
+
+/**
+ * Mobile-specific utility functions for touch optimization
+ */
+export const mobileUtils = {
+  // Touch target classes for accessibility compliance
+  touchTarget: "min-h-touch-target min-w-touch-target touch:select-none",
+  
+  // Enhanced touch feedback
+  touchFeedback: "active:scale-95 transition-transform duration-100",
+  
+  // Mobile-optimized form inputs
+  mobileInput: "mobile:min-h-input-mobile mobile:text-base mobile:px-4 mobile:py-3",
+  
+  // Mobile spacing utilities
+  mobileSpacing: "mobile:space-y-4",
+  
+  // Mobile-optimized button sizing
+  mobileButton: "mobile:h-12 mobile:px-6 mobile:text-base",
+  
+  // Combine multiple mobile utilities
+  getMobileClasses: (base: string, mobile?: string) => {
+    return cn(base, mobile, mobileUtils.touchTarget, mobileUtils.touchFeedback)
+  }
+}
+
+/**
+ * Detects if the current device is likely a mobile device
+ */
+export function isMobileDevice(): boolean {
+  if (typeof window === 'undefined') return false
+  
+  return window.innerWidth <= 768 || 
+         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+}
+
+/**
+ * Detects if the current device supports touch
+ */
+export function isTouchDevice(): boolean {
+  if (typeof window === 'undefined') return false
+  
+  return 'ontouchstart' in window || 
+         navigator.maxTouchPoints > 0 || 
+         window.matchMedia('(pointer: coarse)').matches
+}
+
+/**
+ * Mobile-optimized image sizes for responsive images
+ */
+export const imageSizes = {
+  mobile: '(max-width: 768px) 100vw',
+  tablet: '(max-width: 1024px) 50vw',
+  desktop: '33vw',
+  full: '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
+}

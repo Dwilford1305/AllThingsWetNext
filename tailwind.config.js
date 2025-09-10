@@ -10,6 +10,8 @@ module.exports = {
     extend: {
       screens: {
         'xs': '475px',
+        'mobile': { 'max': '767px' }, // Mobile-first utilities
+        'touch': { 'max': '1024px' }, // Touch device utilities
       },
       colors: {
         // Modern primary palette
@@ -96,6 +98,8 @@ module.exports = {
       minHeight: {
         'screen-75': '75vh',
         'screen-50': '50vh',
+        'touch-target': '44px', // Minimum touch target size
+        'input-mobile': '48px',  // Mobile input minimum height
       },
       maxWidth: {
         'xs': '20rem',
