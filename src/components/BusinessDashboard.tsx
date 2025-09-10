@@ -5,6 +5,7 @@ import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 import SubscriptionUpgradeModal from './SubscriptionUpgradeModal';
+import PayPalButton from './PayPalButton';
 import { authenticatedFetch } from '@/lib/auth-fetch';
 import { 
   Building, 
@@ -199,13 +200,56 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
     }
   };
 
-  const handleUpgrade = async (newTier: string) => {
-    setSelectedTier(newTier);
-    setShowUpgradeModal(true);
+  // Remove unused upgrade handlers since we now use direct PayPal buttons
+  // const handleUpgrade = async (newTier: string) => {
+  //   setSelectedTier(newTier);
+  //   setShowUpgradeModal(true);
+  // };
+
+  // const handleNewUpgrade = () => {
+  //   setShowNewUpgradeModal(true);
+  // };
+
+  // Direct PayPal payment for specific tier
+  const handleDirectPayment = async (tier: string, paymentId: string) => {
+    setLoading(true);
+    try {
+      // Removed unused tierPricing variable since we get pricing from component props
+      const response = await authenticatedFetch('/api/businesses/subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subscriptionTier: tier,
+          duration: 12, // Annual billing
+          paymentId,
+          businessId: business.id
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // Update the business object with new subscription
+        const updatedBusiness = {
+          ...business,
+          subscriptionTier: tier as 'free' | 'silver' | 'gold' | 'platinum',
+          subscriptionStatus: 'active' as const
+        };
+        onUpdate?.(updatedBusiness);
+        alert('🎉 Business subscription upgraded successfully! Your new features are now active.');
+      } else {
+        alert('Error upgrading subscription: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error upgrading subscription:', error);
+      alert('Failed to upgrade subscription. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleNewUpgrade = () => {
-    setShowNewUpgradeModal(true);
+  const handlePaymentError = (error: string) => {
+    console.error('Payment error:', error);
+    alert('Payment failed: ' + error);
   };
 
   const handleUpgradeSuccess = async (tier: string, paymentId: string) => {
@@ -706,22 +750,23 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                   <Shield className="h-4 w-4 mr-2" />
                   Silver
                 </h4>
-                <p className="text-2xl font-bold text-gray-900 mb-2">$19.99<span className="text-sm font-normal">/month</span></p>
+                <p className="text-2xl font-bold text-gray-900 mb-2">$199.99<span className="text-sm font-normal">/year</span></p>
                 <ul className="text-sm text-gray-600 mb-4 space-y-1">
                   <li>• Enhanced listing</li>
                   <li>• Contact form</li>
                   <li>• Basic analytics</li>
                   <li>• Business hours</li>
                 </ul>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={handleNewUpgrade}
-                  disabled={loading}
-                >
-                  Upgrade with PayPal
-                </Button>
+                <div className="w-full">
+                  <PayPalButton
+                    amount={199.99}
+                    description="Business Subscription - Silver Plan (Annual)"
+                    onSuccess={(paymentId) => handleDirectPayment('silver', paymentId)}
+                    onError={handlePaymentError}
+                    disabled={loading}
+                    className="w-full"
+                  />
+                </div>
               </div>
 
               <div className="p-4 border-2 border-yellow-500 rounded-lg relative">
@@ -730,22 +775,23 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                   <Star className="h-4 w-4 mr-2" />
                   Gold
                 </h4>
-                <p className="text-2xl font-bold text-gray-900 mb-2">$39.99<span className="text-sm font-normal">/month</span></p>
+                <p className="text-2xl font-bold text-gray-900 mb-2">$399.99<span className="text-sm font-normal">/year</span></p>
                 <ul className="text-sm text-gray-600 mb-4 space-y-1">
                   <li>• Everything in Silver</li>
                   <li>• Photo gallery</li>
                   <li>• Social media links</li>
                   <li>• Featured placement</li>
                 </ul>
-                <Button 
-                  size="sm" 
-                  variant="primary" 
-                  className="w-full"
-                  onClick={() => handleUpgrade('gold')}
-                  disabled={loading}
-                >
-                  Upgrade to Gold
-                </Button>
+                <div className="w-full">
+                  <PayPalButton
+                    amount={399.99}
+                    description="Business Subscription - Gold Plan (Annual)"
+                    onSuccess={(paymentId) => handleDirectPayment('gold', paymentId)}
+                    onError={handlePaymentError}
+                    disabled={loading}
+                    className="w-full"
+                  />
+                </div>
               </div>
 
               <div className="p-4 border rounded-lg">
@@ -753,22 +799,23 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                   <Award className="h-4 w-4 mr-2" />
                   Platinum
                 </h4>
-                <p className="text-2xl font-bold text-gray-900 mb-2">$79.99<span className="text-sm font-normal">/month</span></p>
+                <p className="text-2xl font-bold text-gray-900 mb-2">$799.99<span className="text-sm font-normal">/year</span></p>
                 <ul className="text-sm text-gray-600 mb-4 space-y-1">
                   <li>• Everything in Gold</li>
                   <li>• Logo upload</li>
                   <li>• Advanced analytics</li>
                   <li>• Priority support</li>
                 </ul>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => handleUpgrade('platinum')}
-                  disabled={loading}
-                >
-                  Upgrade to Platinum
-                </Button>
+                <div className="w-full">
+                  <PayPalButton
+                    amount={799.99}
+                    description="Business Subscription - Platinum Plan (Annual)"
+                    onSuccess={(paymentId) => handleDirectPayment('platinum', paymentId)}
+                    onError={handlePaymentError}
+                    disabled={loading}
+                    className="w-full"
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -776,33 +823,45 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
           {currentTier !== 'free' && currentTier !== 'platinum' && (
             <div className="text-center">
               <p className="text-gray-600 mb-4">Want more features? Upgrade your plan!</p>
-              <div className="space-x-2">
+              <div className="space-y-3 max-w-sm mx-auto">
                 {currentTier === 'silver' && (
                   <>
-                    <Button 
-                      variant="primary" 
-                      onClick={() => handleUpgrade('gold')}
-                      disabled={loading}
-                    >
-                      Upgrade to Gold
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => handleUpgrade('platinum')}
-                      disabled={loading}
-                    >
-                      Upgrade to Platinum
-                    </Button>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-2">Gold Plan - $399.99/year</p>
+                      <PayPalButton
+                        amount={399.99}
+                        description="Business Subscription - Gold Plan (Annual)"
+                        onSuccess={(paymentId) => handleDirectPayment('gold', paymentId)}
+                        onError={handlePaymentError}
+                        disabled={loading}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700 mb-2">Platinum Plan - $799.99/year</p>
+                      <PayPalButton
+                        amount={799.99}
+                        description="Business Subscription - Platinum Plan (Annual)"
+                        onSuccess={(paymentId) => handleDirectPayment('platinum', paymentId)}
+                        onError={handlePaymentError}
+                        disabled={loading}
+                        className="w-full"
+                      />
+                    </div>
                   </>
                 )}
                 {currentTier === 'gold' && (
-                  <Button 
-                    variant="primary" 
-                    onClick={() => handleUpgrade('platinum')}
-                    disabled={loading}
-                  >
-                    Upgrade to Platinum
-                  </Button>
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-2">Platinum Plan - $799.99/year</p>
+                    <PayPalButton
+                      amount={799.99}
+                      description="Business Subscription - Platinum Plan (Annual)"
+                      onSuccess={(paymentId) => handleDirectPayment('platinum', paymentId)}
+                      onError={handlePaymentError}
+                      disabled={loading}
+                      className="w-full"
+                    />
+                  </div>
                 )}
               </div>
             </div>

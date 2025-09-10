@@ -231,7 +231,7 @@ img {
   }
   
   /* Optimize transform animations */
-  .animate-scale, .active\\:scale-95 {
+  .animate-scale, .active\:scale-95 {
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
     will-change: transform;

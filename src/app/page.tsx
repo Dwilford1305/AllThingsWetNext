@@ -7,11 +7,13 @@ import Footer from '@/components/Footer';
 import AnimatedSection from '@/components/AnimatedSection';
 import AdPlaceholder from '@/components/AdPlaceholder';
 import FoldableLayout from '@/components/FoldableLayout';
+import DevelopmentBanner from '@/components/DevelopmentBanner';
 
 export default function Home() {
   return (
     <FoldableLayout>
       <div className="relative">
+        <DevelopmentBanner />
         <Navigation />
         <ParallaxHero />
       

@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Providers } from "./providers";
 
 import Script from "next/script";
-import DevelopmentBanner from "@/components/DevelopmentBanner";
 import CookieConsent from "@/components/CookieConsent";
 import { WebsiteStructuredData } from "@/components/StructuredData";
 import "./globals.css";
@@ -133,7 +132,6 @@ export default function RootLayout({
         className="antialiased overflow-x-hidden max-w-full w-screen font-sans"
       >
         <Providers>
-          <DevelopmentBanner />
           {children}
           <CookieConsent />
         </Providers>

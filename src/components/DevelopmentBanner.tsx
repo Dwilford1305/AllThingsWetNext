@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { AlertTriangle } from 'lucide-react';
 
 const DevelopmentBanner = () => {
   const [viewportWidth, setViewportWidth] = useState(0);
-
+  const pathname = usePathname();
+  
   useEffect(() => {
     const handleResize = () => {
       setViewportWidth(window.innerWidth);
@@ -28,6 +30,11 @@ const DevelopmentBanner = () => {
       window.removeEventListener('orientationchange', handleResize);
     };
   }, []);
+  
+  // Only show banner on homepage
+  if (pathname !== '/') {
+    return null;
+  }
 
   // Detect if device is likely a foldable in unfolded state (same logic as Navigation)
   const isFoldableUnfolded = () => {
@@ -50,7 +57,7 @@ const DevelopmentBanner = () => {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 bg-red-600 text-white px-4 py-3 z-50 border-b-2 border-red-700">
+    <div className="relative bg-red-600 text-white px-4 py-3 border-b-2 border-red-700">
       <div className={`max-w-7xl mx-auto flex items-center justify-center ${
         isFoldableUnfolded() ? 'ml-24' : ''
       }`}>
