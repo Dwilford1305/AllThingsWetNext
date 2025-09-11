@@ -382,10 +382,16 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
       return; // User denied permission
     }
 
-    // Trigger file input click
-    const fileInput = document.getElementById('photo-gallery-upload') as HTMLInputElement;
+    // Try both methods to trigger file input click
+    const fileInput1 = document.getElementById('photo-gallery-upload') as HTMLInputElement;
+    const fileInput2 = (window as any).photoGalleryInput;
+    
+    const fileInput = fileInput1 || fileInput2;
     if (fileInput) {
       fileInput.click();
+    } else {
+      console.warn('Photo upload input not found');
+      alert('Unable to open file picker. Please try again.');
     }
   };
 

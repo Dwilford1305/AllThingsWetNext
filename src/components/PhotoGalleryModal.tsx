@@ -138,9 +138,23 @@ export const PhotoGalleryModal = ({
                       height={200}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        // Handle broken images
+                        // Handle broken images with a placeholder
                         const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder-image.jpg';
+                        const container = target.parentElement;
+                        if (container) {
+                          container.innerHTML = `
+                            <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                              <div class="text-center text-gray-500">
+                                <div class="text-3xl mb-2">🖼️</div>
+                                <div class="text-xs">Image not available</div>
+                              </div>
+                            </div>
+                          `;
+                        }
+                      }}
+                      onLoad={() => {
+                        // Image loaded successfully - could add success handler here
+                        console.log(`Successfully loaded photo ${index + 1}`);
                       }}
                     />
                   </div>
@@ -208,6 +222,12 @@ export const PhotoGalleryModal = ({
             disabled={uploadingPhoto}
             className="hidden"
             id="photo-gallery-upload"
+            ref={(input) => {
+              // Store reference for triggering upload
+              if (input) {
+                (window as any).photoGalleryInput = input;
+              }
+            }}
           />
         </div>
       </Card>

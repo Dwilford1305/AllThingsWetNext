@@ -72,13 +72,24 @@ const AdPreview = ({ ad, className = '' }: AdPreviewProps) => {
       <div className="relative w-full h-full p-2 sm:p-3">
         {/* Photo Background */}
         {photo && (
-          <div className="absolute inset-2 sm:inset-3 rounded overflow-hidden">
+          <div className="absolute inset-2 sm:inset-3 rounded overflow-hidden bg-gray-200">
             <Image
               src={photo}
               alt={businessName}
               fill
               className="object-cover"
               sizes="(max-width: 768px) 300px, 400px"
+              onError={(e) => {
+                // Handle broken images by hiding the image element
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                // Show a placeholder background
+                const parent = target.parentElement;
+                if (parent) {
+                  parent.className += ' bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center';
+                  parent.innerHTML = `<div class="text-gray-500 text-center p-2"><div class="text-2xl mb-1">🏢</div><div class="text-xs">${businessName}</div></div>`;
+                }
+              }}
             />
             {/* Overlay for text readability */}
             <div className="absolute inset-0 bg-black bg-opacity-20" />
@@ -90,12 +101,12 @@ const AdPreview = ({ ad, className = '' }: AdPreviewProps) => {
           {/* Logo (Platinum only) */}
           {tier === 'platinum' && logo && (
             <div className="flex justify-end">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full p-1 shadow-md">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full p-1.5 shadow-md">
                 <Image
                   src={logo}
                   alt={`${businessName} logo`}
-                  width={32}
-                  height={32}
+                  width={64}
+                  height={64}
                   className="w-full h-full object-contain rounded-full"
                 />
               </div>

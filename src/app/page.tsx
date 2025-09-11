@@ -38,10 +38,10 @@ export default function Home() {
             <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Premium Business Spotlight</h3>
             <p className="text-sm text-gray-300">Experience the highest tier of business promotion</p>
           </div>
-          <div className="flex justify-center">
+          <div className="flex justify-center items-center">
             <BusinessAdRotator 
               tier="platinum"
-              className="w-full max-w-md h-64 sm:h-72"
+              className="mx-auto"
             />
           </div>
         </div>
@@ -58,15 +58,17 @@ export default function Home() {
             <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Featured Businesses</h3>
             <p className="text-sm text-gray-300">Gold tier businesses with enhanced visibility</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
-            <BusinessAdRotator 
-              tier="gold"
-              className="h-20 sm:h-24"
-            />
-            <BusinessAdRotator 
-              tier="gold"
-              className="h-20 sm:h-24"
-            />
+          <div className="flex justify-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl">
+              <BusinessAdRotator 
+                tier="gold"
+                className="mx-auto"
+              />
+              <BusinessAdRotator 
+                tier="gold"
+                className="mx-auto"
+              />
+            </div>
           </div>
         </div>
       </AnimatedSection>
@@ -93,23 +95,25 @@ export default function Home() {
             <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-white mb-1 sm:mb-2">Enhanced Local Listings</h3>
             <p className="text-xs sm:text-sm lg:text-base text-gray-300">Discover silver tier enhanced business listings</p>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
-            <BusinessAdRotator 
-              tier="silver"
-              className="h-48 sm:h-52"
-            />
-            <BusinessAdRotator 
-              tier="silver"
-              className="h-48 sm:h-52"
-            />
-            <BusinessAdRotator 
-              tier="silver"
-              className="h-48 sm:h-52"
-            />
-            <BusinessAdRotator 
-              tier="silver"
-              className="h-48 sm:h-52"
-            />
+          <div className="flex justify-center">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 max-w-6xl">
+              <BusinessAdRotator 
+                tier="silver"
+                className="mx-auto"
+              />
+              <BusinessAdRotator 
+                tier="silver"
+                className="mx-auto"
+              />
+              <BusinessAdRotator 
+                tier="silver"
+                className="mx-auto"
+              />
+              <BusinessAdRotator 
+                tier="silver"
+                className="mx-auto"
+              />
+            </div>
           </div>
         </div>
       </AnimatedSection>
