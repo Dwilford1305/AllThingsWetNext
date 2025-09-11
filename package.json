@@ -14,6 +14,8 @@
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
     "test:e2e:install": "playwright install",
+    "test:e2e:install-deps": "playwright install-deps",
+    "test:e2e:setup": "playwright install && playwright install-deps",
     "test:all": "npm run test && npm run test:e2e"
   },
   "overrides": {

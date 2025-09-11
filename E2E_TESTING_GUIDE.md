@@ -12,14 +12,22 @@ This guide provides comprehensive instructions for running, maintaining, and ext
 
 ### Installing Playwright Browsers
 ```bash
-# Install all browsers
+# Install all browsers (recommended)
+npm run test:e2e:setup
+
+# Quick browser-only install
 npm run test:e2e:install
 
-# Or install specific browsers
+# Install system dependencies
+npm run test:e2e:install-deps
+
+# Or install specific browsers manually
 npx playwright install chromium
 npx playwright install firefox
 npx playwright install webkit
 ```
+
+⚠️ **Important**: Visual regression tests will automatically skip if browsers aren't installed, providing helpful guidance messages. The test suite can run framework validation and API tests without browser installation.
 
 ### Running E2E Tests
 ```bash
