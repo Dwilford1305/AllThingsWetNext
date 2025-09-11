@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import type { Business, OfferCodeValidationResult, BusinessAd } from '@/types';
 import AdPreview from './AdPreview';
+import { PhotoGalleryModal } from './PhotoGalleryModal';
 
 interface BusinessDashboardProps {
   business: Business;
@@ -56,6 +57,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
   const [showAdPreview, setShowAdPreview] = useState(false);
   const [showPermissionDialog, setShowPermissionDialog] = useState(false);
   const [pendingUploadType, setPendingUploadType] = useState<'photo' | 'logo' | null>(null);
+  const [showPhotoGallery, setShowPhotoGallery] = useState(false);
 
   // File validation constants
   const PHOTO_SIZE_LIMITS = {
@@ -381,10 +383,24 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
     }
 
     // Trigger file input click
-    const fileInput = document.getElementById('photo-upload') as HTMLInputElement;
+    const fileInput = document.getElementById('photo-gallery-upload') as HTMLInputElement;
     if (fileInput) {
       fileInput.click();
     }
+  };
+
+  // Open photo gallery modal
+  const openPhotoGallery = () => {
+    setShowPhotoGallery(true);
+  };
+
+  // Handle photos update from gallery modal
+  const handlePhotosUpdate = (updatedPhotos: string[]) => {
+    const updatedBusiness = {
+      ...business,
+      photos: updatedPhotos
+    };
+    onUpdate?.(updatedBusiness);
   };
 
   // Logo upload trigger with permission request
@@ -565,6 +581,33 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
     } catch (error) {
       console.error('Ad preview error:', error);
       alert('Failed to generate ad preview');
+    }
+  };
+
+  // Save ad handler
+  const handleSaveAd = async () => {
+    try {
+      setLoading(true);
+      const response = await authenticatedFetch('/api/businesses/ads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessId: business.id
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert('Ad saved successfully! It will now appear in rotation on the website.');
+        setShowAdPreview(false);
+      } else {
+        alert(result.error || 'Failed to save ad');
+      }
+    } catch (error) {
+      console.error('Save ad error:', error);
+      alert('Failed to save ad');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -798,7 +841,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
             {(currentTier === 'gold' || currentTier === 'platinum') && (
               <>
                 <input
-                  id="photo-upload"
+                  id="photo-gallery-upload"
                   type="file"
                   accept="image/*"
                   onChange={handlePhotoUpload}
@@ -809,9 +852,9 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                   variant="outline" 
                   size="sm" 
                   disabled={uploadingPhoto}
-                  onClick={triggerPhotoUpload}
+                  onClick={openPhotoGallery}
                 >
-                  {uploadingPhoto ? 'Uploading...' : 'Manage Photos'}
+                  Manage Photos
                 </Button>
               </>
             )}
@@ -1224,11 +1267,46 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                     </p>
                   </div>
                 )}
+
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAdPreview(false)}
+                    disabled={loading}
+                  >
+                    Close
+                  </Button>
+                  {(adPreview as unknown as BusinessAd).photo && (
+                    <Button
+                      variant="primary"
+                      onClick={handleSaveAd}
+                      disabled={loading}
+                      className="flex items-center"
+                    >
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      {loading ? 'Saving...' : 'Save & Activate Ad'}
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </Card>
         </div>
       )}
+
+      {/* Photo Gallery Modal */}
+      <PhotoGalleryModal
+        isOpen={showPhotoGallery}
+        onClose={() => setShowPhotoGallery(false)}
+        businessId={business.id}
+        photos={business.photos || []}
+        onPhotosUpdate={handlePhotosUpdate}
+        tier={currentTier}
+        uploadingPhoto={uploadingPhoto}
+        onPhotoUpload={handlePhotoUpload}
+        onTriggerUpload={triggerPhotoUpload}
+      />
 
       {/* File Permission Dialog */}
       {showPermissionDialog && (

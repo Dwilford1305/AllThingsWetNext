@@ -118,6 +118,114 @@ export async function GET(request: NextRequest) {
   }
 }
 
+export async function POST(request: NextRequest) {
+  try {
+    await connectDB()
+
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+    const decoded = AuthService.verifyAccessToken(token)
+    if (!decoded || !decoded.userId) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid token' },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+    const { businessId } = body
+
+    if (!businessId) {
+      return NextResponse.json(
+        { success: false, error: 'Business ID is required' },
+        { status: 400 }
+      )
+    }
+
+    // Get business and verify ownership
+    const business = await Business.findOne({ 
+      id: businessId,
+      claimedByUserId: decoded.userId
+    })
+
+    if (!business) {
+      return NextResponse.json(
+        { success: false, error: 'Business not found or not owned by user' },
+        { status: 404 }
+      )
+    }
+
+    const currentTier = business.subscriptionTier || 'free'
+    if (currentTier === 'free') {
+      return NextResponse.json(
+        { success: false, error: 'Ad creation requires subscription' },
+        { status: 403 }
+      )
+    }
+
+    // Check if business has a photo
+    if (!business.photos || business.photos.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Business must have at least one photo to create an ad' },
+        { status: 400 }
+      )
+    }
+
+    // Create or update business ad
+    const adId = `ad_${businessId}_${currentTier}`
+    const adDimensions = getAdDimensions(currentTier)
+    
+    const adData = {
+      id: adId,
+      businessId,
+      tier: currentTier,
+      photo: business.photos[0], // Use first photo
+      logo: currentTier === 'platinum' ? business.logo : undefined,
+      businessName: business.name,
+      adSize: adDimensions,
+      isActive: true,
+      isVisible: true,
+      impressions: 0,
+      clicks: 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+
+    const savedAd = await BusinessAd.findOneAndUpdate(
+      { businessId, tier: currentTier },
+      adData,
+      { 
+        upsert: true,
+        new: true
+      }
+    )
+
+    const response: ApiResponse<typeof savedAd> = {
+      success: true,
+      data: savedAd,
+      message: 'Ad saved successfully'
+    }
+
+    return NextResponse.json(response)
+  } catch (error) {
+    console.error('Save ad error:', error)
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Failed to save ad' 
+      },
+      { status: 500 }
+    )
+  }
+}
+
 // Helper function to get ad dimensions based on tier
 function getAdDimensions(tier: string) {
   const dimensions = {

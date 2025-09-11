@@ -6,6 +6,7 @@ import SubscriptionShowcase from '@/components/SubscriptionShowcase';
 import Footer from '@/components/Footer';
 import AnimatedSection from '@/components/AnimatedSection';
 import AdPlaceholder from '@/components/AdPlaceholder';
+import { BusinessAdRotator } from '@/components/BusinessAdRotator';
 import FoldableLayout from '@/components/FoldableLayout';
 
 export default function Home() {
@@ -38,10 +39,9 @@ export default function Home() {
             <p className="text-sm text-gray-300">Experience the highest tier of business promotion</p>
           </div>
           <div className="flex justify-center">
-            <AdPlaceholder 
-              type="platinum" 
-              size="large" 
-              className="w-full max-w-md" 
+            <BusinessAdRotator 
+              tier="platinum"
+              className="w-full max-w-md h-64 sm:h-72"
             />
           </div>
         </div>
@@ -59,13 +59,13 @@ export default function Home() {
             <p className="text-sm text-gray-300">Gold tier businesses with enhanced visibility</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
-            <AdPlaceholder 
-              type="gold" 
-              size="square" 
+            <BusinessAdRotator 
+              tier="gold"
+              className="h-20 sm:h-24"
             />
-            <AdPlaceholder 
-              type="gold" 
-              size="square" 
+            <BusinessAdRotator 
+              tier="gold"
+              className="h-20 sm:h-24"
             />
           </div>
         </div>
@@ -94,21 +94,21 @@ export default function Home() {
             <p className="text-xs sm:text-sm lg:text-base text-gray-300">Discover silver tier enhanced business listings</p>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
-            <AdPlaceholder 
-              type="silver" 
-              size="square" 
+            <BusinessAdRotator 
+              tier="silver"
+              className="h-48 sm:h-52"
             />
-            <AdPlaceholder 
-              type="silver" 
-              size="square" 
+            <BusinessAdRotator 
+              tier="silver"
+              className="h-48 sm:h-52"
             />
-            <AdPlaceholder 
-              type="silver" 
-              size="square" 
+            <BusinessAdRotator 
+              tier="silver"
+              className="h-48 sm:h-52"
             />
-            <AdPlaceholder 
-              type="silver" 
-              size="square" 
+            <BusinessAdRotator 
+              tier="silver"
+              className="h-48 sm:h-52"
             />
           </div>
         </div>
