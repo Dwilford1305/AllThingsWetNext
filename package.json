@@ -8,7 +8,13 @@
     "start": "next start",
     "lint": "next lint",
     "scrape:events": "node scripts/scrape-events.js",
-    "test": "jest"
+    "test": "jest",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:install": "playwright install",
+    "test:all": "npm run test && npm run test:e2e"
   },
   "overrides": {
     "cookie": "^0.7.0",
@@ -30,6 +36,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/uuid": "^10.0.0",
+    "@types/web-push": "^3.6.4",
     "axios": "^1.10.0",
     "bcryptjs": "^3.0.2",
     "cheerio": "^1.1.0",
@@ -51,11 +58,11 @@
     "typescript": "5.9.2",
     "uuid": "^13.0.0",
     "web-push": "^3.6.7",
-    "zod": "^4.0.15",
-    "@types/web-push": "^3.6.4"
+    "zod": "^4.0.15"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.55.0",
     "@types/jest": "^30.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
