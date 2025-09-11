@@ -419,25 +419,14 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
       return;
     }
 
-    // Check authentication
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      alert('Please log in to upload photos');
-      event.target.value = '';
-      return;
-    }
-
     setUploadingPhoto(true);
     try {
       const formData = new FormData();
       formData.append('photo', file);
       formData.append('businessId', business.id);
 
-      const response = await fetch('/api/businesses/photos', {
+      const response = await authenticatedFetch('/api/businesses/photos', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
         body: formData
       });
 
@@ -504,25 +493,14 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
       return;
     }
 
-    // Check authentication
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      alert('Please log in to upload logos');
-      event.target.value = '';
-      return;
-    }
-
     setUploadingLogo(true);
     try {
       const formData = new FormData();
       formData.append('logo', file);
       formData.append('businessId', business.id);
 
-      const response = await fetch('/api/businesses/logo', {
+      const response = await authenticatedFetch('/api/businesses/logo', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
         body: formData
       });
 
@@ -575,12 +553,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
   // Ad preview handler
   const handleAdPreview = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/businesses/ads?preview=true&businessId=${business.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await authenticatedFetch(`/api/businesses/ads?preview=true&businessId=${business.id}`);
 
       const result = await response.json();
       if (result.success) {

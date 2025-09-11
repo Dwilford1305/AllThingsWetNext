@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import AdPlaceholder from '@/components/AdPlaceholder';
 import MarketplaceListingForm from '@/components/MarketplaceListingForm';
+import PageCallToAction from '@/components/PageCallToAction';
 import Comments from '@/components/Comments';
 import ReportModal from '@/components/ReportModal';
 import { ShoppingBag, MapPin, User, Phone, Mail, Search, Filter, Image as ImageIcon, Plus, Flag, MessageCircle, X, ThumbsUp } from 'lucide-react';
@@ -191,6 +192,7 @@ const MarketplacePage = () => {
                     <Button
                       onClick={() => setShowCreateForm(true)}
                       className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 whitespace-nowrap"
+                      data-create-listing
                     >
                       <Plus className="h-5 w-5" />
                       Create Listing
@@ -199,6 +201,15 @@ const MarketplacePage = () => {
                 </div>
               </div>
             </AnimatedSection>
+
+            {/* Marketplace CTA for non-authenticated users */}
+            {!isAuthenticated && (
+              <AnimatedSection delay={0.25}>
+                <div className="mb-8">
+                  <PageCallToAction type="marketplace" />
+                </div>
+              </AnimatedSection>
+            )}
 
             {/* Marketplace Sponsors */}
             <div className="mb-8">
