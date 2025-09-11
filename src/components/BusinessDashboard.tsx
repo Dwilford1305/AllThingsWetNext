@@ -582,11 +582,32 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
         setAdPreview(result.data);
         setShowAdPreview(true);
       } else {
-        alert(result.error || 'Failed to generate ad preview');
+        // Provide more specific error messages based on response status
+        let errorMessage = result.error || 'Failed to generate ad preview';
+        if (response.status === 401) {
+          errorMessage = '🔐 Authentication required. Please log in to preview your ad.';
+        } else if (response.status === 403) {
+          errorMessage = '🔒 Ad preview requires a subscription. Please upgrade your plan.';
+        } else if (response.status === 404) {
+          errorMessage = '🏢 Business not found or you don\'t have permission to preview this ad.';
+        } else if (response.status === 500) {
+          errorMessage = '⚠️ Database connection error. This feature requires database access in production.';
+        }
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Ad preview error:', error);
-      alert('Failed to generate ad preview');
+      let errorMessage = '❌ Failed to generate ad preview. ';
+      if (error instanceof Error) {
+        if (error.message.includes('Failed to fetch')) {
+          errorMessage += '🌐 Please check your internet connection or try again later.';
+        } else {
+          errorMessage += error.message;
+        }
+      } else {
+        errorMessage += '🔄 Please try again.';
+      }
+      alert(errorMessage);
     }
   };
 

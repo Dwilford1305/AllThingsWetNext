@@ -160,19 +160,33 @@ export const PhotoGalleryModal = ({
                   </div>
                   
                   {/* Photo overlay with actions */}
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200 rounded-lg flex items-center justify-center">
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-200 rounded-lg flex items-center justify-center">
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <Button
                         variant="primary"
                         size="sm"
                         onClick={() => handleDeletePhoto(index)}
                         disabled={deletingIndex === index}
-                        className="flex items-center bg-red-600 hover:bg-red-700 text-white"
+                        className="flex items-center bg-red-600 hover:bg-red-700 text-white shadow-lg"
                       >
                         <Trash2 className="h-4 w-4 mr-1" />
                         {deletingIndex === index ? 'Deleting...' : 'Delete'}
                       </Button>
                     </div>
+                  </div>
+                  
+                  {/* Always visible delete button in corner for better UX */}
+                  <div className="absolute top-2 right-2">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => handleDeletePhoto(index)}
+                      disabled={deletingIndex === index}
+                      className="flex items-center bg-red-600 hover:bg-red-700 text-white w-8 h-8 p-0 rounded-full shadow-lg"
+                      title="Delete photo"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                   
                   {/* Photo number badge */}
