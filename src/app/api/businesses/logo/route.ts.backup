@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Business, BusinessAd, User } from '@/models'
 import { withAuth, type AuthenticatedRequest } from '@/lib/auth-middleware'
-import { AuthService } from '@/lib/auth'
 import type { ApiResponse } from '@/types'
 
 // Logo size limit (in bytes) - only for platinum tier
@@ -35,6 +34,11 @@ async function uploadBusinessLogo(request: AuthenticatedRequest) {
     // Get full user information for permission checking
     const user = await User.findOne({ id: userId })
     if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'User not found' },
+        { status: 404 }
+      )
+    }
       return NextResponse.json(
         { success: false, error: 'User not found' },
         { status: 404 }
@@ -167,27 +171,11 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    // Get user information to check for super admin permissions
-    const user = await User.findOne({ id: decoded.userId })
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      )
-    }
-
-    // Find business - allow super admin to access any business
-    let business
-    if (user.role === 'super_admin') {
-      // Super admin can delete logos from any business
-      business = await Business.findOne({ id: businessId })
-    } else {
-      // Regular users can only access businesses they own
-      business = await Business.findOne({ 
-        id: businessId,
-        claimedByUserId: decoded.userId
-      })
-    }
+    // Find and verify business ownership
+    const business = await Business.findOne({ 
+      id: businessId,
+      claimedByUserId: decoded.userId
+    })
 
     if (!business) {
       return NextResponse.json(
@@ -214,9 +202,9 @@ export async function DELETE(request: NextRequest) {
       }
     )
 
-    const response: ApiResponse<{}> = {
+    const response: ApiResponse<{ message: string }> = {
       success: true,
-      data: {},
+      data: { message: 'Logo deleted' },
       message: 'Logo deleted successfully'
     }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Business, BusinessAd, User } from '@/models'
+import { withAuth, type AuthenticatedRequest } from '@/lib/auth-middleware'
 import { AuthService } from '@/lib/auth'
 import type { ApiResponse } from '@/types'
 
@@ -18,27 +19,9 @@ const AD_DIMENSIONS = {
   platinum: { width: 336, height: 280 }  // Large Rectangle
 }
 
-export async function POST(request: NextRequest) {
+async function uploadBusinessPhoto(request: AuthenticatedRequest) {
   try {
     await connectDB()
-
-    // Verify authentication
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 401 }
-      )
-    }
-
-    const token = authHeader.replace('Bearer ', '')
-    const decoded = AuthService.verifyAccessToken(token)
-    if (!decoded || !decoded.userId) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid token' },
-        { status: 401 }
-      )
-    }
 
     const formData = await request.formData()
     const businessId = formData.get('businessId') as string
@@ -51,8 +34,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get user information to check for super admin permissions
-    const user = await User.findOne({ id: decoded.userId })
+    // Get authenticated user from middleware
+    const userId = request.user?.id
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'User authentication failed' },
+        { status: 401 }
+      )
+    }
+
+    // Get full user information for permission checking
+    const user = await User.findOne({ id: userId })
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'User not found' },
@@ -61,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find business - allow super admin to access any business
-    let business
+    let business;
     if (user.role === 'super_admin') {
       // Super admin can upload photos to any business
       business = await Business.findOne({ id: businessId })
@@ -69,7 +61,7 @@ export async function POST(request: NextRequest) {
       // Regular users can only access businesses they own
       business = await Business.findOne({ 
         id: businessId,
-        claimedByUserId: decoded.userId
+        claimedByUserId: user.id
       })
     }
 
@@ -170,6 +162,9 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// Export POST with authentication middleware
+export const POST = withAuth(uploadBusinessPhoto)
+
 export async function DELETE(request: NextRequest) {
   try {
     await connectDB()
@@ -213,7 +208,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Find business - allow super admin to access any business
-    let business
+    let business;
     if (user.role === 'super_admin') {
       // Super admin can delete photos from any business
       business = await Business.findOne({ id: businessId })
@@ -221,7 +216,7 @@ export async function DELETE(request: NextRequest) {
       // Regular users can only access businesses they own
       business = await Business.findOne({ 
         id: businessId,
-        claimedByUserId: decoded.userId
+        claimedByUserId: user.id
       })
     }
 
