@@ -3,31 +3,35 @@ import { test, expect } from '@playwright/test';
 test.describe('E2E Framework Validation', () => {
   test('should validate framework configuration', async ({ request }) => {
     // Test that Playwright is configured correctly by testing API endpoints
-    // This test can run without browser installation
+    // This test can run without browser installation and handles graceful degradation
     
-    // Test health endpoint
+    // Test health endpoint - should be accessible even without database
     const healthResponse = await request.get('http://localhost:3000/api/health');
     expect(healthResponse.status()).not.toBe(404);
+    console.log('✅ Health endpoint is accessible');
     
-    // Test business API
-    const businessResponse = await request.get('http://localhost:3000/api/businesses');
-    expect(businessResponse.status()).not.toBe(404);
+    // Test API endpoints - they should return proper HTTP codes, not 404
+    // Even if they return errors due to missing database, they should be reachable
+    const apiEndpoints = [
+      '/api/businesses',
+      '/api/events', 
+      '/api/news',
+      '/api/jobs',
+      '/api/marketplace'
+    ];
     
-    // Test events API
-    const eventsResponse = await request.get('http://localhost:3000/api/events');
-    expect(eventsResponse.status()).not.toBe(404);
-    
-    // Test news API
-    const newsResponse = await request.get('http://localhost:3000/api/news');
-    expect(newsResponse.status()).not.toBe(404);
-    
-    // Test jobs API
-    const jobsResponse = await request.get('http://localhost:3000/api/jobs');
-    expect(jobsResponse.status()).not.toBe(404);
-    
-    // Test marketplace API
-    const marketplaceResponse = await request.get('http://localhost:3000/api/marketplace');
-    expect(marketplaceResponse.status()).not.toBe(404);
+    for (const endpoint of apiEndpoints) {
+      try {
+        const response = await request.get(`http://localhost:3000${endpoint}`);
+        // Should not be 404 - endpoint exists
+        expect(response.status()).not.toBe(404);
+        console.log(`✅ ${endpoint} endpoint is accessible (status: ${response.status()})`);
+      } catch (error) {
+        // If we get network errors, that means server isn't running - that's the real problem
+        console.error(`❌ Failed to reach ${endpoint}:`, error.message);
+        throw new Error(`API endpoint ${endpoint} is not accessible - server may not be running`);
+      }
+    }
     
     console.log('✅ All API endpoints are accessible and E2E framework is working correctly');
   });

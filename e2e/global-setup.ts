@@ -1,18 +1,35 @@
 import { chromium, FullConfig } from '@playwright/test';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
 
 async function globalSetup(config: FullConfig) {
-  // Start dev server is handled by webServer config
-  // This is for any additional global setup needed
+  // Load test environment variables
+  const testEnvPath = path.resolve(process.cwd(), '.env.test');
+  dotenv.config({ path: testEnvPath });
+  
   console.log('🚀 Starting E2E test suite...');
   
-  // Setup test environment variables if needed
+  // Setup required test environment variables with fallbacks
   if (!process.env.NEXTAUTH_URL) {
     process.env.NEXTAUTH_URL = 'http://localhost:3000';
   }
   
   if (!process.env.NEXTAUTH_SECRET) {
-    process.env.NEXTAUTH_SECRET = 'test-secret-for-e2e-only';
+    process.env.NEXTAUTH_SECRET = 'test-secret-for-e2e-testing-only-not-for-production';
   }
+  
+  if (!process.env.JWT_SECRET) {
+    process.env.JWT_SECRET = 'test-jwt-secret-for-e2e-testing-only-not-for-production-minimum-32-chars';
+  }
+  
+  if (!process.env.JWT_REFRESH_SECRET) {
+    process.env.JWT_REFRESH_SECRET = 'test-jwt-refresh-secret-for-e2e-testing-only-not-for-production';
+  }
+  
+  // Set NODE_ENV to test mode
+  process.env.NODE_ENV = 'test';
+  
+  console.log('✅ Test environment variables configured');
 
   // Check if dev server is running (skip browser check if browsers not installed)
   try {

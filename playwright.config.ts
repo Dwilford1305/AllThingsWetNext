@@ -95,11 +95,12 @@ export default defineConfig({
 
   // Run your local dev server before starting the tests
   webServer: {
-    command: 'npm run dev',
+    command: 'NODE_ENV=test NEXTAUTH_URL=http://localhost:3000 NEXTAUTH_SECRET=test-secret-for-e2e-testing-only-not-for-production JWT_SECRET=test-jwt-secret-for-e2e-testing-only-not-for-production-minimum-32-chars JWT_REFRESH_SECRET=test-jwt-refresh-secret-for-e2e-testing-only-not-for-production ADMIN_EMAIL=admin@test.example.com SUPER_ADMIN_SETUP_KEY=test-admin-setup-key-for-e2e-only CRON_SECRET=test-cron-secret-for-e2e-testing-only npm run dev',
     url: 'http://localhost:3000',
-    reuseExistingServer: true,
+    reuseExistingServer: false, // Always start fresh for E2E tests
     stdout: 'ignore',
     stderr: 'pipe',
+    timeout: 120000, // 2 minutes timeout for server startup
   },
 
   // Test timeout (5 minutes)
