@@ -1,0 +1,305 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run E2E tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  e2e-tests:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright browsers
+      run: npx playwright install ${{ matrix.browser }} --with-deps
+
+    - name: Build application
+      run: npm run build
+      env:
+        NEXTAUTH_URL: http://localhost:3000
+        NEXTAUTH_SECRET: test-secret-key-for-ci
+        JWT_SECRET: test-jwt-secret-for-ci
+        JWT_REFRESH_SECRET: test-jwt-refresh-secret-for-ci
+
+    - name: Run E2E tests
+      run: npx playwright test --project=${{ matrix.browser }}
+      env:
+        BASE_URL: http://localhost:3000
+        CI: true
+
+    - name: Upload Playwright report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report-${{ matrix.browser }}
+        path: playwright-report/
+        retention-days: 7
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-results-${{ matrix.browser }}
+        path: |
+          test-results/
+          playwright-results.xml
+          playwright-results.json
+        retention-days: 7
+
+    - name: Upload screenshots
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: e2e-screenshots-${{ matrix.browser }}
+        path: tests/e2e/screenshots/
+        retention-days: 14
+
+  mobile-e2e-tests:
+    timeout-minutes: 25
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright browsers
+      run: npx playwright install chromium --with-deps
+
+    - name: Build application
+      run: npm run build
+      env:
+        NEXTAUTH_URL: http://localhost:3000
+        NEXTAUTH_SECRET: test-secret-key-for-ci
+        JWT_SECRET: test-jwt-secret-for-ci
+        JWT_REFRESH_SECRET: test-jwt-refresh-secret-for-ci
+
+    - name: Run Mobile E2E tests
+      run: npm run test:e2e:mobile
+      env:
+        BASE_URL: http://localhost:3000
+        CI: true
+
+    - name: Upload mobile test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: mobile-e2e-results
+        path: |
+          playwright-report/
+          test-results/
+          tests/e2e/screenshots/
+        retention-days: 7
+
+  visual-regression-tests:
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright browsers
+      run: npx playwright install chromium --with-deps
+
+    - name: Build application
+      run: npm run build
+      env:
+        NEXTAUTH_URL: http://localhost:3000
+        NEXTAUTH_SECRET: test-secret-key-for-ci
+        JWT_SECRET: test-jwt-secret-for-ci
+        JWT_REFRESH_SECRET: test-jwt-refresh-secret-for-ci
+
+    - name: Run Visual Regression tests
+      run: npx playwright test tests/e2e/07-visual-regression.spec.ts --project=chromium
+      env:
+        BASE_URL: http://localhost:3000
+        CI: true
+
+    - name: Upload visual test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: visual-regression-results
+        path: |
+          test-results/
+          tests/e2e/screenshots/
+          playwright-report/
+        retention-days: 14
+
+  performance-tests:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright browsers
+      run: npx playwright install chromium --with-deps
+
+    - name: Build application
+      run: npm run build
+      env:
+        NEXTAUTH_URL: http://localhost:3000
+        NEXTAUTH_SECRET: test-secret-key-for-ci
+        JWT_SECRET: test-jwt-secret-for-ci
+        JWT_REFRESH_SECRET: test-jwt-refresh-secret-for-ci
+
+    - name: Run Performance tests
+      run: npx playwright test tests/e2e/08-cross-browser-mobile.spec.ts --project=chromium --grep "performance"
+      env:
+        BASE_URL: http://localhost:3000
+        CI: true
+
+    - name: Upload performance results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-test-results
+        path: |
+          test-results/
+          playwright-report/
+        retention-days: 7
+
+  test-summary:
+    if: always()
+    needs: [e2e-tests, mobile-e2e-tests, visual-regression-tests, performance-tests]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+
+    - name: Create test summary
+      run: |
+        echo "# E2E Test Results Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Browser Tests" >> $GITHUB_STEP_SUMMARY
+        
+        for browser in chromium firefox webkit; do
+          echo "### $browser" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f "playwright-results-$browser/playwright-results.json" ]; then
+            echo "✅ Tests completed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Tests failed or did not complete" >> $GITHUB_STEP_SUMMARY
+          fi
+        done
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Mobile Tests" >> $GITHUB_STEP_SUMMARY
+        if [ -d "mobile-e2e-results" ]; then
+          echo "✅ Mobile tests completed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Mobile tests failed" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Visual Regression Tests" >> $GITHUB_STEP_SUMMARY
+        if [ -d "visual-regression-results" ]; then
+          echo "✅ Visual regression tests completed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Visual regression tests failed" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Performance Tests" >> $GITHUB_STEP_SUMMARY
+        if [ -d "performance-test-results" ]; then
+          echo "✅ Performance tests completed" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Performance tests failed" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Comment on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          let comment = '## 🧪 E2E Test Results\n\n';
+          
+          // Check for test artifacts to determine results
+          const artifacts = [
+            { name: 'chromium', path: 'playwright-results-chromium' },
+            { name: 'firefox', path: 'playwright-results-firefox' },
+            { name: 'webkit', path: 'playwright-results-webkit' },
+            { name: 'mobile', path: 'mobile-e2e-results' },
+            { name: 'visual', path: 'visual-regression-results' },
+            { name: 'performance', path: 'performance-test-results' }
+          ];
+          
+          comment += '### Browser Compatibility\n';
+          artifacts.slice(0, 3).forEach(artifact => {
+            const exists = fs.existsSync(artifact.path);
+            const status = exists ? '✅' : '❌';
+            comment += `- ${status} ${artifact.name.charAt(0).toUpperCase() + artifact.name.slice(1)}\n`;
+          });
+          
+          comment += '\n### Mobile & Visual Tests\n';
+          artifacts.slice(3).forEach(artifact => {
+            const exists = fs.existsSync(artifact.path);
+            const status = exists ? '✅' : '❌';
+            comment += `- ${status} ${artifact.name.charAt(0).toUpperCase() + artifact.name.slice(1)} tests\n`;
+          });
+          
+          comment += '\n📊 Detailed test reports are available in the workflow artifacts.';
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
