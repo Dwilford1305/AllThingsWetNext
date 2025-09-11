@@ -65,7 +65,6 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
   const [quota, setQuota] = useState<QuotaInfo | null>(null)
   const [uploadingImages, setUploadingImages] = useState(false)
   const [showPermissionDialog, setShowPermissionDialog] = useState(false)
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
 
   // Constants for file validation
   const MAX_IMAGES = 5
@@ -115,6 +114,16 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
       checkQuota()
     }
   }, [isOpen, listing, checkQuota])
+
+  // Convert file to base64 for persistence
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = error => reject(error)
+    })
+  }
 
   // File validation function
   const validateImageFile = (file: File): { valid: boolean; error?: string } => {
@@ -183,32 +192,18 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
 
     try {
       const newImageUrls: string[] = []
-      const newPreviewUrls: string[] = []
 
       for (const file of files) {
-        // Create preview URL
-        const previewUrl = URL.createObjectURL(file)
-        newPreviewUrls.push(previewUrl)
-
-        // For now, use the preview URL as the image URL
-        // In production, you would upload to your storage service
-        // const uploadData = new FormData()
-        // uploadData.append('image', file)
-        // const response = await authenticatedFetch('/api/upload/marketplace-image', {
-        //   method: 'POST',
-        //   body: uploadData
-        // })
-        
-        // Mock successful upload - in production this would be the actual uploaded URL
-        newImageUrls.push(previewUrl)
+        // Convert to base64 for persistence across navigation
+        const base64Url = await fileToBase64(file)
+        newImageUrls.push(base64Url)
       }
 
-      // Update form data and preview URLs
+      // Update form data with base64 URLs
       setFormData(prev => ({
         ...prev,
         images: [...prev.images, ...newImageUrls]
       }))
-      setImagePreviewUrls(prev => [...prev, ...newPreviewUrls])
 
     } catch (error) {
       console.error('Image upload error:', error)
@@ -245,20 +240,7 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
     }))
-    
-    // Clean up preview URL
-    if (imagePreviewUrls[index]) {
-      URL.revokeObjectURL(imagePreviewUrls[index])
-      setImagePreviewUrls(prev => prev.filter((_, i) => i !== index))
-    }
   }
-
-  // Clean up preview URLs on unmount
-  useEffect(() => {
-    return () => {
-      imagePreviewUrls.forEach(url => URL.revokeObjectURL(url))
-    }
-  }, [imagePreviewUrls])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -473,15 +455,6 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
                             width={200}
                             height={200}
                             className="object-cover w-full h-full"
-                            onError={() => {
-                              // Fallback to preview URL if main URL fails
-                              if (imagePreviewUrls[index]) {
-                                const img = document.querySelector(`[alt="Listing image ${index + 1}"]`) as HTMLImageElement
-                                if (img) {
-                                  img.src = imagePreviewUrls[index]
-                                }
-                              }
-                            }}
                           />
                         </div>
                         <Button

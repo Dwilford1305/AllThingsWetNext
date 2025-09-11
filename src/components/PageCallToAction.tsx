@@ -2,7 +2,7 @@
 
 import { Button } from './ui/Button';
 import { Card } from './ui/Card';
-import { ArrowRight, Users, Plus, Star, UserPlus, Calendar, ShoppingBag } from 'lucide-react';
+import { ArrowRight, Users, Plus, Star, UserPlus, Calendar, ShoppingBag, Building } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -19,47 +19,47 @@ const PageCallToAction = ({ type, className = '' }: PageCallToActionProps) => {
     switch (type) {
       case 'events':
         return {
-          title: 'Share Your Event with Wetaskiwin',
-          subtitle: 'Join our community and promote your events for free',
-          description: 'Connect with locals and grow your audience. Post one event per month absolutely free as a community member.',
+          title: 'Start Selling in Your Community',
+          subtitle: 'Turn your items into cash with free local listings',
+          description: 'Join thousands of Wetaskiwin residents buying and selling locally. Post your first ad completely free.',
           features: [
             'Free community membership',
-            'One free event posting per month',
-            'Reach thousands of local residents',
-            'Easy event management tools'
+            'One free marketplace listing per month',
+            'Connect with local buyers',
+            'Safe community-based trading'
           ],
           primaryAction: {
-            text: isAuthenticated ? 'Post Your Event' : 'Join & Post Event',
-            href: isAuthenticated ? '/events/create' : '/auth-test?redirect=/events'
+            text: isAuthenticated ? 'Create Listing' : 'Join & List Item',
+            href: isAuthenticated ? '/marketplace' : '/api/auth/login'
           },
           secondaryAction: {
-            text: 'Learn More',
-            href: '/about'
+            text: 'Browse Listings',
+            href: '/marketplace'
           },
-          icon: <Calendar className="h-8 w-8" />,
+          icon: <ShoppingBag className="h-8 w-8" />,
           gradient: 'from-green-600 to-blue-700'
         };
       
       case 'news':
         return {
-          title: 'Stay Connected with Local News',
-          subtitle: 'Be the first to know what\'s happening in Wetaskiwin',
-          description: 'Join our community to get personalized news updates and share stories that matter to you.',
+          title: 'Claim Your Business Listing',
+          subtitle: 'Take control of your business presence in Wetaskiwin',
+          description: 'Manage your business listing, subscription, and advertising space. Connect with customers and grow your local presence.',
           features: [
-            'Free membership with personalized feed',
-            'Share local news and stories',
-            'Connect with community journalists',
-            'Get email alerts for breaking news'
+            'Manage your business listing for free',
+            'Access to premium advertising options',
+            'Update hours, contact info, and services',
+            'Connect with thousands of local customers'
           ],
           primaryAction: {
-            text: isAuthenticated ? 'Customize Feed' : 'Join for Free',
-            href: isAuthenticated ? '/profile' : '/auth-test?redirect=/news'
+            text: isAuthenticated ? 'Manage Business' : 'Join & Claim Business',
+            href: isAuthenticated ? '/businesses/manage' : '/api/auth/login'
           },
           secondaryAction: {
-            text: 'Submit a Story',
-            href: 'mailto:news@allthingswetaskiwin.com?subject=Story Submission'
+            text: 'Browse Directory',
+            href: '/businesses'
           },
-          icon: <Star className="h-8 w-8" />,
+          icon: <Building className="h-8 w-8" />,
           gradient: 'from-purple-600 to-pink-700'
         };
       
@@ -76,7 +76,7 @@ const PageCallToAction = ({ type, className = '' }: PageCallToActionProps) => {
           ],
           primaryAction: {
             text: isAuthenticated ? 'Create Listing' : 'Join & List Item',
-            href: isAuthenticated ? '#create-listing' : '/auth-test?redirect=/marketplace'
+            href: isAuthenticated ? '#create-listing' : '/api/auth/login'
           },
           secondaryAction: {
             text: 'Browse Listings',
@@ -163,7 +163,7 @@ const PageCallToAction = ({ type, className = '' }: PageCallToActionProps) => {
                     asChild
                     variant="outline"
                     size="lg"
-                    className="border-white/30 text-white hover:bg-white/10 backdrop-blur-sm"
+                    className="border-white/50 text-white hover:bg-white hover:text-gray-900 backdrop-blur-sm font-semibold transition-all duration-200"
                   >
                     <Link href={content.secondaryAction.href}>
                       {content.secondaryAction.text}
