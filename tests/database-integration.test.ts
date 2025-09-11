@@ -302,9 +302,22 @@ describe('Database Integration Tests', () => {
       const { User } = require('@/models/auth');
       const schema = User.schema;
       
-      // Password should have basic structure
+      // Password hash field should exist
       expect(schema.paths.passwordHash).toBeDefined();
-      // Validators may or may not be present depending on implementation
+
+      // Check for password validation at the schema level
+      // If a virtual 'password' field is used for validation, check its validators
+      const passwordPath = schema.paths.password || schema.paths.passwordHash;
+      expect(passwordPath).toBeDefined();
+
+      // Check for minimum length validator (minlength or custom validator)
+      const minLength = passwordPath.options && (passwordPath.options.minlength || passwordPath.options.minLength);
+      const hasCustomValidator = passwordPath.validators && passwordPath.validators.some(
+        v => v.type === 'minlength' || (typeof v.validator === 'function' && v.validator.length >= 1)
+      );
+
+      // Assert that either a minlength is set or a custom validator exists
+      expect(minLength || hasCustomValidator).toBeTruthy();
     });
 
     test('Content models have length constraints', () => {
