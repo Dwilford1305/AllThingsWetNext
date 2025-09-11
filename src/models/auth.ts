@@ -250,8 +250,28 @@ UserSchema.methods.resetLoginAttempts = function() {
   })
 }
 
+// Additional schemas expected by tests
+const RefreshTokenSchema = new Schema({
+  id: { type: String, required: true, unique: true },
+  token: { type: String, required: true, unique: true },
+  userId: { type: String, required: true },
+  expiresAt: { type: Date, required: true },
+  createdAt: { type: Date, default: Date.now }
+})
+
+const SessionSchema = new Schema({
+  id: { type: String, required: true, unique: true },
+  userId: { type: String, required: true },
+  sessionId: { type: String, required: true, unique: true },
+  expiresAt: { type: Date, required: true },
+  lastAccessed: { type: Date, default: Date.now },
+  createdAt: { type: Date, default: Date.now }
+})
+
 // Export models
 export const User = models.User || model('User', UserSchema)
 export const BusinessClaimRequest = models.BusinessClaimRequest || model('BusinessClaimRequest', BusinessClaimRequestSchema)
 export const UserSession = models.UserSession || model('UserSession', UserSessionSchema)
 export const UserActivityLog = models.UserActivityLog || model('UserActivityLog', UserActivityLogSchema)
+export const RefreshToken = models.RefreshToken || model('RefreshToken', RefreshTokenSchema)
+export const Session = models.Session || model('Session', SessionSchema)
