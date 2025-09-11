@@ -73,12 +73,13 @@ export const BusinessAdRotator = ({
     );
   }
 
-  // Error state
+  // Error state - show placeholder instead of error for better UX
   if (error) {
     return (
-      <div className={`flex items-center justify-center bg-red-50 rounded-lg border-2 border-dashed border-red-300 ${className}`}>
+      <div className={`flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 ${className}`}>
         <div className="text-center p-4">
-          <p className="text-sm text-red-600">{error}</p>
+          <p className="text-sm text-gray-500 capitalize">Sample {tier} ad space</p>
+          <p className="text-xs text-gray-400 mt-1">Database not connected - showing placeholder</p>
         </div>
       </div>
     );
@@ -89,7 +90,7 @@ export const BusinessAdRotator = ({
     return (
       <div className={`flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 ${className}`}>
         <div className="text-center p-4">
-          <p className="text-sm text-gray-500">No {tier} ads available</p>
+          <p className="text-sm text-gray-500 capitalize">Sample {tier} ad space</p>
           <p className="text-xs text-gray-400 mt-1">Businesses can upgrade to display ads here</p>
         </div>
       </div>
