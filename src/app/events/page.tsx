@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import AdPlaceholder from '@/components/AdPlaceholder';
 import NewBadge from '@/components/NewBadge';
+import PageCallToAction from '@/components/PageCallToAction';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, MapPin, Users, ArrowLeft, Search, Filter } from 'lucide-react';
 import type { Event } from '@/types';
@@ -195,6 +196,13 @@ const EventsPage = () => {
                   className="w-full max-w-md" 
                 />
               </div>
+            </div>
+          </AnimatedSection>
+
+          {/* Mid-page CTA */}
+          <AnimatedSection delay={0.25}>
+            <div className="mb-8">
+              <PageCallToAction type="events" />
             </div>
           </AnimatedSection>
 

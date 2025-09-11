@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import AdPlaceholder from '@/components/AdPlaceholder';
 import NewBadge from '@/components/NewBadge';
+import PageCallToAction from '@/components/PageCallToAction';
 import { motion } from 'framer-motion';
 import { Newspaper, Calendar, ExternalLink, ArrowLeft, Search, Filter } from 'lucide-react';
 import type { NewsArticle } from '@/types';
@@ -166,6 +167,11 @@ const NewsPage = () => {
                 className="w-full max-w-md" 
               />
             </div>
+          </div>
+
+          {/* News CTA */}
+          <div className="mb-8">
+            <PageCallToAction type="news" />
           </div>
 
           {/* Featured Articles */}

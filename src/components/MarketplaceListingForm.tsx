@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { X, AlertCircle } from 'lucide-react'
+import { X, AlertCircle, Upload, Image as ImageIcon, Trash2 } from 'lucide-react'
+import Image from 'next/image'
 import type { MarketplaceListing, MarketplaceCategory, MarketplaceCondition } from '@/types'
 import { useAuth } from '@/hooks/useAuth'
 import { ensureCsrfCookie } from '@/lib/csrf'
@@ -62,6 +63,14 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [quota, setQuota] = useState<QuotaInfo | null>(null)
+  const [uploadingImages, setUploadingImages] = useState(false)
+  const [showPermissionDialog, setShowPermissionDialog] = useState(false)
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
+
+  // Constants for file validation
+  const MAX_IMAGES = 5
+  const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+  const ACCEPTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 
   // Load listing data for editing
   useEffect(() => {
@@ -106,6 +115,150 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
       checkQuota()
     }
   }, [isOpen, listing, checkQuota])
+
+  // File validation function
+  const validateImageFile = (file: File): { valid: boolean; error?: string } => {
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      return {
+        valid: false,
+        error: 'Please select a valid image file (JPEG, PNG, or WebP)'
+      }
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return {
+        valid: false,
+        error: `File size (${Math.round(file.size / (1024 * 1024))}MB) exceeds 5MB limit`
+      }
+    }
+
+    return { valid: true }
+  }
+
+  // Request permission for file access
+  const requestFilePermission = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setShowPermissionDialog(true)
+      // Store resolve function for later use
+      ;(window as unknown as { permissionResolve?: (value: boolean) => void }).permissionResolve = resolve
+    })
+  }
+
+  const handlePermissionResponse = (granted: boolean) => {
+    setShowPermissionDialog(false)
+    const resolve = (window as unknown as { permissionResolve?: (value: boolean) => void }).permissionResolve
+    if (resolve) {
+      resolve(granted)
+      delete (window as unknown as { permissionResolve?: (value: boolean) => void }).permissionResolve
+    }
+  }
+
+  // Handle image upload
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || [])
+    if (files.length === 0) return
+
+    // Check if we can add more images
+    const currentImageCount = formData.images.length
+    const remainingSlots = MAX_IMAGES - currentImageCount
+    
+    if (files.length > remainingSlots) {
+      setError(`You can only upload ${remainingSlots} more image(s). Maximum is ${MAX_IMAGES} images total.`)
+      event.target.value = ''
+      return
+    }
+
+    // Validate each file
+    for (const file of files) {
+      const validation = validateImageFile(file)
+      if (!validation.valid) {
+        setError(validation.error || 'Invalid file')
+        event.target.value = ''
+        return
+      }
+    }
+
+    setUploadingImages(true)
+    setError('')
+
+    try {
+      const newImageUrls: string[] = []
+      const newPreviewUrls: string[] = []
+
+      for (const file of files) {
+        // Create preview URL
+        const previewUrl = URL.createObjectURL(file)
+        newPreviewUrls.push(previewUrl)
+
+        // For now, use the preview URL as the image URL
+        // In production, you would upload to your storage service
+        // const uploadData = new FormData()
+        // uploadData.append('image', file)
+        // const response = await authenticatedFetch('/api/upload/marketplace-image', {
+        //   method: 'POST',
+        //   body: uploadData
+        // })
+        
+        // Mock successful upload - in production this would be the actual uploaded URL
+        newImageUrls.push(previewUrl)
+      }
+
+      // Update form data and preview URLs
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, ...newImageUrls]
+      }))
+      setImagePreviewUrls(prev => [...prev, ...newPreviewUrls])
+
+    } catch (error) {
+      console.error('Image upload error:', error)
+      setError(error instanceof Error ? error.message : 'Failed to upload images')
+    } finally {
+      setUploadingImages(false)
+      event.target.value = ''
+    }
+  }
+
+  // Trigger image upload with permission request
+  const triggerImageUpload = async () => {
+    if (formData.images.length >= MAX_IMAGES) {
+      setError(`Maximum ${MAX_IMAGES} images allowed`)
+      return
+    }
+
+    // Request permission first
+    const permissionGranted = await requestFilePermission()
+    if (!permissionGranted) {
+      return // User denied permission
+    }
+
+    // Trigger file input click
+    const fileInput = document.getElementById('image-upload') as HTMLInputElement
+    if (fileInput) {
+      fileInput.click()
+    }
+  }
+
+  // Remove image
+  const removeImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }))
+    
+    // Clean up preview URL
+    if (imagePreviewUrls[index]) {
+      URL.revokeObjectURL(imagePreviewUrls[index])
+      setImagePreviewUrls(prev => prev.filter((_, i) => i !== index))
+    }
+  }
+
+  // Clean up preview URLs on unmount
+  useEffect(() => {
+    return () => {
+      imagePreviewUrls.forEach(url => URL.revokeObjectURL(url))
+    }
+  }, [imagePreviewUrls])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -262,6 +415,91 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
               />
             </div>
 
+            {/* Image Upload Section */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Images (optional) - Up to {MAX_IMAGES} images
+              </label>
+              
+              {/* Hidden file input */}
+              <input
+                type="file"
+                id="image-upload"
+                multiple
+                accept={ACCEPTED_TYPES.join(',')}
+                onChange={handleImageUpload}
+                disabled={uploadingImages}
+                className="hidden"
+              />
+              
+              {/* Upload button and preview */}
+              <div className="space-y-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={triggerImageUpload}
+                  disabled={uploadingImages || formData.images.length >= MAX_IMAGES}
+                  className="w-full h-32 border-2 border-dashed border-gray-300 hover:border-gray-400 focus:border-primary-500"
+                >
+                  <div className="text-center">
+                    {uploadingImages ? (
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-2"></div>
+                    ) : (
+                      <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    )}
+                    <p className="text-sm text-gray-600">
+                      {uploadingImages 
+                        ? 'Uploading images...' 
+                        : formData.images.length >= MAX_IMAGES
+                        ? 'Maximum images reached'
+                        : 'Click to upload images'
+                      }
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      JPEG, PNG, WebP up to 5MB each
+                    </p>
+                  </div>
+                </Button>
+
+                {/* Image previews */}
+                {formData.images.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {formData.images.map((imageUrl, index) => (
+                      <div key={index} className="relative group">
+                        <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                          <Image
+                            src={imageUrl}
+                            alt={`Listing image ${index + 1}`}
+                            width={200}
+                            height={200}
+                            className="object-cover w-full h-full"
+                            onError={() => {
+                              // Fallback to preview URL if main URL fails
+                              if (imagePreviewUrls[index]) {
+                                const img = document.querySelector(`[alt="Listing image ${index + 1}"]`) as HTMLImageElement
+                                if (img) {
+                                  img.src = imagePreviewUrls[index]
+                                }
+                              }
+                            }}
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white border-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -380,6 +618,42 @@ export default function MarketplaceListingForm({ isOpen, onClose, listing, onSuc
           </form>
         </div>
       </Card>
+
+      {/* File Permission Dialog */}
+      {showPermissionDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="p-6 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <ImageIcon className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                File Access Permission
+              </h3>
+              <p className="text-gray-600 mb-6">
+                This app would like to access your device&apos;s photo gallery to upload
+                images for your marketplace listing. Would you like to allow access?
+              </p>
+              <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={() => handlePermissionResponse(false)}
+                  className="flex-1"
+                >
+                  Deny
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => handlePermissionResponse(true)}
+                  className="flex-1"
+                >
+                  Allow
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
