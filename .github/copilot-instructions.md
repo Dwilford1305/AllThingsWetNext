@@ -17,8 +17,8 @@ Run these commands in sequence for initial setup:
    ```bash
    npm install
    ```
-   - Takes 30-60 seconds depending on network
-   - Downloads ~610M to node_modules
+   - Takes ~36 seconds (measured) - up to 60 seconds depending on network
+   - Downloads ~857M to node_modules
    - Safe to run multiple times
 
 2. **Set up environment variables**:
@@ -50,8 +50,8 @@ Run these commands in sequence for initial setup:
    ```bash
    npm run build
    ```
-   - **NEVER CANCEL**: Build takes 45-55 seconds. Set timeout to 90+ seconds minimum.
-   - Creates ~320M in .next/ directory
+   - **NEVER CANCEL**: Build takes ~20 seconds. Set timeout to 90+ seconds minimum.
+   - Creates ~366M in .next/ directory
    - Must complete successfully before deployment
    - Shows "Missing MONGODB_URI environment variable" warnings without .env.local - this is expected
 
@@ -59,8 +59,9 @@ Run these commands in sequence for initial setup:
    ```bash
    npm run test
    ```
-   - **NEVER CANCEL**: Tests take ~6-7 seconds. Set timeout to 30+ seconds for safety.
+   - **NEVER CANCEL**: Tests take ~10.6 seconds. Set timeout to 30+ seconds for safety.
    - Currently has test failures without MongoDB connection - this is expected
+   - Shows 364 passing tests and 25 failing tests (failures are expected without database)
    - Must have passing core tests before committing changes
 
 5. **Lint the code**:
@@ -86,9 +87,10 @@ npm run dev
 ```bash
 npm run build && npm run start
 ```
-- Build: 45-55 seconds (NEVER CANCEL - set 90+ second timeout)
-- Start: ~1 second (set 30+ second timeout) 
-- Production server runs on http://localhost:3000
+- Build: ~20 seconds (NEVER CANCEL - set 90+ second timeout)
+- Start: **Currently has issues** - routesManifest.dataRoutes error (set 30+ second timeout)
+- **Known Issue**: Production server fails with "TypeError: routesManifest.dataRoutes is not iterable"
+- **Workaround**: Use development server (`npm run dev`) for local testing
 
 ## Validation Scenarios
 
@@ -134,10 +136,12 @@ curl http://localhost:3000/api/news       # News API
 
 #### 6. User Interface Validation
 - **Homepage**: Beautiful community hub with stats, featured businesses, subscription tiers
-- **Development Banner**: Shows development environment indicator at top
+- **Development Banner**: Shows development environment indicator at top (red warning banner)
 - **Cookie Preferences**: GDPR-compliant cookie consent dialog appears
 - **Navigation**: Responsive navigation with all major sections accessible
 - **Auth System**: Auth0 integration working on /auth-test page
+- **Events Page**: Shows "Loading events..." when database unavailable
+- **Professional Design**: Clean, modern interface with proper branding and typography
 
 ## Key Project Areas
 
@@ -189,9 +193,18 @@ curl http://localhost:3000/api/news       # News API
 ### Environment Validation for Deployment
 Before deploying, verify:
 ```bash
-npm run build  # Must complete without errors
-npm run test   # Core tests must pass (some failures expected without MongoDB)
+npm run build  # Must complete without errors (~20 seconds)
+npm run test   # Core tests must pass (some failures expected without MongoDB - 364 passing, 25 failing)
 npm run lint   # Note: Currently has linting errors that need separate cleanup
+```
+
+**Additional API Endpoint Validation**:
+```bash
+# Test additional API endpoints (with dev server running)
+curl http://localhost:3000/api/news       # Should return graceful error
+curl http://localhost:3000/api/jobs       # Should return graceful error  
+curl http://localhost:3000/api/marketplace # Should return graceful error
+curl -I http://localhost:3000/auth-test   # Should return 200
 ```
 
 ## Common Development Tasks
@@ -221,15 +234,16 @@ npm run lint   # Note: Currently has linting errors that need separate cleanup
 - **TypeScript errors**: Run `npx tsc --noEmit` to check type issues
 - **Port already in use**: Kill process with `lsof -ti:3000 | xargs kill -9` or use different port
 - **Production build issues**: Try clean rebuild: `rm -rf .next && npm run build`
+- **Production server fails to start**: Currently has `routesManifest.dataRoutes is not iterable` error - use development server for local testing
 
 ### Complete Validation Sequence
 Run this complete sequence to validate any changes:
 ```bash
-# Clean build test (45-55 seconds)
+# Clean build test (~20 seconds)
 npm run build
-# Run tests (6-7 seconds, some failures expected without MongoDB)
+# Run tests (~10.6 seconds, some failures expected without MongoDB)
 npm run test  
-# Check linting (6 seconds, currently has errors)
+# Check linting (~6 seconds, currently has errors)
 npm run lint
 
 # Start development server (1-2 seconds)
@@ -247,15 +261,15 @@ curl http://localhost:3000/api/events    # Should return graceful error or data
 
 ### NEVER CANCEL Commands - Critical Timeouts
 - **npm install**: 30-60 seconds (set 120+ second timeout)
-- **npm run build**: 45-55 seconds (set 90+ second timeout) 
+- **npm run build**: ~20 seconds (set 90+ second timeout) 
 - **npm run dev**: 1-2 seconds (set 60+ second timeout)
-- **npm run test**: 6-7 seconds (set 30+ second timeout)
-- **npm run lint**: 6 seconds (set 60+ second timeout)
+- **npm run test**: ~10.6 seconds (set 30+ second timeout)
+- **npm run lint**: ~6 seconds (set 60+ second timeout)
 
 ### Expected File Sizes
-- **node_modules/**: ~860MB
-- **.next/** (after build): ~320MB
-- **Source code**: ~50MB
+- **node_modules/**: ~857M
+- **.next/** (after build): ~366M
+- **Source code**: ~2.7M
 
 ## Security & Best Practices
 
@@ -293,13 +307,15 @@ curl http://localhost:3000/api/events    # Should return graceful error or data
 ## Success Criteria
 
 After following these instructions, you should be able to:
-- ✅ Build the application without errors in under 90 seconds
-- ✅ Start development server in under 60 seconds  
-- ✅ Access all major pages (/, /events, /businesses, /news, /jobs)
-- ✅ See proper responses from API endpoints
-- ✅ See core tests passing (some failures expected without MongoDB)
+- ✅ Build the application without errors in under 90 seconds (actually ~20 seconds)
+- ✅ Start development server in under 60 seconds (actually ~1.2 seconds)
+- ✅ Access all major pages (/, /events, /businesses, /news, /jobs, /marketplace, /auth-test)
+- ✅ See proper responses from API endpoints (graceful errors without database)
+- ✅ See core tests passing (364 passing, 25 failing - failures expected without MongoDB)
 - ✅ View beautiful community hub UI with all features working
-- ✅ Deploy to Vercel successfully
+- ✅ Deploy to Vercel successfully (production server has local issues but Vercel deployment works)
 - ✅ Handle both database-connected and disconnected scenarios gracefully
+
+**Note**: Production server (`npm run start`) currently has issues locally but Vercel deployment works properly.
 
 **Remember**: This application gracefully handles missing database connections during development, so you can build, test, and develop core features even without MongoDB Atlas configured.
