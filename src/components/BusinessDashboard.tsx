@@ -424,6 +424,16 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
     }
   };
 
+  // Convert file to base64 for direct storage (like marketplace)
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
   // Photo upload handler
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -443,23 +453,29 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
 
     setUploadingPhoto(true);
     try {
-      const formData = new FormData();
-      formData.append('photo', file);
-      formData.append('businessId', business.id);
-
+      // Use marketplace-style base64 conversion for reliable photo display
+      const base64Photo = await fileToBase64(file);
+      
+      // Send the base64 data to the server for storage
       const response = await authenticatedFetch('/api/businesses/photos', {
         method: 'POST',
-        body: formData
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          businessId: business.id,
+          photoData: base64Photo
+        })
       });
 
       const result = await response.json();
       
       if (result.success) {
         alert('Photo uploaded successfully!');
-        // Update business with new photo
+        // Update business with new photo using the base64 data directly
         const updatedBusiness = {
           ...business,
-          photos: [...(business.photos || []), result.data.photoUrl]
+          photos: [...(business.photos || []), base64Photo]
         };
         if (onUpdate) {
           onUpdate(updatedBusiness);

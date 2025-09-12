@@ -80,14 +80,17 @@ const AdPreview = ({ ad, className = '' }: AdPreviewProps) => {
               className="object-cover"
               sizes="(max-width: 768px) 300px, 400px"
               onError={(e) => {
-                // Handle broken images by hiding the image element
+                // Handle broken images by setting a flag and hiding the image
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
-                // Show a placeholder background
+                
+                // Create a proper placeholder div
                 const parent = target.parentElement;
-                if (parent) {
-                  parent.className += ' bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center';
-                  parent.innerHTML = `<div class="text-gray-500 text-center p-2"><div class="text-2xl mb-1">🏢</div><div class="text-xs">${businessName}</div></div>`;
+                if (parent && !parent.querySelector('.image-placeholder')) {
+                  const placeholder = document.createElement('div');
+                  placeholder.className = 'image-placeholder absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-500 text-center p-2';
+                  placeholder.innerHTML = `<div><div class="text-2xl mb-1">🏢</div><div class="text-xs">${businessName}</div></div>`;
+                  parent.appendChild(placeholder);
                 }
               }}
             />

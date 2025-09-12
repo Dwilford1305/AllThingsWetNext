@@ -138,18 +138,16 @@ export const PhotoGalleryModal = ({
                       height={200}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        // Handle broken images with a placeholder
+                        // Handle broken images with a proper placeholder
                         const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        
                         const container = target.parentElement;
-                        if (container) {
-                          container.innerHTML = `
-                            <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                              <div class="text-center text-gray-500">
-                                <div class="text-3xl mb-2">🖼️</div>
-                                <div class="text-xs">Image not available</div>
-                              </div>
-                            </div>
-                          `;
+                        if (container && !container.querySelector('.image-error-placeholder')) {
+                          const placeholder = document.createElement('div');
+                          placeholder.className = 'image-error-placeholder w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-500 text-center p-2';
+                          placeholder.innerHTML = `<div><div class="text-3xl mb-2">🖼️</div><div class="text-xs">Image not available</div></div>`;
+                          container.appendChild(placeholder);
                         }
                       }}
                       onLoad={() => {
