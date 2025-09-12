@@ -23,15 +23,62 @@ async function uploadBusinessPhoto(request: AuthenticatedRequest) {
   try {
     await connectDB()
 
-    const formData = await request.formData()
-    const businessId = formData.get('businessId') as string
-    const photo = formData.get('photo') as File
+    // Handle both FormData (legacy) and JSON (marketplace-style base64) requests
+    const contentType = request.headers.get('content-type')
+    let businessId: string
+    let photoData: string
+    let photoSize: number
 
-    if (!businessId || !photo) {
-      return NextResponse.json(
-        { success: false, error: 'Business ID and photo are required' },
-        { status: 400 }
-      )
+    if (contentType?.includes('application/json')) {
+      // New marketplace-style base64 approach
+      const body = await request.json()
+      businessId = body.businessId
+      photoData = body.photoData
+
+      if (!businessId || !photoData) {
+        return NextResponse.json(
+          { success: false, error: 'Business ID and photo data are required' },
+          { status: 400 }
+        )
+      }
+
+      // Validate base64 format
+      if (!photoData.startsWith('data:image/')) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid image format' },
+          { status: 400 }
+        )
+      }
+
+      // Estimate size from base64 (base64 is ~1.37x larger than original)
+      const base64Data = photoData.split(',')[1] || ''
+      photoSize = Math.floor((base64Data.length * 3) / 4) // Convert base64 length to bytes
+    } else {
+      // Legacy FormData approach
+      const formData = await request.formData()
+      businessId = formData.get('businessId') as string
+      const photo = formData.get('photo') as File
+
+      if (!businessId || !photo) {
+        return NextResponse.json(
+          { success: false, error: 'Business ID and photo are required' },
+          { status: 400 }
+        )
+      }
+
+      // Validate file type
+      if (!photo.type.startsWith('image/')) {
+        return NextResponse.json(
+          { success: false, error: 'File must be an image' },
+          { status: 400 }
+        )
+      }
+
+      // Convert to base64
+      const buffer = await photo.arrayBuffer()
+      const base64 = Buffer.from(buffer).toString('base64')
+      photoData = `data:${photo.type};base64,${base64}`
+      photoSize = photo.size
     }
 
     // Get authenticated user from middleware
@@ -84,7 +131,7 @@ async function uploadBusinessPhoto(request: AuthenticatedRequest) {
     // Validate photo size (use platinum limits for super admin)
     const effectiveTier = user.role === 'super_admin' ? 'platinum' : tier
     const maxSize = PHOTO_SIZE_LIMITS[effectiveTier as keyof typeof PHOTO_SIZE_LIMITS]
-    if (photo.size > maxSize) {
+    if (photoSize > maxSize) {
       return NextResponse.json(
         { 
           success: false, 
@@ -94,23 +141,9 @@ async function uploadBusinessPhoto(request: AuthenticatedRequest) {
       )
     }
 
-    // Validate file type
-    if (!photo.type.startsWith('image/')) {
-      return NextResponse.json(
-        { success: false, error: 'File must be an image' },
-        { status: 400 }
-      )
-    }
-
-    // For now, we'll store the photo as base64 data URL
-    // In production, you'd upload to a CDN like AWS S3, Cloudinary, etc.
-    const buffer = await photo.arrayBuffer()
-    const base64 = Buffer.from(buffer).toString('base64')
-    const photoUrl = `data:${photo.type};base64,${base64}`
-
     // Update business photos array
     const currentPhotos = business.photos || []
-    currentPhotos.push(photoUrl)
+    currentPhotos.push(photoData)
     
     await Business.updateOne(
       { id: businessId },
@@ -130,7 +163,7 @@ async function uploadBusinessPhoto(request: AuthenticatedRequest) {
         id: adId,
         businessId,
         tier: effectiveTier,
-        photo: photoUrl,
+        photo: photoData,
         businessName: business.name,
         adSize: adDimensions,
         isActive: true,
@@ -145,7 +178,7 @@ async function uploadBusinessPhoto(request: AuthenticatedRequest) {
 
     const response: ApiResponse<{ photoUrl: string }> = {
       success: true,
-      data: { photoUrl },
+      data: { photoUrl: photoData },
       message: 'Photo uploaded successfully'
     }
 

@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import type { Business, OfferCodeValidationResult, BusinessAd } from '@/types';
 import AdPreview from './AdPreview';
+import { PhotoGalleryModal } from './PhotoGalleryModal';
 
 interface BusinessDashboardProps {
   business: Business;
@@ -56,6 +57,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
   const [showAdPreview, setShowAdPreview] = useState(false);
   const [showPermissionDialog, setShowPermissionDialog] = useState(false);
   const [pendingUploadType, setPendingUploadType] = useState<'photo' | 'logo' | null>(null);
+  const [showPhotoGallery, setShowPhotoGallery] = useState(false);
 
   // File validation constants
   const PHOTO_SIZE_LIMITS = {
@@ -380,11 +382,31 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
       return; // User denied permission
     }
 
-    // Trigger file input click
-    const fileInput = document.getElementById('photo-upload') as HTMLInputElement;
+    // Try both methods to trigger file input click
+    const fileInput1 = document.getElementById('photo-gallery-upload') as HTMLInputElement;
+    const fileInput2 = (window as any).photoGalleryInput;
+    
+    const fileInput = fileInput1 || fileInput2;
     if (fileInput) {
       fileInput.click();
+    } else {
+      console.warn('Photo upload input not found');
+      alert('Unable to open file picker. Please try again.');
     }
+  };
+
+  // Open photo gallery modal
+  const openPhotoGallery = () => {
+    setShowPhotoGallery(true);
+  };
+
+  // Handle photos update from gallery modal
+  const handlePhotosUpdate = (updatedPhotos: string[]) => {
+    const updatedBusiness = {
+      ...business,
+      photos: updatedPhotos
+    };
+    onUpdate?.(updatedBusiness);
   };
 
   // Logo upload trigger with permission request
@@ -400,6 +422,16 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
     if (fileInput) {
       fileInput.click();
     }
+  };
+
+  // Convert file to base64 for direct storage (like marketplace)
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
   };
 
   // Photo upload handler
@@ -421,23 +453,29 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
 
     setUploadingPhoto(true);
     try {
-      const formData = new FormData();
-      formData.append('photo', file);
-      formData.append('businessId', business.id);
-
+      // Use marketplace-style base64 conversion for reliable photo display
+      const base64Photo = await fileToBase64(file);
+      
+      // Send the base64 data to the server for storage
       const response = await authenticatedFetch('/api/businesses/photos', {
         method: 'POST',
-        body: formData
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          businessId: business.id,
+          photoData: base64Photo
+        })
       });
 
       const result = await response.json();
       
       if (result.success) {
         alert('Photo uploaded successfully!');
-        // Update business with new photo
+        // Update business with new photo using the base64 data directly
         const updatedBusiness = {
           ...business,
-          photos: [...(business.photos || []), result.data.photoUrl]
+          photos: [...(business.photos || []), base64Photo]
         };
         if (onUpdate) {
           onUpdate(updatedBusiness);
@@ -560,11 +598,59 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
         setAdPreview(result.data);
         setShowAdPreview(true);
       } else {
-        alert(result.error || 'Failed to generate ad preview');
+        // Provide more specific error messages based on response status
+        let errorMessage = result.error || 'Failed to generate ad preview';
+        if (response.status === 401) {
+          errorMessage = '🔐 Authentication required. Please log in to preview your ad.';
+        } else if (response.status === 403) {
+          errorMessage = '🔒 Ad preview requires a subscription. Please upgrade your plan.';
+        } else if (response.status === 404) {
+          errorMessage = '🏢 Business not found or you don\'t have permission to preview this ad.';
+        } else if (response.status === 500) {
+          errorMessage = '⚠️ Database connection error. This feature requires database access in production.';
+        }
+        alert(errorMessage);
       }
     } catch (error) {
       console.error('Ad preview error:', error);
-      alert('Failed to generate ad preview');
+      let errorMessage = '❌ Failed to generate ad preview. ';
+      if (error instanceof Error) {
+        if (error.message.includes('Failed to fetch')) {
+          errorMessage += '🌐 Please check your internet connection or try again later.';
+        } else {
+          errorMessage += error.message;
+        }
+      } else {
+        errorMessage += '🔄 Please try again.';
+      }
+      alert(errorMessage);
+    }
+  };
+
+  // Save ad handler
+  const handleSaveAd = async () => {
+    try {
+      setLoading(true);
+      const response = await authenticatedFetch('/api/businesses/ads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessId: business.id
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert('Ad saved successfully! It will now appear in rotation on the website.');
+        setShowAdPreview(false);
+      } else {
+        alert(result.error || 'Failed to save ad');
+      }
+    } catch (error) {
+      console.error('Save ad error:', error);
+      alert('Failed to save ad');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -798,7 +884,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
             {(currentTier === 'gold' || currentTier === 'platinum') && (
               <>
                 <input
-                  id="photo-upload"
+                  id="photo-gallery-upload"
                   type="file"
                   accept="image/*"
                   onChange={handlePhotoUpload}
@@ -809,9 +895,9 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                   variant="outline" 
                   size="sm" 
                   disabled={uploadingPhoto}
-                  onClick={triggerPhotoUpload}
+                  onClick={openPhotoGallery}
                 >
-                  {uploadingPhoto ? 'Uploading...' : 'Manage Photos'}
+                  Manage Photos
                 </Button>
               </>
             )}
@@ -1224,11 +1310,46 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
                     </p>
                   </div>
                 )}
+
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAdPreview(false)}
+                    disabled={loading}
+                  >
+                    Close
+                  </Button>
+                  {(adPreview as unknown as BusinessAd).photo && (
+                    <Button
+                      variant="primary"
+                      onClick={handleSaveAd}
+                      disabled={loading}
+                      className="flex items-center"
+                    >
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      {loading ? 'Saving...' : 'Save & Activate Ad'}
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </Card>
         </div>
       )}
+
+      {/* Photo Gallery Modal */}
+      <PhotoGalleryModal
+        isOpen={showPhotoGallery}
+        onClose={() => setShowPhotoGallery(false)}
+        businessId={business.id}
+        photos={business.photos || []}
+        onPhotosUpdate={handlePhotosUpdate}
+        tier={currentTier}
+        uploadingPhoto={uploadingPhoto}
+        onPhotoUpload={handlePhotoUpload}
+        onTriggerUpload={triggerPhotoUpload}
+      />
 
       {/* File Permission Dialog */}
       {showPermissionDialog && (
