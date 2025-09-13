@@ -207,8 +207,26 @@ export class AuthService {
 
   // Validate email format
   static validateEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
+    if (!email || email.trim() === '') return false
+    
+    // More comprehensive email regex that requires proper TLD
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+    const trimmedEmail = email.trim()
+    
+    // Additional checks for edge cases
+    if (trimmedEmail.includes(' ')) return false // No spaces allowed
+    if (trimmedEmail.split('@').length !== 2) return false // Exactly one @
+    if (trimmedEmail.startsWith('@') || trimmedEmail.endsWith('@')) return false
+    if (trimmedEmail.includes('..')) return false // No consecutive dots
+    if (trimmedEmail.startsWith('.') || trimmedEmail.endsWith('.')) return false
+    if (trimmedEmail.includes('@.')) return false // No dot immediately after @
+    if (trimmedEmail.includes('.@')) return false // No dot immediately before @
+    
+    const [localPart, domainPart] = trimmedEmail.split('@')
+    if (!localPart || !domainPart) return false
+    if (domainPart.startsWith('.') || domainPart.endsWith('.')) return false
+    
+    return emailRegex.test(trimmedEmail)
   }
 
   // Extract user info from request headers
