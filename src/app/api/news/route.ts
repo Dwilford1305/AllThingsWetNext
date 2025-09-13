@@ -26,7 +26,17 @@ export async function GET(request: NextRequest) {
       data: news
     }
 
-    return NextResponse.json(response)
+    // Performance optimization: Cache news for 10 minutes (600 seconds)  
+    // News changes more frequently than events but less than real-time data
+    const cacheHeaders = {
+      'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200',
+      'CDN-Cache-Control': 'public, s-maxage=600',
+      'Vercel-CDN-Cache-Control': 'public, s-maxage=600',
+      'ETag': `news-${featured ? 'featured' : 'all'}-${category || 'all'}-${Date.now()}`,
+      'Vary': 'Accept-Encoding'
+    }
+
+    return NextResponse.json(response, { headers: cacheHeaders })
   } catch (error) {
     console.error('News API error:', error)
     return NextResponse.json(
@@ -34,7 +44,7 @@ export async function GET(request: NextRequest) {
         success: false, 
         error: 'Failed to fetch news' 
       },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' } }
     )
   }
 }

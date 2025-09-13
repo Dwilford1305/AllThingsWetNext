@@ -26,7 +26,17 @@ export async function GET(request: NextRequest) {
       data: events
     }
 
-    return NextResponse.json(response)
+    // Performance optimization: Cache events for 5 minutes (300 seconds)
+    // Events don't change frequently, so this improves performance significantly
+    const cacheHeaders = {
+      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      'CDN-Cache-Control': 'public, s-maxage=300',
+      'Vercel-CDN-Cache-Control': 'public, s-maxage=300',
+      'ETag': `events-${Date.now()}`,
+      'Vary': 'Accept-Encoding'
+    }
+
+    return NextResponse.json(response, { headers: cacheHeaders })
   } catch (error) {
     console.error('Events API error:', error)
     return NextResponse.json(
@@ -34,7 +44,7 @@ export async function GET(request: NextRequest) {
         success: false, 
         error: 'Failed to fetch events' 
       },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' } }
     )
   }
 }

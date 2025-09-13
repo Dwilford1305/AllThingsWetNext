@@ -1,16 +1,64 @@
 import type { NextConfig } from "next";
 import path from 'path';
 
+// Bundle analyzer for performance optimization
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+})
+
 const nextConfig: NextConfig = {
   eslint: {
     // We omit devDependencies on Vercel, so disable lint during prod builds
     ignoreDuringBuilds: true,
   },
-  webpack: (config) => {
+  // Performance optimizations
+  experimental: {
+    // Enable optimizations that work
+    optimizeServerReact: true
+  },
+  // Webpack optimizations for bundle size
+  webpack: (config, { dev, isServer }) => {
     // Ensure path alias '@/...' resolves in all environments (including Vercel)
     config.resolve = config.resolve || {};
     config.resolve.alias = config.resolve.alias || {};
     config.resolve.alias['@'] = path.resolve(__dirname, 'src');
+    
+    // Production optimizations
+    if (!dev) {
+      // Bundle size optimizations
+      config.optimization = {
+        ...config.optimization,
+        // Better splitting of chunks
+        splitChunks: {
+          ...config.optimization.splitChunks,
+          chunks: 'all',
+          cacheGroups: {
+            ...config.optimization.splitChunks?.cacheGroups,
+            // Separate vendor chunks for better caching
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+              priority: 10,
+            },
+            // Separate common chunks
+            common: {
+              name: 'common',
+              minChunks: 2,
+              chunks: 'all',
+              priority: 5,
+              reuseExistingChunk: true,
+            },
+          },
+        },
+      };
+      
+      // Tree shaking improvements
+      config.optimization.usedExports = true;
+      config.optimization.providedExports = true;
+      config.optimization.sideEffects = false;
+    }
+    
     return config;
   },
   images: {
@@ -148,4 +196,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

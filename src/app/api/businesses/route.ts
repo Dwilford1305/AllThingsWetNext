@@ -63,6 +63,28 @@ export async function GET(request: NextRequest) {
 
     const totalPages = Math.ceil(totalCount / limit)
 
+    // Performance optimization: Cache business listings
+    // Different cache times based on query parameters for optimization
+    let cacheMaxAge = 300 // 5 minutes default
+    
+    // Static lists (no search/filters) can be cached longer
+    if (!search && (!category || category === 'all') && (!letter || letter === 'all')) {
+      cacheMaxAge = 900 // 15 minutes for static lists
+    }
+    
+    // Search results cached shorter due to dynamic nature
+    if (search) {
+      cacheMaxAge = 60 // 1 minute for search results
+    }
+
+    const cacheHeaders = {
+      'Cache-Control': `public, s-maxage=${cacheMaxAge}, stale-while-revalidate=${cacheMaxAge * 2}`,
+      'CDN-Cache-Control': `public, s-maxage=${cacheMaxAge}`,
+      'Vercel-CDN-Cache-Control': `public, s-maxage=${cacheMaxAge}`,
+      'ETag': `businesses-${search}-${category}-${letter}-${sort}-${page}-${Date.now()}`,
+      'Vary': 'Accept-Encoding'
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -79,7 +101,7 @@ export async function GET(request: NextRequest) {
           total: totalCount
         }
       }
-    })
+    }, { headers: cacheHeaders })
   } catch (error) {
     console.error('Businesses API error:', error)
     return NextResponse.json(
@@ -87,7 +109,7 @@ export async function GET(request: NextRequest) {
         success: false, 
         error: 'Failed to fetch businesses' 
       },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' } }
     )
   }
 }

@@ -6,6 +6,7 @@ import DevelopmentBanner from "@/components/DevelopmentBanner";
 import CookieConsent from "@/components/CookieConsent";
 import SkipNavigation from "@/components/SkipNavigation";
 import { WebsiteStructuredData } from "@/components/StructuredData";
+import WebVitalsMonitor from "@/components/WebVitalsMonitor";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -134,6 +135,7 @@ export default function RootLayout({
         className="antialiased overflow-x-hidden max-w-full w-screen font-sans"
       >
         <Providers>
+          <WebVitalsMonitor />
           <SkipNavigation />
           <DevelopmentBanner />
           <div id="main-content">

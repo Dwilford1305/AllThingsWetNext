@@ -39,13 +39,18 @@ async function connectDB(): Promise<typeof mongoose> {
   if (!cached!.promise) {
     const opts = {
       bufferCommands: false,
-      maxPoolSize: 10,
+      // Connection pool settings for better performance
+      maxPoolSize: 20, // Increased from 10 for better concurrent handling
+      minPoolSize: 5, // Maintain minimum connections
+      maxIdleTimeMS: 30000, // How long a connection can be idle before being closed
+      // Timeout settings optimized for performance
       serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
       socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      // Add these for better reliability
       connectTimeoutMS: 10000, // How long to wait before timing out a connection attempt
       heartbeatFrequencyMS: 30000, // How often to check the connection
-      maxIdleTimeMS: 30000, // How long a connection can be idle before being closed
+      // Performance optimizations
+      retryWrites: true, // Retry write operations on transient network errors
+      readPreference: 'primary' as const // Read from primary for consistency
     };
 
     console.log('Attempting to connect to MongoDB...')

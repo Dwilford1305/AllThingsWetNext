@@ -29,6 +29,17 @@ const EventSchema = new Schema({
   updatedAt: { type: Date, default: Date.now }
 })
 
+// Performance indexes for Events
+EventSchema.index({ date: 1 }) // Sort by date (most common query)
+EventSchema.index({ category: 1, date: 1 }) // Filter by category + date
+EventSchema.index({ featured: 1, date: 1 }) // Featured events first
+EventSchema.index({ location: 1, date: 1 }) // Location-based queries
+EventSchema.index({ createdAt: -1 }) // Recent events
+EventSchema.index({ 'title': 'text', 'description': 'text', 'organizer': 'text' }, { 
+  name: 'event_search_index',
+  weights: { title: 10, organizer: 5, description: 1 } // Text search optimization
+})
+
 // News Schema
 const NewsSchema = new Schema({
   id: { type: String, required: true, unique: true },
@@ -49,6 +60,17 @@ const NewsSchema = new Schema({
   featured: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
+})
+
+// Performance indexes for News
+NewsSchema.index({ publishedAt: -1 }) // Sort by publish date (most common)
+NewsSchema.index({ category: 1, publishedAt: -1 }) // Filter by category + date
+NewsSchema.index({ featured: 1, publishedAt: -1 }) // Featured news first
+NewsSchema.index({ sourceName: 1, publishedAt: -1 }) // Source-based queries
+NewsSchema.index({ tags: 1, publishedAt: -1 }) // Tag-based filtering
+NewsSchema.index({ 'title': 'text', 'summary': 'text', 'content': 'text' }, { 
+  name: 'news_search_index',
+  weights: { title: 10, summary: 5, content: 1 } // Text search optimization
 })
 
 // Business Schema
@@ -140,6 +162,21 @@ const BusinessSchema = new Schema({
   updatedAt: { type: Date, default: Date.now }
 })
 
+// Performance indexes for Business - Most critical for app performance
+BusinessSchema.index({ category: 1 }) // Filter by business category
+BusinessSchema.index({ subscriptionTier: 1, featured: 1 }) // Premium listings first
+BusinessSchema.index({ isClaimed: 1, subscriptionTier: 1 }) // Claimed business queries
+BusinessSchema.index({ claimedByUserId: 1 }) // User's businesses
+BusinessSchema.index({ verified: 1, featured: 1 }) // Verified + featured businesses
+BusinessSchema.index({ location: 1 }) // Location-based search (city/province)
+BusinessSchema.index({ rating: -1, reviewCount: -1 }) // High-rated businesses
+BusinessSchema.index({ subscriptionStatus: 1, subscriptionEnd: 1 }) // Subscription management
+BusinessSchema.index({ category: 1, rating: -1, featured: 1 }) // Category + quality sorting
+BusinessSchema.index({ 'name': 'text', 'description': 'text', 'services': 'text', 'tags': 'text' }, { 
+  name: 'business_search_index',
+  weights: { name: 10, services: 5, tags: 3, description: 1 } // Business search optimization
+})
+
 // Job Schema
 const JobSchema = new Schema({
   id: { type: String, required: true, unique: true },
@@ -169,6 +206,17 @@ const JobSchema = new Schema({
   sourceName: { type: String },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
+})
+
+// Performance indexes for Job Postings
+JobSchema.index({ category: 1, type: 1 }) // Filter by category and job type
+JobSchema.index({ expiresAt: 1 }) // Active jobs (not expired)
+JobSchema.index({ featured: 1, createdAt: -1 }) // Featured jobs first
+JobSchema.index({ location: 1, category: 1 }) // Location + category filtering
+JobSchema.index({ company: 1 }) // Company-based queries
+JobSchema.index({ 'title': 'text', 'description': 'text', 'company': 'text' }, { 
+  name: 'job_search_index',
+  weights: { title: 10, company: 5, description: 1 } // Job search optimization
 })
 
 // Marketplace Listing Schema
@@ -225,6 +273,19 @@ const MarketplaceListingSchema = new Schema({
   updatedAt: { type: Date, default: Date.now }
 })
 
+// Performance indexes for Marketplace Listings
+MarketplaceListingSchema.index({ category: 1, status: 1 }) // Filter active listings by category
+MarketplaceListingSchema.index({ userId: 1, status: 1 }) // User's listings
+MarketplaceListingSchema.index({ featured: 1, createdAt: -1 }) // Featured listings first
+MarketplaceListingSchema.index({ status: 1, expiresAt: 1 }) // Active, non-expired listings
+MarketplaceListingSchema.index({ location: 1, category: 1 }) // Location-based filtering
+MarketplaceListingSchema.index({ price: 1, category: 1 }) // Price-based filtering
+MarketplaceListingSchema.index({ 'moderation.state': 1, status: 1 }) // Moderation queries
+MarketplaceListingSchema.index({ 'title': 'text', 'description': 'text' }, { 
+  name: 'marketplace_search_index',
+  weights: { title: 10, description: 1 } // Marketplace search optimization
+})
+
 // Marketplace Comment Schema
 const MarketplaceCommentSchema = new Schema({
   id: { type: String, required: true, unique: true },
@@ -256,6 +317,12 @@ const MarketplaceCommentSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 })
+
+// Performance indexes for Marketplace Comments
+MarketplaceCommentSchema.index({ listingId: 1, createdAt: 1 }) // Comments for a listing
+MarketplaceCommentSchema.index({ userId: 1 }) // User's comments
+MarketplaceCommentSchema.index({ 'moderation.state': 1 }) // Moderation queries
+MarketplaceCommentSchema.index({ isReported: 1, reportCount: -1 }) // Reported comments
 
 // Report Schema (for both listings and comments)
 const ReportSchema = new Schema({
@@ -294,6 +361,12 @@ const ReportSchema = new Schema({
   updatedAt: { type: Date, default: Date.now }
 })
 
+// Performance indexes for Reports
+ReportSchema.index({ status: 1, createdAt: -1 }) // Admin report management
+ReportSchema.index({ reportType: 1, status: 1 }) // Filter by type and status
+ReportSchema.index({ contentId: 1 }) // Reports for specific content
+ReportSchema.index({ reporterUserId: 1 }) // Reports by user
+
 // Scraper Log Schema
 // NOTE: Added 'comprehensive' to enum to align with ComprehensiveScraperService.saveScrapingSession
 // which was previously writing a log with type 'comprehensive' causing a validation error & lost logs.
@@ -315,6 +388,11 @@ const ScraperLogSchema = new Schema({
   createdAt: { type: Date, default: Date.now }
 })
 
+// Performance indexes for Scraper Logs
+ScraperLogSchema.index({ type: 1, createdAt: -1 }) // Logs by scraper type
+ScraperLogSchema.index({ status: 1, createdAt: -1 }) // Filter by status
+ScraperLogSchema.index({ createdAt: -1 }) // Recent logs first
+
 // Scraper Configuration Schema
 const ScraperConfigSchema = new Schema({
   type: { 
@@ -331,6 +409,11 @@ const ScraperConfigSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 })
+
+// Performance indexes for Scraper Config
+// Note: type field already has unique constraint, so no additional index needed
+ScraperConfigSchema.index({ nextRun: 1, isEnabled: 1 }) // Scheduled scraping
+ScraperConfigSchema.index({ isActive: 1 }) // Currently active scrapers
 
 // Offer Code Schema
 const OfferCodeSchema = new Schema({
@@ -383,6 +466,12 @@ const OfferCodeSchema = new Schema({
     discountApplied: { type: Number }
   }]
 })
+
+// Performance indexes for Offer Codes  
+// Note: code field already has unique constraint, so no additional index needed
+OfferCodeSchema.index({ isActive: 1, validFrom: 1, validUntil: 1 }) // Active offers
+OfferCodeSchema.index({ validUntil: 1 }) // Expiring offers
+OfferCodeSchema.index({ createdBy: 1 }) // Offers by admin
 
 // Business Ad Schemas for each tier
 const BusinessAdSchema = new Schema({
