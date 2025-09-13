@@ -159,8 +159,16 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') // 'scheduled', 'sent', 'all'
     const templateType = searchParams.get('templateType')
     
-    // For now, return mock campaign data since full implementation would require 
-    // additional database schema changes
+    // Return mock campaign data only in non-production environments.
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        {
+          error: 'Not implemented',
+          message: 'Campaign listing is not available in production until database support is implemented.'
+        },
+        { status: 501 }
+      )
+    }
     const mockCampaigns = [
       {
         campaignId: 'campaign_1703692800_abc123',
