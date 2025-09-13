@@ -29,6 +29,13 @@ const EventSchema = new Schema({
   updatedAt: { type: Date, default: Date.now }
 })
 
+// Performance indexes for Event queries
+EventSchema.index({ date: 1, featured: -1 }) // Most common query: upcoming events, featured first
+EventSchema.index({ category: 1, date: 1 }) // Filter by category and date
+EventSchema.index({ featured: 1, date: 1 }) // Featured events queries
+EventSchema.index({ location: 1, date: 1 }) // Location-based searches
+EventSchema.index({ title: 'text', description: 'text', organizer: 'text' }) // Text search
+
 // Performance indexes for Events
 EventSchema.index({ date: 1 }) // Sort by date (most common query)
 EventSchema.index({ category: 1, date: 1 }) // Filter by category + date
@@ -61,6 +68,14 @@ const NewsSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 })
+
+// Performance indexes for News queries
+NewsSchema.index({ publishedAt: -1, featured: -1 }) // Most recent news, featured first
+NewsSchema.index({ category: 1, publishedAt: -1 }) // Filter by category, most recent first
+NewsSchema.index({ featured: 1, publishedAt: -1 }) // Featured articles
+NewsSchema.index({ sourceName: 1, publishedAt: -1 }) // Source-based queries
+NewsSchema.index({ tags: 1, publishedAt: -1 }) // Tag-based searches
+NewsSchema.index({ title: 'text', summary: 'text', content: 'text' }) // Full text search
 
 // Performance indexes for News
 NewsSchema.index({ publishedAt: -1 }) // Sort by publish date (most common)
@@ -162,6 +177,17 @@ const BusinessSchema = new Schema({
   updatedAt: { type: Date, default: Date.now }
 })
 
+// Performance indexes for Business queries
+BusinessSchema.index({ category: 1, featured: -1, subscriptionTier: -1 }) // Category browsing with premium first
+BusinessSchema.index({ subscriptionTier: 1, featured: -1 }) // Premium tier queries
+BusinessSchema.index({ isClaimed: 1, subscriptionStatus: 1 }) // Claimed business management
+BusinessSchema.index({ claimedByUserId: 1 }) // User's claimed businesses
+BusinessSchema.index({ featured: 1, category: 1 }) // Featured businesses by category
+BusinessSchema.index({ verified: 1, rating: -1 }) // Verified and highly rated businesses
+BusinessSchema.index({ name: 'text', description: 'text', services: 'text', tags: 'text' }) // Text search
+BusinessSchema.index({ address: 1 }) // Location-based searches
+BusinessSchema.index({ subscriptionEnd: 1 }, { sparse: true }) // Subscription expiry tracking
+
 // Performance indexes for Business - Most critical for app performance
 BusinessSchema.index({ category: 1 }) // Filter by business category
 BusinessSchema.index({ subscriptionTier: 1, featured: 1 }) // Premium listings first
@@ -207,6 +233,14 @@ const JobSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 })
+
+// Performance indexes for Job queries
+JobSchema.index({ expiresAt: 1, featured: -1 }) // Active jobs, featured first
+JobSchema.index({ category: 1, type: 1, expiresAt: 1 }) // Filter by category and type
+JobSchema.index({ location: 1, expiresAt: 1 }) // Location-based job searches
+JobSchema.index({ featured: 1, createdAt: -1 }) // Featured jobs, most recent first
+JobSchema.index({ company: 1, expiresAt: 1 }) // Company job listings
+JobSchema.index({ title: 'text', description: 'text', company: 'text' }) // Job search
 
 // Performance indexes for Job Postings
 JobSchema.index({ category: 1, type: 1 }) // Filter by category and job type
@@ -272,6 +306,16 @@ const MarketplaceListingSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 })
+
+// Performance indexes for Marketplace queries
+MarketplaceListingSchema.index({ status: 1, expiresAt: 1, featured: -1 }) // Active listings, featured first
+MarketplaceListingSchema.index({ category: 1, status: 1, price: 1 }) // Category browsing with price sorting
+MarketplaceListingSchema.index({ userId: 1, status: 1 }) // User's listings
+MarketplaceListingSchema.index({ location: 1, status: 1 }) // Location-based searches
+MarketplaceListingSchema.index({ featured: 1, createdAt: -1 }) // Featured listings
+MarketplaceListingSchema.index({ price: 1, category: 1, status: 1 }) // Price range searches
+MarketplaceListingSchema.index({ title: 'text', description: 'text' }) // Marketplace search
+MarketplaceListingSchema.index({ 'moderation.state': 1, status: 1 }) // Moderation queries
 
 // Performance indexes for Marketplace Listings
 MarketplaceListingSchema.index({ category: 1, status: 1 }) // Filter active listings by category

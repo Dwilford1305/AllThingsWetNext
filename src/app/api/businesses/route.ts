@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Business } from '@/models'
+import { cache, withCache, generateCacheKey, CACHE_TTL } from '@/lib/cache'
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB()
-
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
@@ -14,54 +13,88 @@ export async function GET(request: NextRequest) {
     const letter = searchParams.get('letter') || ''
     const sort = searchParams.get('sort') || 'name'
     
-    const skip = (page - 1) * limit
+    // Generate cache key based on all query parameters
+    const cacheKey = generateCacheKey('businesses', page, limit, search || '', category || 'all', letter || 'all', sort)
 
-    // Build query
-    const query: Record<string, unknown> = {}
-    
+    // Determine cache TTL based on query complexity
+    let cacheTTL = CACHE_TTL.BUSINESSES
     if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { address: { $regex: search, $options: 'i' } }
-      ]
-    }
-    
-    if (category && category !== 'all') {
-      query.category = category
-    }
-    
-    if (letter && letter !== 'all') {
-      query.name = { $regex: `^${letter}`, $options: 'i' }
+      cacheTTL = 60 * 1000 // 1 minute for search results
+    } else if (!category || category === 'all') {
+      cacheTTL = CACHE_TTL.BUSINESSES * 2 // 1 hour for static lists
     }
 
-    // Build sort
-    let sortObj: { [key: string]: 1 | -1 } = {}
-    switch (sort) {
-      case 'featured':
-        sortObj = { 'subscription.tier': -1, featured: -1, name: 1 }
-        break
-      case 'rating':
-        sortObj = { 'analytics.averageRating': -1, name: 1 }
-        break
-      case 'newest':
-        sortObj = { createdAt: -1 }
-        break
-      default:
-        sortObj = { name: 1 }
-    }
+    const result = await withCache(
+      cacheKey,
+      async () => {
+        await connectDB()
 
-    const [businesses, totalCount] = await Promise.all([
-      Business.find(query)
-        .collation({ locale: 'en', strength: 2 }) // Case-insensitive sorting
-        .sort(sortObj)
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Business.countDocuments(query)
-    ])
+        const skip = (page - 1) * limit
 
-    const totalPages = Math.ceil(totalCount / limit)
+        // Build query
+        const query: Record<string, unknown> = {}
+        
+        if (search) {
+          query.$or = [
+            { name: { $regex: search, $options: 'i' } },
+            { description: { $regex: search, $options: 'i' } },
+            { address: { $regex: search, $options: 'i' } }
+          ]
+        }
+        
+        if (category && category !== 'all') {
+          query.category = category
+        }
+        
+        if (letter && letter !== 'all') {
+          query.name = { $regex: `^${letter}`, $options: 'i' }
+        }
+
+        // Build sort
+        let sortObj: { [key: string]: 1 | -1 } = {}
+        switch (sort) {
+          case 'featured':
+            sortObj = { 'subscription.tier': -1, featured: -1, name: 1 }
+            break
+          case 'rating':
+            sortObj = { 'analytics.averageRating': -1, name: 1 }
+            break
+          case 'newest':
+            sortObj = { createdAt: -1 }
+            break
+          default:
+            sortObj = { name: 1 }
+        }
+
+        const [businesses, totalCount] = await Promise.all([
+          Business.find(query)
+            .collation({ locale: 'en', strength: 2 }) // Case-insensitive sorting
+            .sort(sortObj)
+            .skip(skip)
+            .limit(limit)
+            .lean(),
+          Business.countDocuments(query)
+        ])
+
+        const totalPages = Math.ceil(totalCount / limit)
+
+        return {
+          businesses,
+          pagination: {
+            currentPage: page,
+            totalPages,
+            totalCount,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1,
+            limit
+          },
+          summary: {
+            total: totalCount
+          }
+        }
+      },
+      cacheTTL
+    )
 
     // Performance optimization: Cache business listings
     // Different cache times based on query parameters for optimization
@@ -87,20 +120,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: {
-        businesses,
-        pagination: {
-          currentPage: page,
-          totalPages,
-          totalCount,
-          hasNextPage: page < totalPages,
-          hasPrevPage: page > 1,
-          limit
-        },
-        summary: {
-          total: totalCount
-        }
-      }
+      data: result
     }, { headers: cacheHeaders })
   } catch (error) {
     console.error('Businesses API error:', error)

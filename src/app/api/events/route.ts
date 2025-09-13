@@ -1,25 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Event } from '@/models'
+import { cache, withCache, generateCacheKey, CACHE_TTL } from '@/lib/cache'
 import type { ApiResponse } from '@/types'
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB()
-
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '100') // Increased default limit
     const featured = searchParams.get('featured') === 'true'
     const category = searchParams.get('category')
 
-    const query: Record<string, unknown> = {}
-    if (featured) query.featured = true
-    if (category) query.category = category
+    // Generate cache key based on query parameters
+    const cacheKey = generateCacheKey('events', limit, featured, category || 'all')
 
-    const events = await Event.find(query)
-      .limit(limit)
-      .sort({ date: 1 }) // Sort by date ascending (upcoming first)
-      .lean()
+    // Use cache with database query as fallback
+    const events = await withCache(
+      cacheKey,
+      async () => {
+        await connectDB()
+
+        const query: Record<string, unknown> = {}
+        if (featured) query.featured = true
+        if (category) query.category = category
+
+        return await Event.find(query)
+          .limit(limit)
+          .sort({ date: 1 }) // Sort by date ascending (upcoming first)
+          .lean()
+      },
+      CACHE_TTL.EVENTS
+    )
 
     const response: ApiResponse<typeof events> = {
       success: true,
@@ -56,6 +67,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const event = new Event(body)
     const savedEvent = await event.save()
+
+    // Invalidate events cache when new event is created
+    cache.clear() // Simple cache invalidation - clear all cache
+    // In production, could be more selective: cache.delete('events:*')
 
     const response: ApiResponse<typeof savedEvent> = {
       success: true,
