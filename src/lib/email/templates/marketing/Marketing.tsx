@@ -188,7 +188,7 @@ export const Marketing = ({
 const headerSection = {
   textAlign: 'center' as const,
   marginBottom: '32px',
-  backgroundColor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  backgroundColor: '#667eea',
   padding: '40px 24px',
   borderRadius: '12px',
 }
