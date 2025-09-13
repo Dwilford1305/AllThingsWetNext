@@ -66,6 +66,10 @@ import PasswordReset from '../templates/auth/PasswordReset'
 import BusinessApproval from '../templates/business/BusinessApproval'
 import BusinessRejection from '../templates/business/BusinessRejection'
 import EventNotification from '../templates/notifications/EventNotification'
+import Newsletter from '../templates/marketing/Newsletter'
+import Marketing from '../templates/marketing/Marketing'
+import SubscriptionConfirmation from '../templates/subscriptions/SubscriptionConfirmation'
+import Welcome from '../templates/onboarding/Welcome'
 
 export type EmailTemplateType = 
   | 'email_verification'
@@ -294,6 +298,97 @@ export class ComprehensiveEmailService {
           }>; 
           period: string; 
           unsubscribeUrl: string;
+        }))
+        break
+      case 'newsletter':
+        html = await render(Newsletter(data as {
+          firstName: string;
+          articles: Array<{
+            title: string;
+            excerpt: string;
+            url: string;
+            category: string;
+            publishedAt: string;
+          }>;
+          events: Array<{
+            title: string;
+            date: string;
+            time: string;
+            location: string;
+            url?: string;
+          }>;
+          businesses: Array<{
+            name: string;
+            description: string;
+            category: string;
+            url: string;
+          }>;
+          unsubscribeUrl: string;
+        }))
+        break
+      case 'marketing':
+        html = await render(Marketing(data as {
+          firstName: string;
+          campaignTitle: string;
+          campaignSubtitle?: string;
+          heroImageUrl?: string;
+          ctaText: string;
+          ctaUrl: string;
+          content: Array<{
+            type: 'heading' | 'paragraph' | 'list' | 'highlight';
+            text: string;
+            items?: string[];
+          }>;
+          businessSpotlight?: {
+            name: string;
+            description: string;
+            imageUrl: string;
+            url: string;
+            category: string;
+          };
+          specialOffer?: {
+            title: string;
+            description: string;
+            offerCode?: string;
+            expiresAt: string;
+            termsUrl?: string;
+          };
+          unsubscribeUrl: string;
+        }))
+        break
+      case 'subscription_confirmation':
+        html = await render(SubscriptionConfirmation(data as {
+          firstName: string;
+          subscriptionTier: 'free' | 'basic' | 'premium' | 'platinum';
+          businessName?: string;
+          features: string[];
+          subscriptionDate: string;
+          nextBillingDate?: string;
+          amount?: number;
+          invoiceUrl?: string;
+          dashboardUrl: string;
+        }))
+        break
+      case 'welcome':
+        html = await render(Welcome(data as {
+          firstName: string;
+          lastName: string;
+          email: string;
+          verificationUrl: string;
+          profileUrl: string;
+          communityStatsUrl: string;
+          businessesCount: number;
+          eventsCount: number;
+        }))
+        break
+      case 'business_request_confirmation':
+        // Use existing business approval template for now, can be customized later
+        html = await render(BusinessApproval(data as { 
+          firstName: string; 
+          businessName: string; 
+          businessId: string; 
+          dashboardUrl: string; 
+          businessUrl: string;
         }))
         break
       default:
