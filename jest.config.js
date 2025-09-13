@@ -13,7 +13,7 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   transformIgnorePatterns: [
-    'node_modules/(?!(uuid|@react-email)/)'
+    'node_modules/(?!(uuid|@react-email|@auth0|oauth4webapi)/)'
   ],
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
   // Add timeout for database tests
@@ -21,5 +21,7 @@ module.exports = {
   // Improve error reporting
   verbose: true,
   // Run tests in sequence for database tests to avoid connection issues
-  maxWorkers: 1
+  maxWorkers: 1,
+  // Mock React components and JSX to prevent parsing issues in node environment
+  setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js']
 };

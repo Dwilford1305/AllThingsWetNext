@@ -4,7 +4,12 @@ import { EmailQueue, EmailAnalytics, EmailPreferences } from '../src/models/emai
 
 // Mock external dependencies
 jest.mock('nodemailer', () => ({
-  createTransporter: jest.fn(() => ({
+  default: {
+    createTransport: jest.fn(() => ({
+      sendMail: jest.fn().mockResolvedValue({ messageId: 'test-message-id' })
+    }))
+  },
+  createTransport: jest.fn(() => ({
     sendMail: jest.fn().mockResolvedValue({ messageId: 'test-message-id' })
   }))
 }))
