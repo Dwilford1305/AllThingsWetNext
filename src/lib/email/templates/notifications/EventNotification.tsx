@@ -38,7 +38,7 @@ export const EventNotification = ({
       </Text>
       
       <Text style={paragraph}>
-        Don't miss out on these exciting events happening in our community! We've found <strong>{events.length} upcoming event{events.length !== 1 ? 's' : ''}</strong> that might interest you.
+        Don&apos;t miss out on these exciting events happening in our community! We&apos;ve found <strong>{events.length} upcoming event{events.length !== 1 ? 's' : ''}</strong> that might interest you.
       </Text>
 
       {events.map((event, index) => (
@@ -81,7 +81,7 @@ export const EventNotification = ({
           <strong>Want to see more events?</strong>
         </Text>
         <Text style={paragraph}>
-          Visit our events page to discover all upcoming activities, filter by your interests, and never miss what's happening in Wetaskiwin.
+          Visit our events page to discover all upcoming activities, filter by your interests, and never miss what&apos;s happening in Wetaskiwin.
         </Text>
         
         <Section style={buttonContainer}>
@@ -104,7 +104,7 @@ export const EventNotification = ({
       </Text>
 
       <Text style={unsubscribeNote}>
-        You're receiving this because you opted in to event notifications. You can{' '}
+        You&apos;re receiving this because you opted in to event notifications. You can{' '}
         <a href={unsubscribeUrl} style={unsubscribeLink}>
           unsubscribe from event emails
         </a>{' '}

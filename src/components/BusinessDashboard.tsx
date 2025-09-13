@@ -384,7 +384,7 @@ export const BusinessDashboard = ({ business, onUpdate }: BusinessDashboardProps
 
     // Try both methods to trigger file input click
     const fileInput1 = document.getElementById('photo-gallery-upload') as HTMLInputElement;
-    const fileInput2 = (window as any).photoGalleryInput;
+    const fileInput2 = (window as unknown as Record<string, unknown>).photoGalleryInput as HTMLInputElement | undefined;
     
     const fileInput = fileInput1 || fileInput2;
     if (fileInput) {

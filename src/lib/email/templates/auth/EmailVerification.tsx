@@ -21,7 +21,7 @@ export const EmailVerification = ({
       <Text style={heading}>Welcome to AllThingsWetaskiwin, {firstName}! 🎉</Text>
       
       <Text style={paragraph}>
-        Thank you for joining the Wetaskiwin community! We're excited to have you as part of our growing network of residents, business owners, and community members.
+        Thank you for joining the Wetaskiwin community! We&apos;re excited to have you as part of our growing network of residents, business owners, and community members.
       </Text>
       
       <Text style={paragraph}>
@@ -48,7 +48,7 @@ export const EmailVerification = ({
       <Text style={listItem}>✅ Get personalized notifications</Text>
 
       <Text style={paragraph}>
-        If the button above doesn't work, you can also copy and paste this link into your browser:
+        If the button above doesn&apos;t work, you can also copy and paste this link into your browser:
       </Text>
       
       <Text style={linkText}>
@@ -56,7 +56,7 @@ export const EmailVerification = ({
       </Text>
 
       <Text style={paragraph}>
-        <strong>Security Note:</strong> This verification link will expire in 60 minutes for security reasons. If you didn't create this account, you can safely ignore this email.
+        <strong>Security Note:</strong> This verification link will expire in 60 minutes for security reasons. If you didn&apos;t create this account, you can safely ignore this email.
       </Text>
 
       <Text style={paragraph}>

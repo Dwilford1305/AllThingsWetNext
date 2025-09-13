@@ -38,7 +38,7 @@ export const PasswordReset = ({
       </Section>
 
       <Text style={paragraph}>
-        If the button doesn't work, you can copy and paste this link into your browser:
+        If the button doesn&apos;t work, you can copy and paste this link into your browser:
       </Text>
       
       <Text style={linkText}>
@@ -49,12 +49,12 @@ export const PasswordReset = ({
         <strong>🔒 Security Information:</strong><br />
         • This link will expire in 60 minutes<br />
         • You can only use this link once<br />
-        • If you didn't request this reset, you can safely ignore this email<br />
+        • If you didn&apos;t request this reset, you can safely ignore this email<br />
         • Your current password will remain unchanged until you complete the reset
       </Text>
 
       <Text style={paragraph}>
-        <strong>Need help?</strong> If you're having trouble resetting your password or didn't request this change, please contact our support team.
+        <strong>Need help?</strong> If you&apos;re having trouble resetting your password or didn&apos;t request this change, please contact our support team.
       </Text>
 
       <Text style={paragraph}>

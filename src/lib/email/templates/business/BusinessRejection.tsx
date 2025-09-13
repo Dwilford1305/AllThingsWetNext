@@ -48,7 +48,7 @@ export const BusinessRejection = ({
       <Text style={listItem}>1. Review the requirements above</Text>
       <Text style={listItem}>2. Gather any additional information or documentation</Text>
       <Text style={listItem}>3. Contact our team with the updated details</Text>
-      <Text style={listItem}>4. We'll review and approve your listing promptly</Text>
+      <Text style={listItem}>4. We&apos;ll review and approve your listing promptly</Text>
 
       <Section style={buttonContainer}>
         <Button 
@@ -69,7 +69,7 @@ export const BusinessRejection = ({
       </Text>
 
       <Text style={paragraph}>
-        <strong>Don't worry!</strong> Most listing issues are resolved quickly once we receive the additional information. Our team is committed to helping every legitimate business succeed in our directory.
+        <strong>Don&apos;t worry!</strong> Most listing issues are resolved quickly once we receive the additional information. Our team is committed to helping every legitimate business succeed in our directory.
       </Text>
 
       <Text style={paragraph}>

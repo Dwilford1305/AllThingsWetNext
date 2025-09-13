@@ -1,4 +1,4 @@
-import { ComprehensiveEmailService, EmailTemplateType } from './ComprehensiveEmailService'
+import { ComprehensiveEmailService } from './ComprehensiveEmailService'
 import { User } from '../../../models/auth'
 import { Business, Event } from '../../../models'
 
@@ -6,7 +6,7 @@ export interface AutomationTriggerData {
   userId?: string
   businessId?: string
   email?: string
-  data?: any
+  data?: Record<string, unknown>
 }
 
 export class EmailAutomationService {
@@ -299,7 +299,7 @@ export class EmailAutomationService {
   /**
    * Trigger admin notification for new business request
    */
-  static async triggerAdminBusinessRequestNotification(requestData: any): Promise<void> {
+  static async triggerAdminBusinessRequestNotification(requestData: Record<string, unknown>): Promise<void> {
     try {
       const adminEmail = process.env.ADMIN_EMAIL || 'admin@allthingswet.ca'
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'

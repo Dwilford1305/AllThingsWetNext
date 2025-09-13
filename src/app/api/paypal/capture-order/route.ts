@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let captureData: any;
+    let captureData: Record<string, unknown> = {};
     retries = 2; // Fewer retries for capture as it's more sensitive
     
     while (retries > 0) {
@@ -184,12 +184,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract payment information
-    const paymentId = captureData.id;
-    const status = captureData.status;
-    const purchaseUnits = captureData.purchase_units || [];
-    const captures = purchaseUnits[0]?.payments?.captures || [];
-    const captureId = captures[0]?.id;
-    const amount = captures[0]?.amount;
+    const paymentId = captureData.id as string;
+    const status = captureData.status as string;
+    const purchaseUnits = (captureData.purchase_units as Array<Record<string, unknown>>) || [];
+    const captures = (purchaseUnits[0]?.payments as Record<string, unknown>)?.captures as Array<Record<string, unknown>> || [];
+    const captureId = captures[0]?.id as string;
+    const amount = captures[0]?.amount as Record<string, unknown>;
 
     // Validate that payment was successful
     if (status !== 'COMPLETED') {

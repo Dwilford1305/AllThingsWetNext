@@ -12,7 +12,6 @@ import {
   Text,
   Link,
   Hr,
-  Button,
 } from '@react-email/components'
 import * as React from 'react'
 
