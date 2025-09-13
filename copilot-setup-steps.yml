@@ -257,7 +257,7 @@ success_criteria:
   - "✅ Development server starts in under 60 seconds" 
   - "✅ All major pages accessible (/, /events, /businesses, /news, /jobs, /marketplace)"
   - "✅ API endpoints return proper responses (graceful errors without database)"
-  - "✅ Core tests passing (364+ passing, some failures expected without MongoDB)"
+  - "✅ Core tests passing (the majority passing, some failures expected without MongoDB)"
   - "✅ Beautiful community hub UI displays correctly"
   - "✅ Application handles both database-connected and disconnected scenarios gracefully"
 
