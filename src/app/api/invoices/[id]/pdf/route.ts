@@ -22,6 +22,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // Get format parameter (pdf, html)
+    const { searchParams } = new URL(request.url);
+    const format = searchParams.get('format') || 'pdf';
+
     // Get invoice data
     const invoice = await InvoiceService.getInvoice(id);
 
@@ -36,15 +40,24 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Generate HTML invoice
-    const invoiceHTML = InvoiceService.generateInvoiceHTML(invoice);
+    if (format === 'html') {
+      // Return HTML version for preview
+      const invoiceHTML = InvoiceService.generateInvoiceHTML(invoice);
+      return new NextResponse(invoiceHTML, {
+        headers: {
+          'Content-Type': 'text/html',
+          'Content-Disposition': `inline; filename="invoice-${invoice.invoiceNumber}.html"`
+        }
+      });
+    }
 
-    // For now, return HTML. In production, you'd convert to PDF
-    // Using libraries like Puppeteer, html-pdf, or similar
-    return new NextResponse(invoiceHTML, {
+    // Generate PDF invoice
+    const pdfBuffer = await InvoiceService.generateInvoicePDF(invoice);
+
+    return new NextResponse(pdfBuffer as BodyInit, {
       headers: {
-        'Content-Type': 'text/html',
-        'Content-Disposition': `inline; filename="invoice-${invoice.invoiceNumber}.html"`
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="invoice-${invoice.invoiceNumber}.pdf"`
       }
     });
 
