@@ -4,6 +4,7 @@ import { Providers } from "./providers";
 import Script from "next/script";
 import DevelopmentBanner from "@/components/DevelopmentBanner";
 import CookieConsent from "@/components/CookieConsent";
+import SkipNavigation from "@/components/SkipNavigation";
 import { WebsiteStructuredData } from "@/components/StructuredData";
 import "./globals.css";
 
@@ -133,8 +134,11 @@ export default function RootLayout({
         className="antialiased overflow-x-hidden max-w-full w-screen font-sans"
       >
         <Providers>
+          <SkipNavigation />
           <DevelopmentBanner />
-          {children}
+          <div id="main-content">
+            {children}
+          </div>
           <CookieConsent />
         </Providers>
       </body>

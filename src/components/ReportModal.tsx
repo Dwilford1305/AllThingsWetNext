@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { X, Flag } from 'lucide-react'
@@ -59,6 +59,16 @@ export default function ReportModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+  // Focus management for accessibility
+  useEffect(() => {
+    if (isOpen) {
+      // Focus the first focusable element when modal opens
+      const modalElement = document.querySelector('[role="dialog"]')
+      const firstFocusable = modalElement?.querySelector('input, button, [tabindex="0"]') as HTMLElement
+      firstFocusable?.focus()
+    }
+  }, [isOpen])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -96,45 +106,52 @@ export default function ReportModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="report-modal-title"
+      aria-describedby="report-modal-description"
+    >
       <Card className="w-full max-w-md bg-white max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-red-100 rounded-full">
-                <Flag className="h-5 w-5 text-red-600" />
+                <Flag className="h-5 w-5 text-red-600" aria-hidden="true" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-                <p className="text-sm text-gray-700">{description}</p>
+                <h2 id="report-modal-title" className="text-lg font-semibold text-gray-900">{title}</h2>
+                <p id="report-modal-description" className="text-sm text-gray-700">{description}</p>
               </div>
             </div>
             <button
               onClick={handleClose}
               disabled={isSubmitting}
-              className="text-gray-700 hover:text-gray-900 p-2"
+              className="text-gray-700 hover:text-gray-900 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               type="button"
+              aria-label="Close report dialog"
             >
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg" role="alert">
               <p className="text-red-800 text-sm">{error}</p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-800 mb-3">
-                What&apos;s the issue?
-              </label>
-              <div className="space-y-3">
+            <fieldset>
+              <legend className="block text-sm font-medium text-gray-800 mb-3">
+                What's the issue?
+              </legend>
+              <div className="space-y-3" role="radiogroup" aria-required="true">
                 {reportReasons.map((reason) => (
                   <label
                     key={reason.value}
-                    className="flex items-start gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="flex items-start gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors focus-within:ring-2 focus-within:ring-blue-500"
                   >
                     <input
                       type="radio"
@@ -143,6 +160,7 @@ export default function ReportModal({
                       checked={selectedReason === reason.value}
                       onChange={(e) => setSelectedReason(e.target.value as ReportReason)}
                       className="mt-1 text-primary-600 focus:ring-primary-500"
+                      required
                     />
                     <div>
                       <div className="font-medium text-gray-900">
@@ -155,22 +173,24 @@ export default function ReportModal({
                   </label>
                 ))}
               </div>
-            </div>
+            </fieldset>
 
             <div>
-              <label className="block text-sm font-medium text-gray-800 mb-2">
+              <label htmlFor="report-description" className="block text-sm font-medium text-gray-800 mb-2">
                 Additional details *
               </label>
               <textarea
+                id="report-description"
                 required
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
                 value={reportDescription}
                 onChange={(e) => setReportDescription(e.target.value)}
-                placeholder="Please provide specific details about why you&apos;re reporting this content..."
+                placeholder="Please provide specific details about why you're reporting this content..."
                 disabled={isSubmitting}
+                aria-describedby="report-description-help"
               />
-              <p className="mt-1 text-xs text-gray-700">
+              <p id="report-description-help" className="mt-1 text-xs text-gray-700">
                 Be specific about the issue to help our moderators review it quickly.
               </p>
             </div>
