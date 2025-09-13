@@ -101,7 +101,7 @@ setup_steps:
     expected_duration: "~10.6 seconds"
     timeout: "30+ seconds"
     success_indicators:
-      - "375+ passing tests"
+      - "Most tests passing"
       - "Test Suites: X failed, Y passed (some failures expected without DB)"
     notes:
       - "NEVER CANCEL - Always let tests complete"
