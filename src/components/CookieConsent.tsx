@@ -89,14 +89,19 @@ export default function CookieConsent() {
     <>
       {/* Main Cookie Banner */}
       {!showSettings && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-2xl shadow-xl rounded-lg bg-white border border-gray-200 p-6 animate-fade-in">
+        <div 
+          className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-2xl shadow-xl rounded-lg bg-white border border-gray-200 p-6 animate-fade-in"
+          role="dialog"
+          aria-labelledby="cookie-banner-title"
+          aria-describedby="cookie-banner-description"
+        >
           <div className="flex items-start gap-3">
-            <Cookie className="h-6 w-6 text-blue-600 flex-shrink-0 mt-1" />
+            <Cookie className="h-6 w-6 text-blue-600 flex-shrink-0 mt-1" aria-hidden="true" />
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 id="cookie-banner-title" className="text-lg font-semibold text-gray-900 mb-2">
                 Cookie Preferences
               </h3>
-              <p className="text-sm text-gray-700 mb-4">
+              <p id="cookie-banner-description" className="text-sm text-gray-700 mb-4">
                 We use cookies to enhance your browsing experience and analyze site usage. 
                 Essential cookies are required for site functionality, while optional cookies 
                 help us improve our services. You can customize your preferences or learn more 
@@ -109,23 +114,31 @@ export default function CookieConsent() {
               <div className="flex flex-wrap gap-2 sm:gap-3">
                 <button 
                   onClick={acceptAll}
-                  className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  aria-describedby="accept-all-help"
                 >
                   Accept All
                 </button>
+                <span id="accept-all-help" className="sr-only">Accept all cookies including analytics and functional cookies</span>
+                
                 <button 
                   onClick={acceptEssentialOnly}
-                  className="px-4 py-2 text-sm font-medium bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+                  className="px-4 py-2 text-sm font-medium bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                  aria-describedby="essential-only-help"
                 >
                   Essential Only
                 </button>
+                <span id="essential-only-help" className="sr-only">Accept only essential cookies required for site functionality</span>
+                
                 <button 
                   onClick={() => setShowSettings(true)}
-                  className="px-4 py-2 text-sm font-medium border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors flex items-center gap-1"
+                  className="px-4 py-2 text-sm font-medium border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  aria-describedby="customize-help"
                 >
-                  <Settings className="h-4 w-4" />
+                  <Settings className="h-4 w-4" aria-hidden="true" />
                   Customize
                 </button>
+                <span id="customize-help" className="sr-only">Customize individual cookie preferences</span>
               </div>
             </div>
             <button 

@@ -178,17 +178,21 @@ const Navigation = () => {
     <>
       {/* Foldable Sidebar Navigation (client-only) */}
       {hasMounted && isFoldableUnfolded() && (
-        <aside className={`fixed left-0 ${getNavTopPosition()} bottom-0 w-24 bg-white/80 backdrop-blur-lg border-r border-gray-200/50 shadow-xl z-40 flex flex-col items-center py-6 foldable-sidebar overflow-y-auto`}>
+        <aside 
+          className={`fixed left-0 ${getNavTopPosition()} bottom-0 w-24 bg-white/80 backdrop-blur-lg border-r border-gray-200/50 shadow-xl z-40 flex flex-col items-center py-6 foldable-sidebar overflow-y-auto`}
+          role="navigation"
+          aria-label="Main navigation sidebar"
+        >
           {/* Logo/Home */}
-          <Link href="/" className="mb-6 p-3 rounded-xl hover:bg-blue-50 transition-all duration-300 hover-lift flex flex-col items-center flex-shrink-0 group">
+          <Link href="/" className="mb-6 p-3 rounded-xl hover:bg-blue-50 transition-all duration-300 hover-lift flex flex-col items-center flex-shrink-0 group" aria-label="Go to homepage">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-300">
-              <Home size={20} className="text-white" />
+              <Home size={20} className="text-white" aria-hidden="true" />
             </div>
             <span className="text-xs font-semibold text-gray-800 group-hover:text-blue-600 transition-colors duration-300">Home</span>
           </Link>
           
           {/* Navigation Items */}
-          <nav className="flex flex-col space-y-1 flex-1 min-h-0 overflow-y-auto">
+          <nav className="flex flex-col space-y-1 flex-1 min-h-0 overflow-y-auto" role="navigation" aria-label="Page navigation">
             {navItems.slice(1).map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
@@ -199,8 +203,9 @@ const Navigation = () => {
                     : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
                 }`}
                 title={label}
+                aria-current={pathname === href ? 'page' : undefined}
               >
-                <Icon size={18} className="mb-1 group-hover:scale-110 transition-transform duration-300" />
+                <Icon size={18} className="mb-1 group-hover:scale-110 transition-transform duration-300" aria-hidden="true" />
                 <span className={`text-xs font-semibold leading-tight text-center transition-colors duration-300 max-w-full truncate ${
                   pathname === href ? 'text-white' : 'text-gray-800 group-hover:text-blue-600'
                 }`}>
@@ -219,18 +224,19 @@ const Navigation = () => {
                   href="/profile"
                   className="p-2 rounded-xl bg-blue-50/80 hover:bg-blue-100 flex flex-col items-center text-center flex-shrink-0 transition-all duration-300 hover-lift group"
                   title="Profile Settings"
+                  aria-label={`Profile settings for ${displayFirst} ${displayLast}`}
                 >
                   <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mb-1 group-hover:scale-110 transition-transform duration-300">
           {displayPicture ? (
                       <Image
             src={displayPicture}
-            alt={`${displayFirst} ${displayLast}`}
+            alt={`${displayFirst} ${displayLast} profile picture`}
                         width={28}
                         height={28}
                         className="w-7 h-7 rounded-full object-cover"
                       />
                     ) : (
-                      <User size={14} className="text-white" />
+                      <User size={14} className="text-white" aria-hidden="true" />
                     )}
                   </div>
                   <span className="text-xs font-semibold text-gray-800 leading-tight text-center group-hover:text-blue-600 transition-colors duration-300 max-w-full truncate">
@@ -282,15 +288,19 @@ const Navigation = () => {
       )}
 
       {/* Traditional Navigation for non-foldable devices (always rendered) */}
-      <nav className={`fixed w-full max-w-full ${getNavTopPosition()} z-40 transition-all duration-500 nav-container overflow-x-hidden no-horizontal-scroll safe-width rounded-b-2xl` +
-        ` ${getNavStyles()} ${hasMounted && isFoldableUnfolded() ? 'hidden' : ''}`}
+      <nav 
+        className={`fixed w-full max-w-full ${getNavTopPosition()} z-40 transition-all duration-500 nav-container overflow-x-hidden no-horizontal-scroll safe-width rounded-b-2xl` +
+          ` ${getNavStyles()} ${hasMounted && isFoldableUnfolded() ? 'hidden' : ''}`}
+        role="navigation"
+        aria-label="Main navigation"
+        id="navigation"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-hidden no-horizontal-scroll safe-width">
           <div className="flex justify-between items-center h-16 sm:h-18 min-w-0 flex-between w-full overflow-x-hidden no-horizontal-scroll safe-width">
             <div className="flex items-center min-w-0 flex-1 mr-3 overflow-x-hidden no-horizontal-scroll safe-width">
               {/* Heading only appears after scroll and after mount */}
               {hasMounted && isScrolled && (
-                <Link href="/" className="flex-shrink-0 min-w-0 overflow-x-hidden no-horizontal-scroll safe-width group">
+                <Link href="/" className="flex-shrink-0 min-w-0 overflow-x-hidden no-horizontal-scroll safe-width group" aria-label="Go to homepage">
                   <h1 className={`nav-title text-2xl sm:text-3xl md:text-3xl font-bold transition-all duration-300 ${getTextStyles()} truncate ${getTitleMaxWidth()} overflow-x-hidden no-horizontal-scroll safe-width group-hover:scale-105`}>
                     All Things Wetaskiwin
                   </h1>
@@ -311,8 +321,9 @@ const Navigation = () => {
                         ? 'text-gray-700 hover:bg-white/20 hover:text-blue-600' 
                         : 'text-white/90 hover:text-white hover:bg-white/10'
                   }`}
+                  aria-current={pathname === href ? 'page' : undefined}
                 >
-                  <Icon size={18} className="group-hover:scale-110 transition-transform duration-300" />
+                  <Icon size={18} className="group-hover:scale-110 transition-transform duration-300" aria-hidden="true" />
                   <span className="hidden lg:inline">{label}</span>
                 </Link>
               ))}

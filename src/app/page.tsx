@@ -18,35 +18,41 @@ export default function Home() {
       
       {/* Top Banner Ad - Full width, horizontally centered */}
       <AnimatedSection delay={0}>
-        <div className="w-full px-2 sm:px-4 py-2 sm:py-4 lg:py-6">
-          <div className="flex justify-center">
-            <AdPlaceholder 
-              type="google" 
-              size="leaderboard" 
-              className="w-full max-w-full" 
-            />
+        <section aria-label="Advertisement banner">
+          <div className="w-full px-2 sm:px-4 py-2 sm:py-4 lg:py-6">
+            <div className="flex justify-center">
+              <AdPlaceholder 
+                type="google" 
+                size="leaderboard" 
+                className="w-full max-w-full" 
+              />
+            </div>
           </div>
-        </div>
+        </section>
       </AnimatedSection>
 
       <AnimatedSection delay={0.1}>
-        <Dashboard />
+        <main role="main" id="main-content">
+          <Dashboard />
+        </main>
       </AnimatedSection>
 
       {/* Platinum Tier - Premium positioning, full width */}
       <AnimatedSection delay={0.15}>
-        <div className="w-full px-2 sm:px-4 py-3 sm:py-4 lg:py-6">
-          <div className="text-center mb-4 sm:mb-6">
-            <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">Premium Business Spotlight</h3>
-            <p className="text-sm text-gray-300">Experience the highest tier of business promotion</p>
+        <section aria-labelledby="business-spotlight-heading">
+          <div className="w-full px-2 sm:px-4 py-3 sm:py-4 lg:py-6">
+            <div className="text-center mb-4 sm:mb-6">
+              <h3 id="business-spotlight-heading" className="text-lg sm:text-xl font-semibold text-white mb-2">Premium Business Spotlight</h3>
+              <p className="text-sm text-gray-300">Experience the highest tier of business promotion</p>
+            </div>
+            <div className="flex justify-center">
+              <BusinessAdRotator 
+                tier="platinum"
+                className="w-full max-w-full"
+              />
+            </div>
           </div>
-          <div className="flex justify-center">
-            <BusinessAdRotator 
-              tier="platinum"
-              className="w-full max-w-full"
-            />
-          </div>
-        </div>
+        </section>
       </AnimatedSection>
 
       <AnimatedSection delay={0.2}>
