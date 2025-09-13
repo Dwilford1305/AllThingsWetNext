@@ -66,6 +66,10 @@ import PasswordReset from '../templates/auth/PasswordReset'
 import BusinessApproval from '../templates/business/BusinessApproval'
 import BusinessRejection from '../templates/business/BusinessRejection'
 import EventNotification from '../templates/notifications/EventNotification'
+import Newsletter from '../templates/marketing/Newsletter'
+import Marketing from '../templates/marketing/Marketing'
+import SubscriptionConfirmation from '../templates/subscriptions/SubscriptionConfirmation'
+import Welcome from '../templates/onboarding/Welcome'
 
 export type EmailTemplateType = 
   | 'email_verification'
@@ -296,6 +300,97 @@ export class ComprehensiveEmailService {
           unsubscribeUrl: string;
         }))
         break
+      case 'newsletter':
+        html = await render(Newsletter(data as {
+          firstName: string;
+          articles: Array<{
+            title: string;
+            excerpt: string;
+            url: string;
+            category: string;
+            publishedAt: string;
+          }>;
+          events: Array<{
+            title: string;
+            date: string;
+            time: string;
+            location: string;
+            url?: string;
+          }>;
+          businesses: Array<{
+            name: string;
+            description: string;
+            category: string;
+            url: string;
+          }>;
+          unsubscribeUrl: string;
+        }))
+        break
+      case 'marketing':
+        html = await render(Marketing(data as {
+          firstName: string;
+          campaignTitle: string;
+          campaignSubtitle?: string;
+          heroImageUrl?: string;
+          ctaText: string;
+          ctaUrl: string;
+          content: Array<{
+            type: 'heading' | 'paragraph' | 'list' | 'highlight';
+            text: string;
+            items?: string[];
+          }>;
+          businessSpotlight?: {
+            name: string;
+            description: string;
+            imageUrl: string;
+            url: string;
+            category: string;
+          };
+          specialOffer?: {
+            title: string;
+            description: string;
+            offerCode?: string;
+            expiresAt: string;
+            termsUrl?: string;
+          };
+          unsubscribeUrl: string;
+        }))
+        break
+      case 'subscription_confirmation':
+        html = await render(SubscriptionConfirmation(data as {
+          firstName: string;
+          subscriptionTier: 'free' | 'basic' | 'premium' | 'platinum';
+          businessName?: string;
+          features: string[];
+          subscriptionDate: string;
+          nextBillingDate?: string;
+          amount?: number;
+          invoiceUrl?: string;
+          dashboardUrl: string;
+        }))
+        break
+      case 'welcome':
+        html = await render(Welcome(data as {
+          firstName: string;
+          lastName: string;
+          email: string;
+          verificationUrl: string;
+          profileUrl: string;
+          communityStatsUrl: string;
+          businessesCount: number;
+          eventsCount: number;
+        }))
+        break
+      case 'business_request_confirmation':
+        // Use existing business approval template for now, can be customized later
+        html = await render(BusinessApproval(data as { 
+          firstName: string; 
+          businessName: string; 
+          businessId: string; 
+          dashboardUrl: string; 
+          businessUrl: string;
+        }))
+        break
       default:
         throw new Error(`Unknown template type: ${templateType}`)
     }
@@ -455,49 +550,6 @@ export class ComprehensiveEmailService {
     }
   }
 
-  /**
-   * Get email analytics for a campaign or template type
-   */
-  static async getAnalytics(options: {
-    campaignId?: string
-    templateType?: EmailTemplateType
-    startDate?: Date
-    endDate?: Date
-  }) {
-    try {
-      const query: QueryFilter = {}
-      
-      if (options.campaignId) query.campaignId = options.campaignId
-      if (options.templateType) query.templateType = options.templateType
-      if (options.startDate || options.endDate) {
-        const dateQuery: Record<string, Date> = {};
-        if (options.startDate) dateQuery.$gte = options.startDate
-        if (options.endDate) dateQuery.$lte = options.endDate
-        query.sentAt = dateQuery;
-      }
-
-      const analytics = await EmailAnalytics.find(query)
-      
-      const totalSent = analytics.length
-      const totalOpened = analytics.filter((a: { opened?: boolean }) => a.opened).length
-      const totalClicked = analytics.filter((a: { clicked?: boolean }) => a.clicked).length
-      const totalBounced = analytics.filter((a: { deliveryStatus?: string }) => a.deliveryStatus === 'bounced').length
-
-      return {
-        totalSent,
-        totalOpened,
-        totalClicked,
-        totalBounced,
-        openRate: totalSent > 0 ? (totalOpened / totalSent) * 100 : 0,
-        clickRate: totalSent > 0 ? (totalClicked / totalSent) * 100 : 0,
-        bounceRate: totalSent > 0 ? (totalBounced / totalSent) * 100 : 0,
-        analytics
-      }
-    } catch (error) {
-      console.error('Failed to get email analytics:', error)
-      throw error
-    }
-  }
 
   /**
    * Update user email preferences
@@ -519,6 +571,93 @@ export class ComprehensiveEmailService {
       )
     } catch (error) {
       console.error('Failed to update email preferences:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get email queue for admin operations
+   */
+  static getEmailQueue() {
+    return EmailQueue
+  }
+
+  /**
+   * Get email analytics with campaign support
+   */
+  static async getAnalytics(options: {
+    campaignId?: string
+    campaignIds?: string[]
+    templateType?: EmailTemplateType
+    startDate?: Date
+    endDate?: Date
+    includeDetails?: boolean
+  }): Promise<any> {
+    try {
+      const filter: any = {}
+      
+      if (options.campaignId) {
+        filter.campaignId = options.campaignId
+      }
+      
+      if (options.campaignIds) {
+        filter.campaignId = { $in: options.campaignIds }
+      }
+      
+      if (options.templateType) {
+        filter.templateType = options.templateType
+      }
+      
+      if (options.startDate || options.endDate) {
+        filter.sentAt = {}
+        if (options.startDate) filter.sentAt.$gte = options.startDate
+        if (options.endDate) filter.sentAt.$lte = options.endDate
+      }
+
+      const analytics = await EmailAnalytics.find(filter)
+      
+      if (options.campaignIds) {
+        // Group by campaign ID
+        const campaignAnalytics: any = {}
+        
+        options.campaignIds.forEach(campaignId => {
+          const campaignEmails = analytics.filter(a => a.campaignId === campaignId)
+          const total = campaignEmails.length
+          const opened = campaignEmails.filter(a => a.opened).length
+          const clicked = campaignEmails.filter(a => a.clicked).length
+          const bounced = campaignEmails.filter(a => a.deliveryStatus === 'bounced').length
+          
+          campaignAnalytics[campaignId] = {
+            total,
+            opened,
+            clicked,
+            bounced,
+            openRate: total > 0 ? Math.round((opened / total) * 100 * 10) / 10 : 0,
+            clickRate: total > 0 ? Math.round((clicked / total) * 100 * 10) / 10 : 0,
+            bounceRate: total > 0 ? Math.round((bounced / total) * 100 * 10) / 10 : 0
+          }
+        })
+        
+        return campaignAnalytics
+      }
+
+      const total = analytics.length
+      const opened = analytics.filter(a => a.opened).length
+      const clicked = analytics.filter(a => a.clicked).length
+      const bounced = analytics.filter(a => a.deliveryStatus === 'bounced').length
+
+      return {
+        total,
+        opened,
+        clicked,
+        bounced,
+        openRate: total > 0 ? Math.round((opened / total) * 100 * 10) / 10 : 0,
+        clickRate: total > 0 ? Math.round((clicked / total) * 100 * 10) / 10 : 0,
+        bounceRate: total > 0 ? Math.round((bounced / total) * 100 * 10) / 10 : 0,
+        analytics: options.includeDetails ? analytics : undefined
+      }
+    } catch (error) {
+      console.error('Failed to get campaign analytics:', error)
       throw error
     }
   }
