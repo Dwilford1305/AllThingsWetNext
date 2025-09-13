@@ -96,10 +96,10 @@ const AdminDashboard = () => {
   });
 
   // Comprehensive scraper status
-  const [comprehensiveScraperStatus, setComprehensiveScraperStatus] = useState<{
+  const [_comprehensiveScraperStatus, setComprehensiveScraperStatus] = useState<{
     isRunning: boolean;
     lastRun: Date | null;
-    stats: any;
+    stats: Record<string, unknown> | null;
   }>({
     isRunning: false,
     lastRun: null,

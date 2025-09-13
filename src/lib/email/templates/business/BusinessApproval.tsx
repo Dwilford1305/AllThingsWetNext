@@ -44,7 +44,7 @@ export const BusinessApproval = ({
       </Section>
 
       <Text style={paragraph}>
-        <strong>What's next?</strong>
+        <strong>What&apos;s next?</strong>
       </Text>
 
       <Section style={buttonContainer}>

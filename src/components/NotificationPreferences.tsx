@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
@@ -94,10 +94,26 @@ export default function NotificationPreferences() {
 
   const pushManager = PushNotificationManager.getInstance();
 
+  const checkPushStatus = useCallback(async () => {
+    try {
+      const status = pushManager.getStatus();
+      const subscribed = await pushManager.isSubscribed();
+      
+      setPushStatus({
+        supported: status.supported,
+        permission: status.permission,
+        subscribed,
+        enabling: false
+      });
+    } catch (error) {
+      console.error('Failed to check push status:', error);
+    }
+  }, [pushManager]);
+
   useEffect(() => {
     loadPreferences();
     checkPushStatus();
-  }, []);
+  }, [checkPushStatus]);
 
   const loadPreferences = async () => {
     try {
@@ -113,22 +129,6 @@ export default function NotificationPreferences() {
       console.error('Failed to load preferences:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const checkPushStatus = async () => {
-    try {
-      const status = pushManager.getStatus();
-      const subscribed = await pushManager.isSubscribed();
-      
-      setPushStatus({
-        supported: status.supported,
-        permission: status.permission,
-        subscribed,
-        enabling: false
-      });
-    } catch (error) {
-      console.error('Failed to check push status:', error);
     }
   };
 
@@ -227,7 +227,7 @@ export default function NotificationPreferences() {
     }));
   };
 
-  const updatePushSettings = (setting: 'frequency' | 'quietHours', value: any) => {
+  const updatePushSettings = (setting: 'frequency' | 'quietHours', value: unknown) => {
     setPreferences(prev => ({
       ...prev,
       pushNotifications: {
@@ -625,7 +625,7 @@ export default function NotificationPreferences() {
             <X className="h-12 w-12 text-gray-400 mx-auto mb-3" />
             <h4 className="text-lg font-medium text-gray-900 mb-2">Push Notifications Not Available</h4>
             <p className="text-gray-600">
-              Your browser or device doesn't support push notifications. 
+              Your browser or device doesn&apos;t support push notifications. 
               Try using a modern browser like Chrome, Firefox, or Safari.
             </p>
           </div>

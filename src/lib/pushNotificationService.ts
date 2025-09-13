@@ -273,7 +273,7 @@ export class PushNotificationService {
   }
 
   // Get user notification preferences (stub for now)
-  private async getUserNotificationPreferences(userId: string): Promise<{
+  private async getUserNotificationPreferences(_userId: string): Promise<{
     pushNotifications: {
       enabled: boolean;
       types: {

@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPayPalConfig } from '@/lib/paypal-config';
-import { InvoiceService } from '@/lib/invoice-service';
-import { connectDB } from '@/lib/mongodb';
-import { Business } from '@/models';
 
 // PayPal webhook event types we handle
 const SUPPORTED_EVENTS = [
@@ -27,7 +24,7 @@ interface PayPalWebhookEvent {
   resource_type: string;
   event_type: PayPalEventType;
   summary: string;
-  resource: any;
+  resource: Record<string, unknown>;
   links?: Array<{
     href: string;
     rel: string;
@@ -213,16 +210,19 @@ async function processWebhookEvent(event: PayPalWebhookEvent): Promise<void> {
  * Handle successful payment capture
  */
 async function handlePaymentCaptureCompleted(event: PayPalWebhookEvent): Promise<void> {
-  const capture = event.resource;
-  const orderId = capture.supplementary_data?.related_ids?.order_id;
-  const amount = parseFloat(capture.amount?.value || '0');
-  const currency = capture.amount?.currency_code || 'CAD';
+  const capture = event.resource as Record<string, unknown>;
+  const supplementaryData = capture.supplementary_data as Record<string, unknown> | undefined;
+  const relatedIds = supplementaryData?.related_ids as Record<string, unknown> | undefined;
+  const orderId = relatedIds?.order_id as string | undefined;
+  const amountData = capture.amount as Record<string, unknown> | undefined;
+  const amount = parseFloat((amountData?.value as string) || '0');
+  const currency = (amountData?.currency_code as string) || 'CAD';
 
   console.log('💰 Payment captured successfully:', {
-    captureId: capture.id,
+    captureId: capture.id as string,
     orderId,
     amount: `${amount} ${currency}`,
-    status: capture.status
+    status: capture.status as string
   });
 
   // Find related subscription or business from order metadata
@@ -240,12 +240,13 @@ async function handlePaymentCaptureCompleted(event: PayPalWebhookEvent): Promise
  * Handle failed payment
  */
 async function handlePaymentFailed(event: PayPalWebhookEvent): Promise<void> {
-  const capture = event.resource;
+  const capture = event.resource as Record<string, unknown>;
+  const statusDetails = capture.status_details as Record<string, unknown> | undefined;
   
   console.warn('⚠️ Payment failed:', {
-    captureId: capture.id,
-    status: capture.status,
-    reason: capture.status_details?.reason || 'Unknown'
+    captureId: capture.id as string,
+    status: capture.status as string,
+    reason: (statusDetails?.reason as string) || 'Unknown'
   });
 
   // In production, you would:
@@ -259,12 +260,13 @@ async function handlePaymentFailed(event: PayPalWebhookEvent): Promise<void> {
  * Handle payment refund
  */
 async function handlePaymentRefunded(event: PayPalWebhookEvent): Promise<void> {
-  const refund = event.resource;
+  const refund = event.resource as Record<string, unknown>;
+  const amountData = refund.amount as Record<string, unknown> | undefined;
   
   console.log('🔄 Payment refunded:', {
-    refundId: refund.id,
-    amount: `${refund.amount?.value} ${refund.amount?.currency_code}`,
-    status: refund.status
+    refundId: refund.id as string,
+    amount: `${amountData?.value as string} ${amountData?.currency_code as string}`,
+    status: refund.status as string
   });
 
   // In production, you would:
@@ -347,12 +349,14 @@ async function handleSubscriptionDeactivated(event: PayPalWebhookEvent): Promise
  * Handle subscription payment failure
  */
 async function handleSubscriptionPaymentFailed(event: PayPalWebhookEvent): Promise<void> {
-  const subscription = event.resource;
+  const subscription = event.resource as Record<string, unknown>;
+  const billingInfo = subscription.billing_info as Record<string, unknown> | undefined;
+  const lastPayment = billingInfo?.last_payment as Record<string, unknown> | undefined;
   
   console.warn('💳 Subscription payment failed:', {
-    subscriptionId: subscription.id,
-    status: subscription.status,
-    lastPaymentStatus: subscription.billing_info?.last_payment?.status
+    subscriptionId: subscription.id as string,
+    status: subscription.status as string,
+    lastPaymentStatus: lastPayment?.status as string | undefined
   });
 
   // In production, handle payment failure:

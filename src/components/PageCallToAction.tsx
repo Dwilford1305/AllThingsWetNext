@@ -2,7 +2,7 @@
 
 import { Button } from './ui/Button';
 import { Card } from './ui/Card';
-import { ArrowRight, Users, Plus, Star, UserPlus, Calendar, ShoppingBag, Building } from 'lucide-react';
+import { ArrowRight, UserPlus, ShoppingBag, Building } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';

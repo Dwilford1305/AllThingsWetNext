@@ -23,7 +23,7 @@ export class PaymentError extends Error {
     message: string,
     public code: string,
     public retryable: boolean = false,
-    public details?: any
+    public details?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'PaymentError';
@@ -299,7 +299,7 @@ export class PaymentService {
   /**
    * Check if payment error is retryable
    */
-  static isRetryableError(error: any): boolean {
+  static isRetryableError(error: unknown): boolean {
     if (error instanceof PaymentError) {
       return error.retryable;
     }

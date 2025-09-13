@@ -237,7 +237,7 @@ export const PhotoGalleryModal = ({
             ref={(input) => {
               // Store reference for triggering upload
               if (input) {
-                (window as any).photoGalleryInput = input;
+                (window as unknown as Record<string, unknown>).photoGalleryInput = input;
               }
             }}
           />

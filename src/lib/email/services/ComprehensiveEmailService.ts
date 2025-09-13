@@ -3,6 +3,62 @@ import { v4 as uuidv4 } from 'uuid'
 import nodemailer from 'nodemailer'
 import { EmailQueue, EmailAnalytics, EmailPreferences } from '../../../models/email'
 import { User } from '../../../models/auth'
+import { Document } from 'mongoose'
+
+// Define interfaces for better typing
+interface EmailQueueDocument extends Document {
+  id: string
+  to: string
+  from: string
+  subject: string
+  html: string
+  text?: string
+  templateType: EmailTemplateType
+  templateData?: EmailTemplateData
+  status: string
+  priority: string
+  scheduledFor: Date
+  sentAt?: Date
+  attempts: number
+  maxAttempts?: number
+  nextRetryAt?: Date
+  lastError?: string
+  errorHistory: Array<{
+    error: string
+    occurredAt: Date
+  }>
+  trackingId?: string
+  userId?: string
+  businessId?: string
+  campaignId?: string
+  save(): Promise<this>
+}
+
+interface EmailAnalyticsDocument extends Document {
+  emailId: string
+  openCount: number
+  clickCount: number
+  clickedUrls: Array<{
+    url: string
+    clickedAt: Date
+    count: number
+  }>
+  opened?: boolean
+  openedAt?: Date
+  clicked?: boolean
+  clickedAt?: Date
+  deviceInfo?: {
+    userAgent?: string
+    ip?: string
+    browser?: string
+    os?: string
+    device?: string
+  }
+}
+
+interface QueryFilter {
+  [key: string]: unknown
+}
 
 // Import email templates
 import EmailVerification from '../templates/auth/EmailVerification'
@@ -23,11 +79,15 @@ export type EmailTemplateType =
   | 'welcome'
   | 'marketing'
 
+export interface EmailTemplateData {
+  [key: string]: unknown
+}
+
 export interface EmailOptions {
   to: string
   subject: string
   templateType: EmailTemplateType
-  templateData?: any
+  templateData?: EmailTemplateData
   userId?: string
   businessId?: string
   campaignId?: string
@@ -133,7 +193,7 @@ export class ComprehensiveEmailService {
   /**
    * Send a queued email
    */
-  private static async sendQueuedEmail(queueEntry: any): Promise<void> {
+  private static async sendQueuedEmail(queueEntry: EmailQueueDocument): Promise<void> {
     try {
       // Update status to processing
       queueEntry.status = 'processing'
@@ -205,24 +265,36 @@ export class ComprehensiveEmailService {
   /**
    * Render email template to HTML and text
    */
-  private static async renderTemplate(templateType: EmailTemplateType, data: any): Promise<{ html: string; text: string }> {
+  private static async renderTemplate(templateType: EmailTemplateType, data: EmailTemplateData): Promise<{ html: string; text: string }> {
     let html: string
     
     switch (templateType) {
       case 'email_verification':
-        html = await render(EmailVerification(data))
+        html = await render(EmailVerification(data as { firstName: string; verificationUrl: string }))
         break
       case 'password_reset':
-        html = await render(PasswordReset(data))
+        html = await render(PasswordReset(data as { firstName: string; resetUrl: string }))
         break
       case 'business_approval':
-        html = await render(BusinessApproval(data))
+        html = await render(BusinessApproval(data as { firstName: string; businessName: string; businessId: string; dashboardUrl: string; businessUrl: string }))
         break
       case 'business_rejection':
-        html = await render(BusinessRejection(data))
+        html = await render(BusinessRejection(data as { firstName: string; businessName: string; reason: string; contactUrl: string }))
         break
       case 'event_notification':
-        html = await render(EventNotification(data))
+        html = await render(EventNotification(data as { 
+          firstName: string; 
+          events: Array<{
+            title: string;
+            date: string;
+            time: string;
+            location: string;
+            description: string;
+            url?: string;
+          }>; 
+          period: string; 
+          unsubscribeUrl: string;
+        }))
         break
       default:
         throw new Error(`Unknown template type: ${templateType}`)
@@ -299,7 +371,7 @@ export class ComprehensiveEmailService {
       const analytics = await EmailAnalytics.findOne({ emailId: trackingId })
       if (!analytics) return
 
-      const updateData: any = {
+      const updateData: Partial<EmailAnalyticsDocument & { updatedAt: Date }> = {
         opened: true,
         openCount: analytics.openCount + 1,
         updatedAt: new Date()
@@ -335,7 +407,7 @@ export class ComprehensiveEmailService {
       const analytics = await EmailAnalytics.findOne({ emailId: trackingId })
       if (!analytics) return
 
-      const existingClick = analytics.clickedUrls.find((click: any) => click.url === url)
+      const existingClick = analytics.clickedUrls.find((click: { url: string }) => click.url === url)
       
       if (existingClick) {
         existingClick.count += 1
@@ -348,7 +420,14 @@ export class ComprehensiveEmailService {
         })
       }
 
-      const updateData: any = {
+      const updateData: Partial<EmailAnalyticsDocument & { 
+        updatedAt: Date
+        clickedUrls: Array<{
+          url: string
+          clickedAt: Date
+          count: number
+        }>
+      }> = {
         clicked: true,
         clickCount: analytics.clickCount + 1,
         clickedUrls: analytics.clickedUrls,
@@ -386,22 +465,23 @@ export class ComprehensiveEmailService {
     endDate?: Date
   }) {
     try {
-      const query: any = {}
+      const query: QueryFilter = {}
       
       if (options.campaignId) query.campaignId = options.campaignId
       if (options.templateType) query.templateType = options.templateType
       if (options.startDate || options.endDate) {
-        query.sentAt = {}
-        if (options.startDate) query.sentAt.$gte = options.startDate
-        if (options.endDate) query.sentAt.$lte = options.endDate
+        const dateQuery: Record<string, Date> = {};
+        if (options.startDate) dateQuery.$gte = options.startDate
+        if (options.endDate) dateQuery.$lte = options.endDate
+        query.sentAt = dateQuery;
       }
 
       const analytics = await EmailAnalytics.find(query)
       
       const totalSent = analytics.length
-      const totalOpened = analytics.filter((a: any) => a.opened).length
-      const totalClicked = analytics.filter((a: any) => a.clicked).length
-      const totalBounced = analytics.filter((a: any) => a.deliveryStatus === 'bounced').length
+      const totalOpened = analytics.filter((a: { opened?: boolean }) => a.opened).length
+      const totalClicked = analytics.filter((a: { clicked?: boolean }) => a.clicked).length
+      const totalBounced = analytics.filter((a: { deliveryStatus?: string }) => a.deliveryStatus === 'bounced').length
 
       return {
         totalSent,
@@ -422,7 +502,7 @@ export class ComprehensiveEmailService {
   /**
    * Update user email preferences
    */
-  static async updateEmailPreferences(userId: string, preferences: any): Promise<void> {
+  static async updateEmailPreferences(userId: string, preferences: EmailTemplateData): Promise<void> {
     try {
       const user = await User.findOne({ id: userId })
       if (!user) throw new Error('User not found')

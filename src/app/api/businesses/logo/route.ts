@@ -214,7 +214,7 @@ export async function DELETE(request: NextRequest) {
       }
     )
 
-    const response: ApiResponse<{}> = {
+    const response: ApiResponse<Record<string, never>> = {
       success: true,
       data: {},
       message: 'Logo deleted successfully'
