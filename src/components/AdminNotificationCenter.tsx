@@ -167,7 +167,7 @@ export default function AdminNotificationCenter() {
 
       {/* Notification Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden z-50">
+        <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-lg bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden z-50">
           {/* Header */}
           <div className="px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
             <div className="flex items-center justify-between">
@@ -215,12 +215,12 @@ export default function AdminNotificationCenter() {
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <h4 className="text-sm font-semibold text-gray-900 truncate">
+                          <h4 className="text-sm font-semibold text-gray-900 break-words flex-1">
                             {notification.title}
                           </h4>
                           <Badge
                             variant="secondary"
-                            className={`text-xs ${
+                            className={`text-xs flex-shrink-0 ${
                               notification.priority === 'critical' ? 'bg-red-100 text-red-800' :
                               notification.priority === 'high' ? 'bg-orange-100 text-orange-800' :
                               notification.priority === 'medium' ? 'bg-blue-100 text-blue-800' :
@@ -230,7 +230,7 @@ export default function AdminNotificationCenter() {
                             {notification.priority}
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                        <p className="text-sm text-gray-600 mt-1 break-words">
                           {notification.message}
                         </p>
                         <div className="flex items-center justify-between mt-2">
