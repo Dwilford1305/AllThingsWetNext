@@ -1,5 +1,18 @@
 // Jest setup file for mocking React components and JSX
 
+// Set test environment variable before any imports
+process.env.NODE_ENV = 'test'
+
+// Mock MongoDB connection to prevent actual connections in tests
+jest.mock('@/lib/mongodb', () => ({
+  connectDB: jest.fn().mockResolvedValue({
+    connection: {
+      readyState: 1,
+      close: jest.fn().mockResolvedValue(undefined)
+    }
+  })
+}))
+
 // Mock React to prevent JSX parsing issues in node environment
 jest.mock('react', () => ({
   ...jest.requireActual('react'),
@@ -151,3 +164,14 @@ jest.mock('framer-motion', () => ({
   },
   AnimatePresence: ({ children }) => children
 }))
+
+// Global teardown to ensure mongoose connections are closed
+afterAll(async () => {
+  // Close all mongoose connections
+  const mongoose = require('mongoose')
+  if (mongoose.connection && mongoose.connection.readyState !== 0) {
+    await mongoose.connection.close()
+  }
+  // Close all connections in the connection pool
+  await mongoose.disconnect()
+})

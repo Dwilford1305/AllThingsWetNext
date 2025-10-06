@@ -23,5 +23,11 @@ module.exports = {
   // Run tests in sequence for database tests to avoid connection issues
   maxWorkers: 1,
   // Mock React components and JSX to prevent parsing issues in node environment
-  setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js']
+  setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js'],
+  // Global teardown to close database connections
+  globalTeardown: '<rootDir>/tests/jest.teardown.js',
+  // Detect open handles to help identify connection leaks
+  detectOpenHandles: false,
+  // Force exit after tests complete
+  forceExit: true
 };
