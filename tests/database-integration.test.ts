@@ -305,19 +305,23 @@ describe('Database Integration Tests', () => {
       // Password hash field should exist
       expect(schema.paths.passwordHash).toBeDefined();
 
-      // Check for password validation at the schema level
-      // If a virtual 'password' field is used for validation, check its validators
-      const passwordPath = schema.paths.password || schema.paths.passwordHash;
-      expect(passwordPath).toBeDefined();
-
-      // Check for minimum length validator (minlength or custom validator)
-      const minLength = passwordPath.options && (passwordPath.options.minlength || passwordPath.options.minLength);
-      const hasCustomValidator = passwordPath.validators && passwordPath.validators.some(
-        v => v.type === 'minlength' || (typeof v.validator === 'function' && v.validator.length >= 1)
-      );
-
-      // Assert that either a minlength is set or a custom validator exists
-      expect(minLength || hasCustomValidator).toBeTruthy();
+      // Check for password validation via virtual field
+      // The 'password' is a virtual field with a setter that validates before hashing
+      const passwordVirtual = schema.virtuals.password;
+      expect(passwordVirtual).toBeDefined();
+      
+      // Virtual field should have a setter function that performs validation
+      expect(passwordVirtual.setters).toBeDefined();
+      expect(passwordVirtual.setters.length).toBeGreaterThan(0);
+      
+      // The setter should be a function (validation logic is in the setter)
+      const setter = passwordVirtual.setters[0];
+      expect(typeof setter).toBe('function');
+      
+      // Verify the setter contains validation logic for minimum password length
+      const setterSource = setter.toString();
+      expect(setterSource).toContain('password.length < 8');
+      expect(setterSource).toContain('invalidate');
     });
 
     test('Content models have length constraints', () => {
