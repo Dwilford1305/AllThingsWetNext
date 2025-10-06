@@ -1,5 +1,3 @@
-import { connectDB } from '../src/lib/mongodb'
-
 describe('Super Admin Test Business', () => {
   // Test constants
   const TEST_BUSINESS_ID = 'test-platinum-business-admin'
