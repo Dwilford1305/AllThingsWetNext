@@ -15,14 +15,13 @@ describe('PayPal Integration - Production Readiness Validation', () => {
     process.env.NEXTAUTH_URL = 'http://localhost:3000';
   });
 
-  afterAll(() => {
-    jest.restoreAllMocks();
-  });
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
   describe('Complete PayPal Integration Suite', () => {
     it('should validate all PayPal configuration components exist', async () => {
       const { getPayPalConfig, validatePayPalConfig, MARKETPLACE_SUBSCRIPTION_TIERS, BUSINESS_SUBSCRIPTION_TIERS } = await import('@/lib/paypal-config');
