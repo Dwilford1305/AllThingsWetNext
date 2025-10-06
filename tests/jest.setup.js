@@ -164,14 +164,3 @@ jest.mock('framer-motion', () => ({
   },
   AnimatePresence: ({ children }) => children
 }))
-
-// Global teardown to ensure mongoose connections are closed
-afterAll(async () => {
-  // Close all mongoose connections
-  const mongoose = require('mongoose')
-  if (mongoose.connection && mongoose.connection.readyState !== 0) {
-    await mongoose.connection.close()
-  }
-  // Close all connections in the connection pool
-  await mongoose.disconnect()
-})
