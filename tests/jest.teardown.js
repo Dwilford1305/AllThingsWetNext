@@ -20,5 +20,4 @@ module.exports = async () => {
   }
   
   // Give Jest time to clean up
-  await new Promise(resolve => setTimeout(resolve, 500))
 }
