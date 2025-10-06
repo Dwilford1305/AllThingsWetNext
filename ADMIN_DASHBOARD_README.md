@@ -11,6 +11,8 @@ The admin dashboard provides comprehensive site management capabilities includin
 - **Scraper Controls**: Manually run scrapers and monitor their status
 - **Analytics**: View detailed statistics and performance metrics
 - **System Settings**: Configure site-wide settings and notifications
+- **🆕 Real-Time Notifications**: Receive instant alerts for critical events
+- **🆕 Activity Monitoring**: Track all user signups, business requests, and system events
 
 ## Access
 
@@ -28,6 +30,8 @@ The admin dashboard is accessible at `/admin` and is protected by password authe
 - Recent business claims
 - Business category breakdown
 - System status indicators
+- **🆕 Notification Center**: Bell icon with unread count badge in header
+- **🆕 Recent Activity Widget**: Shows latest notifications and events at a glance
 
 ### 2. Business Management
 - View all businesses with status and subscription details
@@ -71,6 +75,11 @@ The admin dashboard uses the following API endpoints:
 ### Content Management
 - `POST /api/admin/event` - Event actions (approve, reject, delete)
 - `POST /api/admin/news` - News actions (approve, reject, delete)
+
+### 🆕 Notifications
+- `GET /api/admin/notifications` - Fetch admin notifications (with filtering)
+- `PATCH /api/admin/notifications` - Mark notification(s) as read
+- `DELETE /api/admin/notifications` - Cleanup old notifications
 
 ## Security Considerations
 
@@ -126,14 +135,75 @@ The admin dashboard is included in the feature branch. To use it:
 2. **Setting Updates**: Adjust automation schedules if needed
 3. **Security Review**: Rotate passwords and review access logs
 
+## 🆕 Admin Notification System
+
+### Overview
+The admin dashboard now includes a comprehensive notification system that alerts administrators of critical events in real-time.
+
+### Features
+- **Email Notifications**: Receive email alerts for important events
+- **Push Notifications**: Real-time browser push notifications (if enabled)
+- **In-Dashboard Alerts**: Notification bell icon with unread count badge
+- **Priority Levels**: Color-coded notifications (critical, high, medium, low)
+- **Activity Log**: Complete history of all admin-relevant events
+
+### Notification Types
+1. **User Signups**: Alerted when new users register (JWT or Auth0)
+2. **Business Requests**: Notified when businesses submit listing requests
+3. **Content Moderation**: Alerts for content requiring review (coming soon)
+4. **System Alerts**: Critical system errors or warnings (coming soon)
+
+### Configuration
+
+#### Email Notifications
+Email notifications are sent to the address specified in the `ADMIN_EMAIL` environment variable:
+
+```bash
+# Add to .env.local
+ADMIN_EMAIL=admin@yoursite.com
+```
+
+#### Push Notifications
+To enable push notifications, configure VAPID keys:
+
+```bash
+# Generate VAPID keys (run once)
+# The notification service includes a helper to generate these
+
+# Add to .env.local
+VAPID_PUBLIC_KEY=your_public_key
+VAPID_PRIVATE_KEY=your_private_key
+VAPID_EMAIL=admin@yoursite.com
+```
+
+### Using the Notification Center
+
+1. **View Notifications**: Click the bell icon in the admin dashboard header
+2. **Read Notifications**: Click "Dismiss" on individual notifications
+3. **Mark All Read**: Use "Mark all read" button to clear all notifications
+4. **Recent Activity**: View the "Recent Activity" widget on the main dashboard
+
+### Notification Priority Levels
+
+- **Critical** 🔴: Requires immediate attention (system errors, security issues)
+- **High** 🟠: Important but not urgent (business requests, new signups)
+- **Medium** 🔵: Regular admin activities (content updates)
+- **Low** ⚪: Informational only (system logs)
+
+### Auto-Refresh
+- Notifications refresh automatically every 30 seconds
+- Unread count updates in real-time
+- Recent activity widget refreshes every minute
+
 ## Future Enhancements
 
 ### Planned Features
-1. **Email Notifications**: Automated alerts for important events
+1. ~~**Email Notifications**: Automated alerts for important events~~ ✅ **COMPLETED**
 2. **Advanced Analytics**: Charts, graphs, and detailed reporting
 3. **Bulk Operations**: Mass approve/reject content
 4. **API Management**: Monitor and control API usage
 5. **Backup Management**: Database backup scheduling and monitoring
+6. **Notification Preferences**: Customize which notifications to receive
 
 ### Integration Opportunities
 1. **Payment Processing**: Direct Stripe/PayPal integration for subscriptions
