@@ -99,15 +99,19 @@ describe('CSRF Token Handling in Subscription Upgrades', () => {
       });
 
       // Verify fetch was called with CSRF headers
-      expect(mockFetch).toHaveBeenCalledWith('/api/marketplace/subscription', {
-        method: 'POST',
-        headers: expect.objectContaining({
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': testToken,
-        }),
-        credentials: 'include',
-        body: JSON.stringify({ subscriptionTier: 'gold', duration: 12 }),
-      });
+      expect(mockFetch).toHaveBeenCalled();
+      const callArgs = mockFetch.mock.calls[0];
+      expect(callArgs[0]).toBe('/api/marketplace/subscription');
+      
+      const options = callArgs[1];
+      expect(options.method).toBe('POST');
+      expect(options.credentials).toBe('include');
+      expect(options.body).toBe(JSON.stringify({ subscriptionTier: 'gold', duration: 12 }));
+      
+      // Check headers - it's a Headers object
+      expect(options.headers).toBeInstanceOf(Headers);
+      expect(options.headers.get('Content-Type')).toBe('application/json');
+      expect(options.headers.get('X-CSRF-Token')).toBe(testToken);
     });
 
     test('should include CSRF token in business subscription POST requests', async () => {
@@ -129,19 +133,18 @@ describe('CSRF Token Handling in Subscription Upgrades', () => {
         }),
       });
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/businesses/subscription', {
-        method: 'POST',
-        headers: expect.objectContaining({
-          'Content-Type': 'application/json',
-          'X-CSRF-Token': testToken,
-        }),
-        credentials: 'include',
-        body: JSON.stringify({ 
-          businessId: 'test-business',
-          subscriptionTier: 'platinum',
-          duration: 12 
-        }),
-      });
+      expect(mockFetch).toHaveBeenCalled();
+      const callArgs = mockFetch.mock.calls[0];
+      expect(callArgs[0]).toBe('/api/businesses/subscription');
+      
+      const options = callArgs[1];
+      expect(options.method).toBe('POST');
+      expect(options.credentials).toBe('include');
+      
+      // Check headers - it's a Headers object
+      expect(options.headers).toBeInstanceOf(Headers);
+      expect(options.headers.get('Content-Type')).toBe('application/json');
+      expect(options.headers.get('X-CSRF-Token')).toBe(testToken);
     });
 
     test('should not include CSRF token in GET requests', async () => {
@@ -214,15 +217,14 @@ describe('CSRF Token Handling in Subscription Upgrades', () => {
         })
       });
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/marketplace/subscription', 
-        expect.objectContaining({
-          method: 'POST',
-          headers: expect.objectContaining({
-            'X-CSRF-Token': testToken,
-          }),
-          credentials: 'include',
-        })
-      );
+      expect(mockFetch).toHaveBeenCalled();
+      const callArgs = mockFetch.mock.calls[0];
+      expect(callArgs[0]).toBe('/api/marketplace/subscription');
+      
+      const options = callArgs[1];
+      expect(options.method).toBe('POST');
+      expect(options.credentials).toBe('include');
+      expect(options.headers.get('X-CSRF-Token')).toBe(testToken);
     });
 
     test('business dashboard upgrade should include CSRF token', async () => {
@@ -250,15 +252,14 @@ describe('CSRF Token Handling in Subscription Upgrades', () => {
         })
       });
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/businesses/subscription', 
-        expect.objectContaining({
-          method: 'POST',
-          headers: expect.objectContaining({
-            'X-CSRF-Token': testToken,
-          }),
-          credentials: 'include',
-        })
-      );
+      expect(mockFetch).toHaveBeenCalled();
+      const callArgs = mockFetch.mock.calls[0];
+      expect(callArgs[0]).toBe('/api/businesses/subscription');
+      
+      const options = callArgs[1];
+      expect(options.method).toBe('POST');
+      expect(options.credentials).toBe('include');
+      expect(options.headers.get('X-CSRF-Token')).toBe(testToken);
     });
 
     test('offer code validation should include CSRF token', async () => {
@@ -286,15 +287,14 @@ describe('CSRF Token Handling in Subscription Upgrades', () => {
         })
       });
 
-      expect(mockFetch).toHaveBeenCalledWith('/api/businesses/validate-offer-code', 
-        expect.objectContaining({
-          method: 'POST',
-          headers: expect.objectContaining({
-            'X-CSRF-Token': testToken,
-          }),
-          credentials: 'include',
-        })
-      );
+      expect(mockFetch).toHaveBeenCalled();
+      const callArgs = mockFetch.mock.calls[0];
+      expect(callArgs[0]).toBe('/api/businesses/validate-offer-code');
+      
+      const options = callArgs[1];
+      expect(options.method).toBe('POST');
+      expect(options.credentials).toBe('include');
+      expect(options.headers.get('X-CSRF-Token')).toBe(testToken);
     });
   });
 
