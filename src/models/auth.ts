@@ -214,6 +214,16 @@ UserSchema.virtual('fullName').get(function() {
   return `${this.firstName} ${this.lastName}`
 })
 
+// Virtual password field with validation (used during user creation/password changes)
+// This doesn't store the password, but validates it before hashing
+UserSchema.virtual('password')
+  .set(function(password: string) {
+    // Validation happens here, actual hashing happens in the service layer
+    if (password && password.length < 8) {
+      this.invalidate('password', 'Password must be at least 8 characters long')
+    }
+  })
+
 // Pre-save middleware to update timestamps
 UserSchema.pre('save', function(next) {
   this.updatedAt = new Date()

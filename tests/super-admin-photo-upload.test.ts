@@ -71,9 +71,14 @@ describe('Super Admin Photo Upload API', () => {
 
     // Create mock request
     const mockRequest = {
+      method: 'POST',
       headers: new Headers({
-        'authorization': 'Bearer mock-token'
+        'authorization': 'Bearer mock-token',
+        'x-csrf-token': 'test-csrf-token'
       }),
+      cookies: {
+        get: (name: string) => name === 'csrfToken' ? { value: 'test-csrf-token' } : undefined
+      },
       formData: () => Promise.resolve(formData)
     } as unknown as NextRequest
 
@@ -136,9 +141,14 @@ describe('Super Admin Photo Upload API', () => {
     formData.append('photo', mockFile)
 
     const mockRequest = {
+      method: 'POST',
       headers: new Headers({
-        'authorization': 'Bearer mock-token'
+        'authorization': 'Bearer mock-token',
+        'x-csrf-token': 'test-csrf-token'
       }),
+      cookies: {
+        get: (name: string) => name === 'csrfToken' ? { value: 'test-csrf-token' } : undefined
+      },
       formData: () => Promise.resolve(formData)
     } as unknown as NextRequest
 
@@ -160,7 +170,13 @@ describe('Super Admin Photo Upload API', () => {
 
   it('should reject upload without authentication', async () => {
     const mockRequest = {
-      headers: new Headers({}), // No authorization header
+      method: 'POST',
+      headers: new Headers({
+        'x-csrf-token': 'test-csrf-token'
+      }), // No authorization header
+      cookies: {
+        get: (name: string) => name === 'csrfToken' ? { value: 'test-csrf-token' } : undefined
+      },
       formData: () => Promise.resolve(new FormData())
     } as unknown as NextRequest
 
@@ -169,6 +185,6 @@ describe('Super Admin Photo Upload API', () => {
 
     expect(response.status).toBe(401)
     expect(result.success).toBe(false)
-    expect(result.error).toBe('Authentication required')
+    expect(result.error).toBe('Not authenticated')
   })
 })

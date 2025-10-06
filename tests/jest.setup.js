@@ -96,13 +96,32 @@ jest.mock('@/lib/emailService', () => ({
 jest.mock('@/lib/email/services/ComprehensiveEmailService', () => ({
   default: class MockComprehensiveEmailService {
     static async queueEmail() {
-      return { id: 'mock-email-id' }
+      return 'mock-email-id'
     }
     static async processEmailQueue() {
       return true
     }
     static async isConfigured() {
       return true
+    }
+    static async trackOpen(trackingId, userAgent, ip) {
+      return undefined
+    }
+    static async trackClick(trackingId, url, userAgent, ip) {
+      return undefined
+    }
+    static async getAnalytics(options) {
+      return {
+        sent: 0,
+        delivered: 0,
+        opened: 0,
+        clicked: 0,
+        bounced: 0,
+        failed: 0
+      }
+    }
+    static async unsubscribeUser(email) {
+      return undefined
     }
   }
 }))
