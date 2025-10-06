@@ -112,7 +112,7 @@ describe('Comprehensive Email System', () => {
 
       it('should have email service methods available', () => {
         // Verify core email service methods exist
-        // Note: Some methods may not be directly accessible due to module export structure
+        // These tests verify that the public API interface exposes the expected methods
         expect(typeof ComprehensiveEmailService.queueEmail).toBe('function')
         expect(typeof ComprehensiveEmailService.trackOpen).toBe('function')
         expect(typeof ComprehensiveEmailService.trackClick).toBe('function')
