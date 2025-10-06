@@ -27,7 +27,5 @@ module.exports = {
   // Global teardown to close database connections
   globalTeardown: '<rootDir>/tests/jest.teardown.js',
   // Detect open handles to help identify connection leaks
-  detectOpenHandles: false,
-  // Force exit after tests complete
-  forceExit: true
+  detectOpenHandles: true
 };

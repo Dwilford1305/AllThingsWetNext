@@ -126,13 +126,29 @@ class CacheStore {
 const cache = new CacheStore()
 
 // Run cleanup every 10 minutes
+let cleanupInterval: NodeJS.Timeout | null = null
 if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
+  cleanupInterval = setInterval(() => {
     const cleaned = cache.cleanup()
     if (cleaned > 0) {
       console.log(`🧹 Cache cleanup: removed ${cleaned} expired entries`)
     }
   }, 10 * 60 * 1000)
+  
+  // Allow the interval to be cleared (important for testing)
+  if (cleanupInterval && typeof cleanupInterval.unref === 'function') {
+    cleanupInterval.unref()
+  }
+}
+
+/**
+ * Stop the cache cleanup interval (useful for testing and graceful shutdown)
+ */
+export function stopCacheCleanup(): void {
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval)
+    cleanupInterval = null
+  }
 }
 
 /**

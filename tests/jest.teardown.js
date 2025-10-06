@@ -19,5 +19,14 @@ module.exports = async () => {
     console.warn('⚠️ Error closing database connections:', error.message)
   }
   
+  // Stop cache cleanup interval to prevent open handles
+  try {
+    const { stopCacheCleanup } = require('../src/lib/cache')
+    stopCacheCleanup()
+    console.log('✅ Cache cleanup interval stopped')
+  } catch (error) {
+    console.warn('⚠️ Error stopping cache cleanup:', error.message)
+  }
+  
   // Give Jest time to clean up
 }

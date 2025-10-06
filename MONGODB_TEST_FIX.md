@@ -28,7 +28,7 @@ jest.mock('@/lib/mongodb', () => ({
 - Allows tests to run without requiring actual database access
 
 ### 2. Global Test Teardown (`tests/jest.teardown.js`)
-Created a global teardown function that forcefully closes all mongoose connections:
+Created a global teardown function that closes all mongoose connections and stops async operations:
 
 ```javascript
 module.exports = async () => {
@@ -44,14 +44,22 @@ module.exports = async () => {
     console.warn('⚠️ Error closing database connections:', error.message)
   }
   
-  await new Promise(resolve => setTimeout(resolve, 500))
+  // Stop cache cleanup interval to prevent open handles
+  try {
+    const { stopCacheCleanup } = require('../src/lib/cache')
+    stopCacheCleanup()
+    console.log('✅ Cache cleanup interval stopped')
+  } catch (error) {
+    console.warn('⚠️ Error stopping cache cleanup:', error.message)
+  }
 }
 ```
 
 **Benefits:**
 - Ensures all mongoose connections are closed after test completion
+- Stops cache cleanup intervals that would prevent Jest from exiting
 - Handles error cases gracefully
-- Provides visual confirmation of connection cleanup
+- Provides visual confirmation of cleanup operations
 
 ### 3. Jest Configuration Updates (`jest.config.js`)
 Enhanced Jest configuration with connection cleanup settings:
@@ -59,18 +67,52 @@ Enhanced Jest configuration with connection cleanup settings:
 ```javascript
 {
   globalTeardown: '<rootDir>/tests/jest.teardown.js',
-  detectOpenHandles: false,
-  forceExit: true
+  detectOpenHandles: true
 }
 ```
 
 **Settings Explained:**
 - `globalTeardown`: Runs cleanup function after all tests complete
-- `detectOpenHandles`: Disabled to prevent false positives from mocked connections
-- `forceExit`: Forces Jest to exit after teardown completes
+- `detectOpenHandles`: Enabled to identify and surface async operations that prevent Jest from exiting cleanly
 
-### 4. Code Cleanup
-Removed unused `connectDB` import from `tests/super-admin-test-business.test.ts` that was causing unnecessary module loading.
+**Note:** Previously used `forceExit: true` which masked underlying issues. Now using `detectOpenHandles: true` following Jest best practices to ensure all async operations are properly cleaned up.
+
+### 4. Cache Cleanup Interval Fix (`src/lib/cache.ts`)
+Fixed the cache cleanup interval that was preventing Jest from exiting:
+
+```javascript
+// Run cleanup every 10 minutes
+let cleanupInterval: NodeJS.Timeout | null = null
+if (typeof setInterval !== 'undefined') {
+  cleanupInterval = setInterval(() => {
+    const cleaned = cache.cleanup()
+    if (cleaned > 0) {
+      console.log(`🧹 Cache cleanup: removed ${cleaned} expired entries`)
+    }
+  }, 10 * 60 * 1000)
+  
+  // Allow the interval to be cleared (important for testing)
+  if (cleanupInterval && typeof cleanupInterval.unref === 'function') {
+    cleanupInterval.unref()
+  }
+}
+
+// Export cleanup function for teardown
+export function stopCacheCleanup(): void {
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval)
+    cleanupInterval = null
+  }
+}
+```
+
+**Benefits:**
+- Uses `unref()` to allow Node.js to exit naturally if no other work is pending
+- Provides explicit cleanup function for test teardown
+- Prevents open handles that would keep Jest from exiting
+
+### 5. Code Cleanup
+Removed unused `connectDB` import from test files that was causing unnecessary module loading.
 
 ## Results
 
@@ -79,13 +121,17 @@ Removed unused `connectDB` import from `tests/super-admin-test-business.test.ts`
 - ❌ Jest process wouldn't exit cleanly
 - ❌ Required manual intervention to kill test process
 - ❌ CI/CD pipelines would timeout
+- ❌ Used `forceExit: true` which masked underlying issues
 
 ### After Fix
-- ✅ Tests complete in ~33 seconds
-- ✅ Jest exits cleanly with proper connection cleanup
+- ✅ Tests complete in ~30 seconds
+- ✅ Jest exits cleanly without force exit
 - ✅ All database connections properly closed
+- ✅ Cache cleanup intervals properly stopped
+- ✅ Uses `detectOpenHandles: true` following Jest best practices
 - ✅ Test suite: 27 passed, 4 failed (failures unrelated to connection issues)
-- ✅ Confirmed message: "✅ All database connections closed"
+- ✅ Confirmed messages: "✅ All database connections closed" and "✅ Cache cleanup interval stopped"
+- ✅ No open handles detected by Jest
 
 ## Testing Strategy
 
