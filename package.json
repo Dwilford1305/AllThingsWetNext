@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "scrape:events": "node scripts/scrape-events.js",
-    "test": "jest"
+    "test": "jest",
+    "test:performance": "node scripts/performance-test.js"
   },
   "overrides": {
     "cookie": "^0.7.0",
