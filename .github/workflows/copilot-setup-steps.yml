@@ -99,13 +99,17 @@ jobs:
       # Step 2: Environment Configuration (simulated)
       - name: Report environment configuration
         run: |
-          echo "Configured env variables:"
+          echo "=== Environment Configuration ==="
           echo "NEXTAUTH_URL=$NEXTAUTH_URL"
+          echo "JWT_SECRET: ${JWT_SECRET:0:10}..." # Show first 10 chars only
+          echo "JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:0:10}..."
           if [ -n "$MONGODB_URI" ]; then
             echo "MONGODB_URI detected (length: ${#MONGODB_URI})"
           else
-            echo "MONGODB_URI not set - operating in graceful no-database mode."
+            echo "⚠️  MONGODB_URI not set - operating in graceful no-database mode."
+            echo "   Some tests may fail - this is expected behavior."
           fi
+          echo "=================================="
 
       # Step 3: Build
       - name: Build application
@@ -122,7 +126,8 @@ jobs:
           npm test -- --watch=false || EXIT_CODE=$?
           echo "Test phase exit code: ${EXIT_CODE:-0}"
           # Capture (do not fail immediately if partial failures allowed)
-          if [ "${{ (github.event_name == 'workflow_dispatch' && inputs.allow_partial_failures == 'true') || (github.event_name != 'workflow_dispatch') && 'true' }}" = "true" ]; then
+          # Allow partial failures when: (1) workflow_dispatch with allow_partial_failures=true, OR (2) on push/PR
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.allow_partial_failures == 'true' || github.event_name != 'workflow_dispatch' }}" = "true" ]; then
             exit 0
           else
             exit ${EXIT_CODE:-0}
@@ -136,7 +141,8 @@ jobs:
           echo "Running lint..."
           npm run lint || EXIT_CODE=$?
           echo "Lint exit code: ${EXIT_CODE:-0}"
-          if [ "${{ (github.event_name == 'workflow_dispatch' && inputs.allow_partial_failures == 'true') || (github.event_name != 'workflow_dispatch') && 'true' }}" = "true" ]; then
+          # Allow partial failures when: (1) workflow_dispatch with allow_partial_failures=true, OR (2) on push/PR
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.allow_partial_failures == 'true' || github.event_name != 'workflow_dispatch' }}" = "true" ]; then
             exit 0
           else
             exit ${EXIT_CODE:-0}
@@ -151,6 +157,10 @@ jobs:
           npm run dev > dev.log 2>&1 &
           DEV_PID=$!
           echo "Dev server PID: $DEV_PID"
+          
+          # Ensure cleanup on script exit
+          trap "kill $DEV_PID 2>/dev/null || true; wait $DEV_PID 2>/dev/null || true" EXIT
+          
           echo "Waiting for readiness..."
           ATTEMPTS=0
           until curl -fsS http://localhost:3000 >/dev/null 2>&1; do
@@ -159,7 +169,6 @@ jobs:
               echo "Server failed to become ready within 60 attempts (~60s)."
               echo "=== Dev Server Log (tail) ==="
               tail -n 200 dev.log || true
-              kill $DEV_PID || true
               exit 1
             fi
             sleep 1
@@ -186,11 +195,8 @@ jobs:
           echo "---- Auth Test Page (HEAD) ----"
           curl -I -s http://localhost:3000/auth-test | head -n 1 || true
 
-          echo "Stopping dev server..."
-          kill $DEV_PID || true
-          wait $DEV_PID 2>/dev/null || true
-
           echo "Dev server validation complete."
+          # Cleanup handled by trap
         timeout-minutes: 6
 
       # Summarize (Success Criteria)
