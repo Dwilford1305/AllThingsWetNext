@@ -8,6 +8,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import ConditionalLayout from '@/components/ConditionalLayout';
+import AdminNotificationCenter from '@/components/AdminNotificationCenter';
+import AdminRecentActivity from '@/components/AdminRecentActivity';
 import { 
   Shield, 
   Users, 
@@ -103,19 +105,27 @@ export default function AdminPage() {
               </h1>
               <p className="text-blue-200 mt-2">Manage your All Things Wetaskiwin platform</p>
             </div>
-            <Button 
-              onClick={handleRefresh} 
-              disabled={refreshing}
-              variant="outline"
-              className="flex items-center refresh-button bg-white/10 border-white/20 text-white hover:bg-white/20"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
+            <div className="flex items-center gap-3">
+              <AdminNotificationCenter />
+              <Button 
+                onClick={handleRefresh} 
+                disabled={refreshing}
+                variant="outline"
+                className="flex items-center refresh-button bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </div>
           </div>
 
           {stats && (
             <>
+              {/* Recent Activity Section */}
+              <div className="mb-8">
+                <AdminRecentActivity />
+              </div>
+
               {/* Quick Stats */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <Card className="p-6 bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg">

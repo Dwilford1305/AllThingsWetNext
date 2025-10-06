@@ -4,6 +4,7 @@ import { connectDB } from '@/lib/mongodb';
 import { User } from '@/models/auth';
 import { randomUUID } from 'crypto';
 import { initializeAuth0Environment } from '@/lib/auth0-config';
+import AdminNotificationService from '@/lib/adminNotificationService';
 
 // Initialize Auth0 environment variables before using the SDK
 initializeAuth0Environment();
@@ -48,7 +49,7 @@ export default handleAuth({
 							if (!existing) {
 								const name = auth0User?.name || '';
 								const [first = '', ...rest] = name.split(' ').filter(Boolean);
-								await User.create({
+								const newUser = await User.create({
 									id: `user_${randomUUID()}`,
 									email,
 									passwordHash: '',
@@ -62,6 +63,33 @@ export default handleAuth({
 									isSuspended: false,
 									preferences: defaultPreferences,
 								});
+
+								// Send admin notification about new Auth0 user signup
+								try {
+									const notificationService = AdminNotificationService.getInstance();
+									await notificationService.createNotification({
+										type: 'user_signup',
+										title: 'New User Registration (Auth0)',
+										message: `${newUser.firstName} ${newUser.lastName} (${newUser.email}) has signed up via Auth0.`,
+										priority: 'medium',
+										relatedEntity: {
+											type: 'user',
+											id: newUser.id
+										},
+										metadata: {
+											email: newUser.email,
+											firstName: newUser.firstName,
+											lastName: newUser.lastName,
+											provider: 'auth0',
+											emailVerified: newUser.isEmailVerified,
+											signupDate: new Date().toISOString()
+										},
+										sendEmail: true,
+										sendPush: true
+									});
+								} catch (notifError) {
+									console.error('Failed to send admin notification:', notifError);
+								}
 							} else {
 								// Light-touch sync for verified flag and picture on login
 								const updates: Record<string, unknown> = {};

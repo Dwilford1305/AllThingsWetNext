@@ -5,6 +5,7 @@ import { AuthService } from '@/lib/auth'
 import { User, UserActivityLog } from '@/models/auth'
 import type { SignupRequest, ApiResponse, User as UserType } from '@/types'
 import { verifyCaptcha, CAPTCHA_REQUIRED } from '@/lib/captcha'
+import AdminNotificationService from '@/lib/adminNotificationService'
 
 export async function POST(request: NextRequest) {
   try {
@@ -150,6 +151,35 @@ export async function POST(request: NextRequest) {
     // await EmailService.sendVerificationEmail(user.email, emailVerificationToken)
     
     console.log(`📧 EMAIL VERIFICATION: Send to ${user.email} with token: ${emailVerificationToken}`)
+
+    // Send admin notification about new user signup
+    try {
+      const notificationService = AdminNotificationService.getInstance();
+      await notificationService.createNotification({
+        type: 'user_signup',
+        title: 'New User Registration',
+        message: `${user.firstName} ${user.lastName} (${user.email}) has signed up as ${accountType || 'user'}${businessName ? ` for business: ${businessName}` : ''}.`,
+        priority: accountType === 'business_owner' ? 'high' : 'medium',
+        relatedEntity: {
+          type: 'user',
+          id: user.id
+        },
+        metadata: {
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          accountType: accountType || 'user',
+          businessName: businessName || null,
+          verificationStatus: user.verificationStatus,
+          signupDate: new Date().toISOString()
+        },
+        sendEmail: true,
+        sendPush: true
+      });
+    } catch (notifError) {
+      // Don't fail signup if notification fails
+      console.error('Failed to send admin notification:', notifError);
+    }
 
     // Prepare response (don't include sensitive data)
     const sanitizedUser = AuthService.sanitizeUser(user.toObject())

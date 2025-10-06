@@ -4,6 +4,7 @@ import { User } from '@/models/auth'
 import { BusinessRequest } from '@/models/businessRequest'
 import { AuthService } from '@/lib/auth'
 import { EmailService } from '@/lib/emailService'
+import AdminNotificationService from '@/lib/adminNotificationService'
 import { z } from 'zod'
 
 // Business Request Schema Validation
@@ -163,6 +164,31 @@ export async function POST(request: NextRequest) {
           userName: `${user.firstName} ${user.lastName}`
         }
       )
+
+      // Create admin notification via new service
+      const notificationService = AdminNotificationService.getInstance();
+      await notificationService.createNotification({
+        type: 'business_request',
+        title: 'New Business Listing Request',
+        message: `${businessName} (${businessType}) - submitted by ${user.firstName} ${user.lastName}`,
+        priority: 'high',
+        relatedEntity: {
+          type: 'business',
+          id: businessRequest.id
+        },
+        metadata: {
+          requestId: businessRequest.id,
+          businessName,
+          businessType,
+          userName: `${user.firstName} ${user.lastName}`,
+          userEmail: user.email,
+          phone,
+          address,
+          submittedAt: new Date().toISOString()
+        },
+        sendEmail: true,
+        sendPush: true
+      });
     } catch (emailError) {
       console.error('Failed to send notification emails:', emailError)
       // Don't fail the request if email sending fails
