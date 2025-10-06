@@ -6,6 +6,16 @@ const nextConfig: NextConfig = {
     // We omit devDependencies on Vercel, so disable lint during prod builds
     ignoreDuringBuilds: true,
   },
+  
+  // Performance optimizations
+  compress: true, // Enable gzip compression
+  poweredByHeader: false, // Remove X-Powered-By header for security
+  
+  // Experimental features for better performance
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'framer-motion'], // Optimize large packages
+  },
+  
   webpack: (config) => {
     // Ensure path alias '@/...' resolves in all environments (including Vercel)
     config.resolve = config.resolve || {};
@@ -145,6 +155,11 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       }
     ],
+    // Image optimization settings
+    formats: ['image/avif', 'image/webp'], // Modern formats for better compression
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840], // Responsive breakpoints
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384], // Icon/thumbnail sizes
+    minimumCacheTTL: 60 * 60 * 24 * 30, // Cache optimized images for 30 days
   },
 };
 

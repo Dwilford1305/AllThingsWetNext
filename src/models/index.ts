@@ -418,6 +418,60 @@ const BusinessAdSchema = new Schema({
 BusinessAdSchema.index({ tier: 1, isActive: 1, isVisible: 1 })
 BusinessAdSchema.index({ businessId: 1, tier: 1 })
 
+// ============================================================================
+// PERFORMANCE OPTIMIZATION: Compound Indexes
+// ============================================================================
+// These indexes optimize common query patterns and improve API response times
+
+// Event indexes for common queries
+EventSchema.index({ date: 1, featured: -1 }) // Upcoming events with featured first
+EventSchema.index({ category: 1, date: 1 }) // Events by category sorted by date
+EventSchema.index({ featured: -1, date: 1 }) // Featured events
+EventSchema.index({ date: 1, category: 1, featured: -1 }) // Full query optimization
+
+// News indexes for common queries
+NewsSchema.index({ publishedAt: -1, featured: -1 }) // Recent news with featured first
+NewsSchema.index({ category: 1, publishedAt: -1 }) // News by category
+NewsSchema.index({ featured: -1, publishedAt: -1 }) // Featured news
+NewsSchema.index({ tags: 1, publishedAt: -1 }) // News by tags
+
+// Business indexes for search and filtering
+BusinessSchema.index({ name: 1 }) // Alphabetical sorting
+BusinessSchema.index({ category: 1, name: 1 }) // Category filtering
+BusinessSchema.index({ subscriptionTier: -1, featured: -1, name: 1 }) // Premium listings first
+BusinessSchema.index({ name: 'text', description: 'text', address: 'text' }) // Full-text search
+BusinessSchema.index({ category: 1, subscriptionTier: -1 }) // Category with premium first
+BusinessSchema.index({ isClaimed: 1, claimedByUserId: 1 }) // User's claimed businesses
+
+// Job indexes for filtering and search
+JobSchema.index({ expiresAt: 1, featured: -1 }) // Active jobs with featured first
+JobSchema.index({ category: 1, expiresAt: 1 }) // Jobs by category
+JobSchema.index({ type: 1, expiresAt: 1 }) // Jobs by type
+JobSchema.index({ featured: -1, createdAt: -1 }) // Featured and recent jobs
+
+// Marketplace indexes
+MarketplaceListingSchema.index({ status: 1, createdAt: -1 }) // Active listings
+MarketplaceListingSchema.index({ category: 1, status: 1, createdAt: -1 }) // Category filtering
+MarketplaceListingSchema.index({ userId: 1, status: 1 }) // User's listings
+MarketplaceListingSchema.index({ featured: -1, createdAt: -1 }) // Featured listings
+MarketplaceListingSchema.index({ expiresAt: 1, status: 1 }) // Expiration management
+
+// Marketplace comment indexes
+MarketplaceCommentSchema.index({ listingId: 1, createdAt: -1 }) // Comments for a listing
+MarketplaceCommentSchema.index({ userId: 1, createdAt: -1 }) // User's comments
+
+// Report indexes
+ReportSchema.index({ status: 1, createdAt: -1 }) // Reports by status
+ReportSchema.index({ targetType: 1, targetId: 1 }) // Reports for specific content
+
+// Scraper log indexes for monitoring
+ScraperLogSchema.index({ type: 1, startTime: -1 }) // Logs by scraper type
+ScraperLogSchema.index({ status: 1, startTime: -1 }) // Logs by status
+
+// Offer code indexes
+OfferCodeSchema.index({ code: 1, isActive: 1 }) // Active codes lookup
+OfferCodeSchema.index({ validUntil: 1, isActive: 1 }) // Expiration management
+
 // Export models
 export const Event = models.Event || model('Event', EventSchema)
 export const NewsArticle = models.NewsArticle || model('NewsArticle', NewsSchema)
