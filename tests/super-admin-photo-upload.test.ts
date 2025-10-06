@@ -39,7 +39,7 @@ jest.mock('@/lib/auth-middleware', () => ({
       
       // Create an authenticated request with user property
       const authenticatedRequest = request as any
-      authenticatedRequest.user = { id: 'test-user-id' } // Will be overridden by test setup
+      authenticatedRequest.user = { id: 'test-user-id' } // Fallback value; typically overridden by specific test values in test setup
       
       return handler(authenticatedRequest)
     }
