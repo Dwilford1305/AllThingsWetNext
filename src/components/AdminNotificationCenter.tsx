@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Bell, Check, X, AlertCircle, Info, UserPlus, Building, FileText } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
@@ -34,9 +35,12 @@ export default function AdminNotificationCenter() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [statistics, setStatistics] = useState<NotificationStats | null>(null);
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    setMounted(true);
     fetchNotifications();
     
     // Poll for new notifications every 30 seconds
@@ -148,9 +152,10 @@ export default function AdminNotificationCenter() {
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <>
       {/* Notification Bell Button */}
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
         aria-label="Notifications"
@@ -165,9 +170,17 @@ export default function AdminNotificationCenter() {
         )}
       </button>
 
-      {/* Notification Dropdown */}
-      {isOpen && (
-        <div className="fixed lg:absolute right-2 lg:right-0 left-2 lg:left-auto top-16 lg:top-auto lg:mt-2 lg:w-96 max-w-lg bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden z-[9999]">
+      {/* Notification Dropdown - Rendered via Portal */}
+      {isOpen && mounted && createPortal(
+        <div ref={dropdownRef} className="fixed right-2 lg:right-auto left-2 lg:left-auto top-16 lg:top-auto lg:mt-2 lg:w-96 max-w-lg bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden z-[9999]" style={
+          typeof window !== 'undefined' && buttonRef.current && window.innerWidth >= 1024 
+            ? {
+                top: `${buttonRef.current.getBoundingClientRect().bottom + 8}px`,
+                right: `${window.innerWidth - buttonRef.current.getBoundingClientRect().right}px`,
+                left: 'auto'
+              }
+            : undefined
+        }>
           {/* Header */}
           <div className="px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
             <div className="flex items-center justify-between">
@@ -266,8 +279,9 @@ export default function AdminNotificationCenter() {
               </button>
             </div>
           )}
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 }
