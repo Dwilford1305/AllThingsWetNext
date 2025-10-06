@@ -24,17 +24,24 @@ describe('Database Integration Tests', () => {
       // an appropriate error rather than silently failing
       const mongoUtil = require('@/lib/mongodb');
       
-      let errorThrown = false;
+      // Save original env
+      const originalUri = process.env.MONGODB_URI;
+      delete process.env.MONGODB_URI;
+      
       try {
         await mongoUtil.connectDB();
+        // If we get here, test should fail
+        expect(true).toBe(false); // Force failure if no error thrown
       } catch (error) {
-        if (error instanceof Error && error.message.includes('MONGODB_URI is not defined')) {
-          errorThrown = true;
+        // Should throw error about missing MONGODB_URI
+        expect(error instanceof Error).toBe(true);
+        expect((error as Error).message).toContain('MONGODB_URI is not defined');
+      } finally {
+        // Restore original env
+        if (originalUri) {
+          process.env.MONGODB_URI = originalUri;
         }
       }
-      
-      // This confirms the function properly validates the environment
-      expect(errorThrown).toBe(true);
     });
   });
 
@@ -374,8 +381,19 @@ describe('Database Integration Tests', () => {
     test('mongodb connection handles missing environment gracefully', async () => {
       const mongoUtil = require('@/lib/mongodb');
       
-      // In test environment, should throw appropriate error
-      await expect(mongoUtil.connectDB()).rejects.toThrow('MONGODB_URI is not defined');
+      // Save original env
+      const originalUri = process.env.MONGODB_URI;
+      delete process.env.MONGODB_URI;
+      
+      try {
+        // In test environment, should throw appropriate error
+        await expect(mongoUtil.connectDB()).rejects.toThrow('MONGODB_URI is not defined');
+      } finally {
+        // Restore original env
+        if (originalUri) {
+          process.env.MONGODB_URI = originalUri;
+        }
+      }
     });
 
     test('mongodb connection module structure is correct', () => {
@@ -383,7 +401,7 @@ describe('Database Integration Tests', () => {
       
       // Should export the connectDB function
       expect(mongoUtil).toHaveProperty('connectDB');
-      expect(mongoUtil.connectDB).toBeInstanceOf(Function);
+      expect(typeof mongoUtil.connectDB).toBe('function');
     });
   });
 

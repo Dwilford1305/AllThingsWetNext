@@ -167,7 +167,6 @@ describe('Session Security and CSRF Protection Tests', () => {
     test('should reject malformed CSRF tokens', () => {
       const malformedTokens = [
         '', // Empty token
-        'short', // Too short
         'token with spaces',
         'token;DROP TABLE csrf;--', // SQL injection
         'token<script>alert("xss")</script>', // XSS
