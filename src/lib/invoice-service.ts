@@ -277,9 +277,7 @@ export class InvoiceService {
 
     } catch (error) {
       console.error('PDF generation error:', error);
-      // Fall back to returning the HTML content as a simple text-based PDF
-      const htmlContent = this.generateInvoiceHTML(invoice);
-      return Buffer.from(htmlContent, 'utf-8');
+      throw error;
     }
   }
 
