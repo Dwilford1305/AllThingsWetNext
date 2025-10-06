@@ -24,6 +24,28 @@ jest.mock('@/lib/auth', () => ({
   }
 }))
 
+// Mock the auth middleware to inject user into request
+jest.mock('@/lib/auth-middleware', () => ({
+  withAuth: (handler: Function) => {
+    return async (request: NextRequest) => {
+      // Extract user info from Authorization header for tests
+      const authHeader = request.headers.get('authorization')
+      if (!authHeader) {
+        return Response.json(
+          { success: false, error: 'Not authenticated' },
+          { status: 401 }
+        )
+      }
+      
+      // Create an authenticated request with user property
+      const authenticatedRequest = request as any
+      authenticatedRequest.user = { id: 'test-user-id' } // Fallback value; typically overridden by specific test values in test setup
+      
+      return handler(authenticatedRequest)
+    }
+  }
+}))
+
 import { POST } from '@/app/api/businesses/photos/route'
 import { Business, BusinessAd, User } from '@/models'
 import { AuthService } from '@/lib/auth'
@@ -69,7 +91,7 @@ describe('Super Admin Photo Upload API', () => {
     formData.append('businessId', 'test-business-123')
     formData.append('photo', mockFile)
 
-    // Create mock request
+    // Create mock request with user property (injected by withAuth mock)
     const mockRequest = {
       method: 'POST',
       headers: new Headers({
@@ -79,7 +101,8 @@ describe('Super Admin Photo Upload API', () => {
       cookies: {
         get: (name: string) => name === 'csrfToken' ? { value: 'test-csrf-token' } : undefined
       },
-      formData: () => Promise.resolve(formData)
+      formData: () => Promise.resolve(formData),
+      user: { id: 'super-admin-123' } // User injected by withAuth middleware
     } as unknown as NextRequest
 
     // Call the API
@@ -149,7 +172,8 @@ describe('Super Admin Photo Upload API', () => {
       cookies: {
         get: (name: string) => name === 'csrfToken' ? { value: 'test-csrf-token' } : undefined
       },
-      formData: () => Promise.resolve(formData)
+      formData: () => Promise.resolve(formData),
+      user: { id: 'regular-user-123' } // User injected by withAuth middleware
     } as unknown as NextRequest
 
     // Call the API
