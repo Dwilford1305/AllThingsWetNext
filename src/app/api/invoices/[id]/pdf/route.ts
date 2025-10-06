@@ -54,7 +54,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Generate PDF invoice
     const pdfBuffer = await InvoiceService.generateInvoicePDF(invoice);
 
-    return new NextResponse(pdfBuffer as BodyInit, {
+    // Convert Buffer to ArrayBuffer for standards-compliant BodyInit
+    const arrayBuffer = pdfBuffer.buffer.slice(pdfBuffer.byteOffset, pdfBuffer.byteOffset + pdfBuffer.byteLength);
+    return new NextResponse(arrayBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="invoice-${invoice.invoiceNumber}.pdf"`
