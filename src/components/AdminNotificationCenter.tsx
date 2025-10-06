@@ -167,7 +167,7 @@ export default function AdminNotificationCenter() {
 
       {/* Notification Dropdown */}
       {isOpen && (
-        <div className="fixed sm:absolute right-2 sm:right-0 left-2 sm:left-auto top-16 sm:top-auto sm:mt-2 sm:w-96 max-w-lg bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden z-50">
+        <div className="fixed md:absolute right-2 md:right-0 left-2 md:left-auto top-16 md:top-auto md:mt-2 md:w-96 max-w-lg bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden z-50">
           {/* Header */}
           <div className="px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
             <div className="flex items-center justify-between">
