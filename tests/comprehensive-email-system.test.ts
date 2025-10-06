@@ -139,8 +139,9 @@ describe('Comprehensive Email System', () => {
   describe('Email Template Rendering', () => {
     it('should render email templates without errors', () => {
       // Test that templates can be imported and used
-      // Note: These are React components, which are defined but may not work in node test environment
-      // We just verify they're importable
+      // Note: These are React components, which are defined but may not work in node test environment.
+      // Intentionally, we only verify that these modules are importable and do not attempt to render the React components,
+      // as rendering is not supported in the Node test environment.
       const EmailVerificationModule = require('../src/lib/email/templates/auth/EmailVerification')
       const PasswordResetModule = require('../src/lib/email/templates/auth/PasswordReset')
       const BusinessApprovalModule = require('../src/lib/email/templates/business/BusinessApproval')
