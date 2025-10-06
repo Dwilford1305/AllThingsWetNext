@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { Business } from '@/models'
+import cache, { generateCacheKey } from '@/lib/cache'
+import { getCacheHeaders, QueryCacheSettings } from '@/lib/cache-config'
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,6 +17,26 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'name'
     
     const skip = (page - 1) * limit
+
+    // Generate cache key
+    const cacheKey = generateCacheKey('api:businesses', {
+      page,
+      limit,
+      search: search || 'none',
+      category: category || 'all',
+      letter: letter || 'all',
+      sort
+    })
+
+    // Try to get from cache (only cache if no search - search results change frequently)
+    if (!search) {
+      const cached = cache.get(cacheKey)
+      if (cached) {
+        return NextResponse.json(cached, {
+          headers: getCacheHeaders('API_LONG')
+        })
+      }
+    }
 
     // Build query
     const query: Record<string, unknown> = {}
@@ -35,14 +57,14 @@ export async function GET(request: NextRequest) {
       query.name = { $regex: `^${letter}`, $options: 'i' }
     }
 
-    // Build sort
+    // Build sort - optimized to use indexes
     let sortObj: { [key: string]: 1 | -1 } = {}
     switch (sort) {
       case 'featured':
-        sortObj = { 'subscription.tier': -1, featured: -1, name: 1 }
+        sortObj = { subscriptionTier: -1, featured: -1, name: 1 }
         break
       case 'rating':
-        sortObj = { 'analytics.averageRating': -1, name: 1 }
+        sortObj = { rating: -1, name: 1 }
         break
       case 'newest':
         sortObj = { createdAt: -1 }
@@ -57,13 +79,14 @@ export async function GET(request: NextRequest) {
         .sort(sortObj)
         .skip(skip)
         .limit(limit)
+        .select('-__v') // Exclude version field
         .lean(),
       Business.countDocuments(query)
     ])
 
     const totalPages = Math.ceil(totalCount / limit)
 
-    return NextResponse.json({
+    const response = {
       success: true,
       data: {
         businesses,
@@ -79,6 +102,15 @@ export async function GET(request: NextRequest) {
           total: totalCount
         }
       }
+    }
+
+    // Cache the result (only if no search)
+    if (!search) {
+      cache.set(cacheKey, response, QueryCacheSettings.BUSINESSES.ttl)
+    }
+
+    return NextResponse.json(response, {
+      headers: getCacheHeaders(search ? 'API_SHORT' : 'API_LONG')
     })
   } catch (error) {
     console.error('Businesses API error:', error)

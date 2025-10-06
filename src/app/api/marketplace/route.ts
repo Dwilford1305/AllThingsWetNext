@@ -15,6 +15,30 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category')
     const status = searchParams.get('status') || 'active'
 
+    // Import cache utilities here to avoid circular dependencies
+    const { default: cache, generateCacheKey } = await import('@/lib/cache')
+    const { getCacheHeaders, QueryCacheSettings } = await import('@/lib/cache-config')
+
+    // Generate cache key
+    const cacheKey = generateCacheKey('api:marketplace', {
+      limit,
+      featured: featured || false,
+      category: category || 'all',
+      status
+    })
+
+    // Try to get from cache
+    const cached = cache.get<typeof listings>(cacheKey)
+    if (cached) {
+      const response: ApiResponse<typeof cached> = {
+        success: true,
+        data: cached
+      }
+      return NextResponse.json(response, {
+        headers: getCacheHeaders('DYNAMIC')
+      })
+    }
+
     const query: Record<string, unknown> = {
       status: status,
       expiresAt: { $gte: new Date() } // Only show non-expired listings
@@ -24,15 +48,21 @@ export async function GET(request: NextRequest) {
 
     const listings = await MarketplaceListing.find(query)
       .limit(limit)
-      .sort({ createdAt: -1 }) // Sort by creation date descending (newest first)
+      .sort({ featured: -1, createdAt: -1 }) // Featured first, then newest
+      .select('-__v') // Exclude version field
       .lean()
+
+    // Store in cache
+    cache.set(cacheKey, listings, QueryCacheSettings.MARKETPLACE.ttl)
 
     const response: ApiResponse<typeof listings> = {
       success: true,
       data: listings
     }
 
-    return NextResponse.json(response)
+    return NextResponse.json(response, {
+      headers: getCacheHeaders('DYNAMIC')
+    })
   } catch (error) {
     console.error('Marketplace API error:', error)
     return NextResponse.json(

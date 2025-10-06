@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/mongodb'
 import { NewsArticle } from '@/models'
 import type { ApiResponse } from '@/types'
+import cache, { generateCacheKey } from '@/lib/cache'
+import { getCacheHeaders, QueryCacheSettings } from '@/lib/cache-config'
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,6 +14,25 @@ export async function GET(request: NextRequest) {
     const featured = searchParams.get('featured') === 'true'
     const category = searchParams.get('category')
 
+    // Generate cache key
+    const cacheKey = generateCacheKey('api:news', {
+      limit,
+      featured: featured || false,
+      category: category || 'all'
+    })
+
+    // Try to get from cache
+    const cached = cache.get<typeof news>(cacheKey)
+    if (cached) {
+      const response: ApiResponse<typeof cached> = {
+        success: true,
+        data: cached
+      }
+      return NextResponse.json(response, {
+        headers: getCacheHeaders('API_MEDIUM')
+      })
+    }
+
     const query: Record<string, unknown> = {}
     if (featured) query.featured = true
     if (category) query.category = category
@@ -19,14 +40,20 @@ export async function GET(request: NextRequest) {
     const news = await NewsArticle.find(query)
       .limit(limit)
       .sort({ publishedAt: -1 }) // Sort by publish date descending (newest first)
+      .select('-__v') // Exclude version field
       .lean()
+
+    // Store in cache
+    cache.set(cacheKey, news, QueryCacheSettings.NEWS.ttl)
 
     const response: ApiResponse<typeof news> = {
       success: true,
       data: news
     }
 
-    return NextResponse.json(response)
+    return NextResponse.json(response, {
+      headers: getCacheHeaders('API_MEDIUM')
+    })
   } catch (error) {
     console.error('News API error:', error)
     return NextResponse.json(
@@ -51,6 +78,9 @@ export async function DELETE(request: NextRequest) {
       // Delete all articles
       const result = await NewsArticle.deleteMany({})
       
+      // Invalidate cache
+      cache.clearPattern('^api:news:')
+      
       return NextResponse.json({
         success: true,
         message: `Deleted ${result.deletedCount} articles`
@@ -71,6 +101,9 @@ export async function DELETE(request: NextRequest) {
           { id: { $in: ['n1', 'n2', 'n3', 'n4'] } }
         ]
       })
+
+      // Invalidate cache
+      cache.clearPattern('^api:news:')
 
       return NextResponse.json({
         success: true,
