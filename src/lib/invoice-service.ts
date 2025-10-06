@@ -146,8 +146,8 @@ export class InvoiceService {
    * Generate PDF invoice
    */
   static async generateInvoicePDF(invoice: InvoiceData): Promise<Buffer> {
-    // For PDF generation, we need to use a server-side solution since jsPDF doesn't work well in Node.js
-    // Let's use a simpler HTML-to-PDF approach using basic PDF generation
+    // For PDF generation, we use jsPDF, imported dynamically for server-side use.
+    // This approach allows us to generate PDFs directly in Node.js.
     
     try {
       // Import jsPDF dynamically for server-side use
