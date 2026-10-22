@@ -44,7 +44,7 @@
     "marked": "^16.0.0",
     "mongoose": "^8.16.1",
     "next": "15.5.7",
-    "nodemailer": "^7.0.5",
+    "nodemailer": "^10.0.9",
     "react": "19.1.2",
     "react-dom": "19.1.2",
     "react-email": "^4.2.11",
